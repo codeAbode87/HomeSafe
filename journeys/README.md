@@ -19,10 +19,33 @@ server.
 To add a screen: `nines look` at the node it is reached from, write its node and the edge in (and Back out), run
 `nines test`. The briefs in nines' `agents/` folder say how, one screen at a time.
 
-## The inventory
+## What counts, and how it is kept honest
 
-`inventory.json` is the code's own list of what the model's denominator should hold: every drawer app, tab, page, route,
-modal, back-owning overlay, `*Screen`, state type and deep link declared in the `commonMain` sources, extracted by text
-analysis alone (no Gradle, no model). Regenerate it with `python3 journeys/inventory.py` from the repo root; CI can run
-`python3 journeys/inventory.py --check`, which exits 1 when the committed file is stale. `nines audit journeys/nines.yaml --inventory journeys/inventory.json`
-lists the inventory items no node of the model covers.
+The scenario count is every screen, every entry state, every transition and every screen under each disturbance
+(rotation, recreation, process death, dark mode, large text…), plus the pairs a screen declares as interacting
+(`interactions:`). A screen or edge that no walk can reach or recognise yet is `pending: <why>`: it stays in the count
+and against the coverage figure until someone makes it real.
+
+`inventory.json` is the code's own list of what the model must hold: every drawer app, tab, page, route, dialog,
+sheet, menu, back-owning overlay, `*Screen`, state type and deep link the `commonMain` sources declare, extracted by
+text analysis from `inventory.yaml` (no Gradle, no language model):
+
+```bash
+nines inventory --config journeys/inventory.yaml --out journeys/inventory.json   # regenerate after changing UI code
+nines audit journeys/nines.yaml --inventory journeys/inventory.json              # what no screen of the model covers
+```
+
+## Pull requests and nights
+
+```bash
+scripts/journeys.sh build     # the APK and the fake Frigate
+scripts/journeys.sh pr        # what a pull request must pass
+scripts/journeys.sh nightly   # everything, plus a depth sample that changes each night
+```
+
+`pr` fails when the inventory is stale, when a walk the change can reach fails, or when `nines gate` finds a new page,
+dialog or state the model does not claim, a new surface that is only `pending`, a changed UI file no screen's
+`sources` names, or a changed screen whose scenarios are not covered. Its report says what to add. `nightly` runs the
+whole core plan with re-planning rounds, samples the deeper levels with the day as its seed, audits the model against
+the inventory, and compares coverage with the night before. Neither uses a language model: a run replays planned
+walks. They are not part of CI yet: nines is a local checkout (`NINES_HOME`, default `~/nines`).

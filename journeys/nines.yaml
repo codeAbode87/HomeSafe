@@ -59,4 +59,19 @@ oracles:
 resilience:
   perturbations: [rotate, recreate, process-death, background, dark, fontscale, rtl, offline]
 
+# A changed file under these that no screen's `sources` names fails the pull-request gate: new UI belongs to a screen.
+gate:
+  ui_globs:
+    - "shared/src/commonMain/kotlin/**/ui/screens/*.kt"
+    - "app/src/commonMain/kotlin/**/ui/screens/*.kt"
+    - "features/*/src/commonMain/kotlin/**/ui/*.kt"
+  # App code whose reach no screen can name (view models, data, network, the fake server): a change there walks
+  # every screen and transition once.
+  code_globs:
+    - "shared/src/*Main/**"
+    - "app/src/*Main/**"
+    - "features/*/src/*Main/**"
+    - "androidApp/src/main/**"
+    - "fake-frigate/src/main/**"
+
 start: home

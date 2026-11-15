@@ -315,319 +315,319 @@
     {
       "id": "page:AtlasPage.Day",
       "kind": "page",
-      "label": "AtlasPage page Day",
+      "label": "AtlasPage Day",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:128"
     },
     {
       "id": "page:AtlasPage.PlaceDetail",
       "kind": "page",
-      "label": "AtlasPage page PlaceDetail",
+      "label": "AtlasPage PlaceDetail",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:130"
     },
     {
       "id": "page:AtlasPage.Sync",
       "kind": "page",
-      "label": "AtlasPage page Sync",
+      "label": "AtlasPage Sync",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:136"
     },
     {
       "id": "page:AtlasPage.TripDetail",
       "kind": "page",
-      "label": "AtlasPage page TripDetail",
+      "label": "AtlasPage TripDetail",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:133"
     },
     {
       "id": "page:ChargingPage.Car",
       "kind": "page",
-      "label": "ChargingPage page Car",
+      "label": "ChargingPage Car",
       "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt:123"
     },
     {
       "id": "page:ChargingPage.Charge",
       "kind": "page",
-      "label": "ChargingPage page Charge",
+      "label": "ChargingPage Charge",
       "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt:120"
     },
     {
       "id": "page:CheckKind.COSTLY_DEBT",
       "kind": "page",
-      "label": "CheckKind Costly debt",
+      "label": "CheckKind COSTLY_DEBT",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MoneyCheckup.kt:184"
     },
     {
       "id": "page:CheckKind.DEBT_RATIO",
       "kind": "page",
-      "label": "CheckKind Debt ratio",
+      "label": "CheckKind DEBT_RATIO",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MoneyCheckup.kt:185"
     },
     {
       "id": "page:CheckKind.EMERGENCY_FUND",
       "kind": "page",
-      "label": "CheckKind Emergency fund",
+      "label": "CheckKind EMERGENCY_FUND",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MoneyCheckup.kt:182"
     },
     {
       "id": "page:CheckKind.RETIREMENT",
       "kind": "page",
-      "label": "CheckKind Retirement",
+      "label": "CheckKind RETIREMENT",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MoneyCheckup.kt:186"
     },
     {
       "id": "page:CheckKind.SAVINGS_RATE",
       "kind": "page",
-      "label": "CheckKind Savings rate",
+      "label": "CheckKind SAVINGS_RATE",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MoneyCheckup.kt:183"
     },
     {
       "id": "page:FinanceDetail.BankSync",
       "kind": "page",
-      "label": "FinanceDetail page BankSync",
+      "label": "FinanceDetail BankSync",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:154"
     },
     {
       "id": "page:FinanceDetail.BudgetSettings",
       "kind": "page",
-      "label": "FinanceDetail page BudgetSettings",
+      "label": "FinanceDetail BudgetSettings",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:157"
     },
     {
       "id": "page:FinanceDetail.ChartSettings",
       "kind": "page",
-      "label": "FinanceDetail page ChartSettings",
+      "label": "FinanceDetail ChartSettings",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:160"
     },
     {
       "id": "page:FinanceDetail.Connections",
       "kind": "page",
-      "label": "FinanceDetail page Connections",
+      "label": "FinanceDetail Connections",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:145"
     },
     {
       "id": "page:FinanceDetail.Glossary",
       "kind": "page",
-      "label": "FinanceDetail page Glossary",
+      "label": "FinanceDetail Glossary",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:148"
     },
     {
       "id": "page:FinanceDetail.IndicatorPage",
       "kind": "page",
-      "label": "FinanceDetail page IndicatorPage",
+      "label": "FinanceDetail IndicatorPage",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:142"
     },
     {
       "id": "page:FinanceDetail.QuotePage",
       "kind": "page",
-      "label": "FinanceDetail page QuotePage",
+      "label": "FinanceDetail QuotePage",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:140"
     },
     {
       "id": "page:FinanceDetail.SheetSync",
       "kind": "page",
-      "label": "FinanceDetail page SheetSync",
+      "label": "FinanceDetail SheetSync",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:151"
     },
     {
       "id": "page:FinanceDetail.TypedBalances",
       "kind": "page",
-      "label": "FinanceDetail page TypedBalances",
+      "label": "FinanceDetail TypedBalances",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:163"
     },
     {
       "id": "page:FinanceDetail.WalletPage",
       "kind": "page",
-      "label": "FinanceDetail page WalletPage",
+      "label": "FinanceDetail WalletPage",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:166"
     },
     {
       "id": "page:FitnessPage.Edit",
       "kind": "page",
-      "label": "FitnessPage page Edit",
+      "label": "FitnessPage Edit",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:170"
     },
     {
       "id": "page:FitnessPage.Heart",
       "kind": "page",
-      "label": "FitnessPage page Heart",
+      "label": "FitnessPage Heart",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:175"
     },
     {
       "id": "page:FitnessPage.Import",
       "kind": "page",
-      "label": "FitnessPage page Import",
+      "label": "FitnessPage Import",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:172"
     },
     {
       "id": "page:FitnessPage.Lift",
       "kind": "page",
-      "label": "FitnessPage page Lift",
+      "label": "FitnessPage Lift",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:168"
     },
     {
       "id": "page:FitnessPage.Recording",
       "kind": "page",
-      "label": "FitnessPage page Recording",
+      "label": "FitnessPage Recording",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:187"
     },
     {
       "id": "page:FitnessPage.Run",
       "kind": "page",
-      "label": "FitnessPage page Run",
+      "label": "FitnessPage Run",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:184"
     },
     {
       "id": "page:FitnessPage.Runs",
       "kind": "page",
-      "label": "FitnessPage page Runs",
+      "label": "FitnessPage Runs",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:181"
     },
     {
       "id": "page:FitnessPage.Session",
       "kind": "page",
-      "label": "FitnessPage page Session",
+      "label": "FitnessPage Session",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:178"
     },
     {
       "id": "page:FitnessPage.Workout",
       "kind": "page",
-      "label": "FitnessPage page Workout",
+      "label": "FitnessPage Workout",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:166"
     },
     {
       "id": "page:PackagesPage.Add",
       "kind": "page",
-      "label": "PackagesPage page Add",
+      "label": "PackagesPage Add",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:132"
     },
     {
       "id": "page:PackagesPage.Claim",
       "kind": "page",
-      "label": "PackagesPage page Claim",
+      "label": "PackagesPage Claim",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:130"
     },
     {
       "id": "page:PackagesPage.Detail",
       "kind": "page",
-      "label": "PackagesPage page Detail",
+      "label": "PackagesPage Detail",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:128"
     },
     {
       "id": "page:PackagesPage.Setup",
       "kind": "page",
-      "label": "PackagesPage page Setup",
+      "label": "PackagesPage Setup",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:134"
     },
     {
       "id": "page:SettingsFold.APP_ICON",
       "kind": "page",
-      "label": "SettingsFold App icon",
+      "label": "SettingsFold APP_ICON",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
     },
     {
       "id": "page:SettingsFold.CAMERAS",
       "kind": "page",
-      "label": "SettingsFold Cameras",
+      "label": "SettingsFold CAMERAS",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
     },
     {
       "id": "page:SettingsFold.ECONOMY",
       "kind": "page",
-      "label": "SettingsFold Economy",
+      "label": "SettingsFold ECONOMY",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
     },
     {
       "id": "page:SettingsFold.FIGURES",
       "kind": "page",
-      "label": "SettingsFold Figures",
+      "label": "SettingsFold FIGURES",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
     },
     {
       "id": "page:SettingsFold.FINANCE_DRAWER",
       "kind": "page",
-      "label": "SettingsFold Finance drawer",
+      "label": "SettingsFold FINANCE_DRAWER",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
     },
     {
       "id": "page:SettingsFold.MAPS",
       "kind": "page",
-      "label": "SettingsFold Maps",
+      "label": "SettingsFold MAPS",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
     },
     {
       "id": "page:WalletTopic.ACCOUNTS",
       "kind": "page",
-      "label": "WalletTopic Accounts",
+      "label": "WalletTopic ACCOUNTS",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:94"
     },
     {
       "id": "page:WalletTopic.CASH_FLOW",
       "kind": "page",
-      "label": "WalletTopic Cash flow",
+      "label": "WalletTopic CASH_FLOW",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:95"
     },
     {
       "id": "page:WalletTopic.DEBT",
       "kind": "page",
-      "label": "WalletTopic Debt",
+      "label": "WalletTopic DEBT",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:96"
     },
     {
       "id": "page:WalletTopic.HOME",
       "kind": "page",
-      "label": "WalletTopic Home",
+      "label": "WalletTopic HOME",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:97"
     },
     {
       "id": "page:WalletTopic.SHEET_CHARTS",
       "kind": "page",
-      "label": "WalletTopic Sheet charts",
+      "label": "WalletTopic SHEET_CHARTS",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:99"
     },
     {
       "id": "page:WalletTopic.VESTING_TAXES",
       "kind": "page",
-      "label": "WalletTopic Vesting taxes",
+      "label": "WalletTopic VESTING_TAXES",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:98"
     },
     {
       "id": "page:WeatherPage.Alert",
       "kind": "page",
-      "label": "WeatherPage page Alert",
+      "label": "WeatherPage Alert",
       "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:196"
     },
     {
       "id": "page:WeatherPage.Places",
       "kind": "page",
-      "label": "WeatherPage page Places",
+      "label": "WeatherPage Places",
       "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:191"
     },
     {
       "id": "page:WeatherPage.Settings",
       "kind": "page",
-      "label": "WeatherPage page Settings",
+      "label": "WeatherPage Settings",
       "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:193"
     },
     {
       "id": "page:WeatherPage.SkiFind",
       "kind": "page",
-      "label": "WeatherPage page SkiFind",
+      "label": "WeatherPage SkiFind",
       "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:202"
     },
     {
       "id": "page:WeatherPage.SkiRegion",
       "kind": "page",
-      "label": "WeatherPage page SkiRegion",
+      "label": "WeatherPage SkiRegion",
       "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:205"
     },
     {
       "id": "page:WeatherPage.SkiResort",
       "kind": "page",
-      "label": "WeatherPage page SkiResort",
+      "label": "WeatherPage SkiResort",
       "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:199"
     },
     {
       "id": "page:WeatherPage.SkiSetup",
       "kind": "page",
-      "label": "WeatherPage page SkiSetup",
+      "label": "WeatherPage SkiSetup",
       "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:208"
     },
     {
@@ -1221,169 +1221,169 @@
     {
       "id": "state:AtlasProblem.NOT_ALLOWED",
       "kind": "state",
-      "label": "AtlasProblem Not allowed",
+      "label": "AtlasProblem NOT_ALLOWED",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:17"
     },
     {
       "id": "state:AtlasProblem.OTHER",
       "kind": "state",
-      "label": "AtlasProblem Other",
+      "label": "AtlasProblem OTHER",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:21"
     },
     {
       "id": "state:AtlasProblem.RELAY_OUTDATED",
       "kind": "state",
-      "label": "AtlasProblem Relay outdated",
+      "label": "AtlasProblem RELAY_OUTDATED",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:20"
     },
     {
       "id": "state:AtlasProblem.SIGNED_OUT",
       "kind": "state",
-      "label": "AtlasProblem Signed out",
+      "label": "AtlasProblem SIGNED_OUT",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:11"
     },
     {
       "id": "state:AtlasProblem.UNREACHABLE",
       "kind": "state",
-      "label": "AtlasProblem Unreachable",
+      "label": "AtlasProblem UNREACHABLE",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:14"
     },
     {
       "id": "state:AtlasSetupProblem.API_DISABLED",
       "kind": "state",
-      "label": "AtlasSetupProblem Api disabled",
+      "label": "AtlasSetupProblem API_DISABLED",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:30"
     },
     {
       "id": "state:AtlasSetupProblem.EMPTY",
       "kind": "state",
-      "label": "AtlasSetupProblem Empty",
+      "label": "AtlasSetupProblem EMPTY",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:36"
     },
     {
       "id": "state:AtlasSetupProblem.FAILED",
       "kind": "state",
-      "label": "AtlasSetupProblem Failed",
+      "label": "AtlasSetupProblem FAILED",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:42"
     },
     {
       "id": "state:AtlasSetupProblem.NOT_SHARED",
       "kind": "state",
-      "label": "AtlasSetupProblem Not shared",
+      "label": "AtlasSetupProblem NOT_SHARED",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:33"
     },
     {
       "id": "state:AtlasSetupProblem.NO_KEY",
       "kind": "state",
-      "label": "AtlasSetupProblem No key",
+      "label": "AtlasSetupProblem NO_KEY",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:39"
     },
     {
       "id": "state:AtlasSetupProblem.OTHER",
       "kind": "state",
-      "label": "AtlasSetupProblem Other",
+      "label": "AtlasSetupProblem OTHER",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:43"
     },
     {
       "id": "state:BalanceProblem.BANK_FILLED",
       "kind": "state",
-      "label": "BalanceProblem Bank filled",
+      "label": "BalanceProblem BANK_FILLED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:128"
     },
     {
       "id": "state:BalanceProblem.BUSY",
       "kind": "state",
-      "label": "BalanceProblem Busy",
+      "label": "BalanceProblem BUSY",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:137"
     },
     {
       "id": "state:BalanceProblem.CALCULATED",
       "kind": "state",
-      "label": "BalanceProblem Calculated",
+      "label": "BalanceProblem CALCULATED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:125"
     },
     {
       "id": "state:BalanceProblem.CHANGED",
       "kind": "state",
-      "label": "BalanceProblem Changed",
+      "label": "BalanceProblem CHANGED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:122"
     },
     {
       "id": "state:BalanceProblem.NOT_CONNECTED",
       "kind": "state",
-      "label": "BalanceProblem Not connected",
+      "label": "BalanceProblem NOT_CONNECTED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:143"
     },
     {
       "id": "state:BalanceProblem.NOT_FOUND",
       "kind": "state",
-      "label": "BalanceProblem Not found",
+      "label": "BalanceProblem NOT_FOUND",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:131"
     },
     {
       "id": "state:BalanceProblem.NOT_SHARED",
       "kind": "state",
-      "label": "BalanceProblem Not shared",
+      "label": "BalanceProblem NOT_SHARED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:134"
     },
     {
       "id": "state:BalanceProblem.OTHER",
       "kind": "state",
-      "label": "BalanceProblem Other",
+      "label": "BalanceProblem OTHER",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:145"
     },
     {
       "id": "state:BalanceProblem.RELAY_OUTDATED",
       "kind": "state",
-      "label": "BalanceProblem Relay outdated",
+      "label": "BalanceProblem RELAY_OUTDATED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:140"
     },
     {
       "id": "state:BankProblem.NOT_ALLOWED",
       "kind": "state",
-      "label": "BankProblem Not allowed",
+      "label": "BankProblem NOT_ALLOWED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:291"
     },
     {
       "id": "state:BankProblem.NOT_CONFIGURED",
       "kind": "state",
-      "label": "BankProblem Not configured",
+      "label": "BankProblem NOT_CONFIGURED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:297"
     },
     {
       "id": "state:BankProblem.OTHER",
       "kind": "state",
-      "label": "BankProblem Other",
+      "label": "BankProblem OTHER",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:311"
     },
     {
       "id": "state:BankProblem.PLAID",
       "kind": "state",
-      "label": "BankProblem Plaid",
+      "label": "BankProblem PLAID",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:300"
     },
     {
       "id": "state:BankProblem.RELAY_OUTDATED",
       "kind": "state",
-      "label": "BankProblem Relay outdated",
+      "label": "BankProblem RELAY_OUTDATED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:288"
     },
     {
       "id": "state:BankProblem.SIGNED_OUT",
       "kind": "state",
-      "label": "BankProblem Signed out",
+      "label": "BankProblem SIGNED_OUT",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:294"
     },
     {
       "id": "state:BankProblem.TAILSCALE_OFF",
       "kind": "state",
-      "label": "BankProblem Tailscale off",
+      "label": "BankProblem TAILSCALE_OFF",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:306"
     },
     {
       "id": "state:BankProblem.UNREACHABLE",
       "kind": "state",
-      "label": "BankProblem Unreachable",
+      "label": "BankProblem UNREACHABLE",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:309"
     },
     {
@@ -1437,109 +1437,109 @@
     {
       "id": "state:ConnectionProblem.ServerUnreachable",
       "kind": "state",
-      "label": "ConnectionProblem Server unreachable",
+      "label": "ConnectionProblem ServerUnreachable",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/ConnectionProblem.kt:12"
     },
     {
       "id": "state:ConnectionProblem.TailscaleOff",
       "kind": "state",
-      "label": "ConnectionProblem Tailscale off",
+      "label": "ConnectionProblem TailscaleOff",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/ConnectionProblem.kt:9"
     },
     {
       "id": "state:DoorSignal.FAIR",
       "kind": "state",
-      "label": "DoorSignal Fair",
+      "label": "DoorSignal FAIR",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/Door.kt:62"
     },
     {
       "id": "state:DoorSignal.GOOD",
       "kind": "state",
-      "label": "DoorSignal Good",
+      "label": "DoorSignal GOOD",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/Door.kt:63"
     },
     {
       "id": "state:DoorSignal.STRONG",
       "kind": "state",
-      "label": "DoorSignal Strong",
+      "label": "DoorSignal STRONG",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/Door.kt:64"
     },
     {
       "id": "state:DoorSignal.WEAK",
       "kind": "state",
-      "label": "DoorSignal Weak",
+      "label": "DoorSignal WEAK",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/Door.kt:61"
     },
     {
       "id": "state:FitnessSyncStatus.HELD_BACK",
       "kind": "state",
-      "label": "FitnessSyncStatus Held back",
+      "label": "FitnessSyncStatus HELD_BACK",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/FitnessLogSync.kt:23"
     },
     {
       "id": "state:FitnessSyncStatus.SAVED",
       "kind": "state",
-      "label": "FitnessSyncStatus Saved",
+      "label": "FitnessSyncStatus SAVED",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/FitnessLogSync.kt:17"
     },
     {
       "id": "state:FitnessSyncStatus.SIGNED_OUT",
       "kind": "state",
-      "label": "FitnessSyncStatus Signed out",
+      "label": "FitnessSyncStatus SIGNED_OUT",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/FitnessLogSync.kt:11"
     },
     {
       "id": "state:FitnessSyncStatus.WAITING",
       "kind": "state",
-      "label": "FitnessSyncStatus Waiting",
+      "label": "FitnessSyncStatus WAITING",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/FitnessLogSync.kt:14"
     },
     {
       "id": "state:GpsSignal.GOOD",
       "kind": "state",
-      "label": "GpsSignal Good",
+      "label": "GpsSignal GOOD",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/RunRecording.kt:66"
     },
     {
       "id": "state:GpsSignal.LOST",
       "kind": "state",
-      "label": "GpsSignal Lost",
+      "label": "GpsSignal LOST",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/RunRecording.kt:69"
     },
     {
       "id": "state:GpsSignal.SEARCHING",
       "kind": "state",
-      "label": "GpsSignal Searching",
+      "label": "GpsSignal SEARCHING",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/RunRecording.kt:63"
     },
     {
       "id": "state:HealthAccess.CHECKING",
       "kind": "state",
-      "label": "HealthAccess Checking",
+      "label": "HealthAccess CHECKING",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/HealthViewModel.kt:61"
     },
     {
       "id": "state:HealthAccess.MISSING",
       "kind": "state",
-      "label": "HealthAccess Missing",
+      "label": "HealthAccess MISSING",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/HealthViewModel.kt:55"
     },
     {
       "id": "state:HealthAccess.OFF",
       "kind": "state",
-      "label": "HealthAccess Off",
+      "label": "HealthAccess OFF",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/HealthViewModel.kt:64"
     },
     {
       "id": "state:HealthAccess.ON",
       "kind": "state",
-      "label": "HealthAccess On",
+      "label": "HealthAccess ON",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/HealthViewModel.kt:66"
     },
     {
       "id": "state:HealthAccess.UNSUPPORTED",
       "kind": "state",
-      "label": "HealthAccess Unsupported",
+      "label": "HealthAccess UNSUPPORTED",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/HealthViewModel.kt:52"
     },
     {
@@ -1599,289 +1599,289 @@
     {
       "id": "state:LocationAccess.ALWAYS",
       "kind": "state",
-      "label": "LocationAccess Always",
+      "label": "LocationAccess ALWAYS",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/platform/GeofenceMonitor.kt:14"
     },
     {
       "id": "state:LocationAccess.DENIED",
       "kind": "state",
-      "label": "LocationAccess Denied",
+      "label": "LocationAccess DENIED",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/platform/GeofenceMonitor.kt:15"
     },
     {
       "id": "state:LocationAccess.NOT_ASKED",
       "kind": "state",
-      "label": "LocationAccess Not asked",
+      "label": "LocationAccess NOT_ASKED",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/platform/GeofenceMonitor.kt:10"
     },
     {
       "id": "state:LocationAccess.UNAVAILABLE",
       "kind": "state",
-      "label": "LocationAccess Unavailable",
+      "label": "LocationAccess UNAVAILABLE",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/platform/GeofenceMonitor.kt:9"
     },
     {
       "id": "state:LocationAccess.WHILE_IN_USE",
       "kind": "state",
-      "label": "LocationAccess While in use",
+      "label": "LocationAccess WHILE_IN_USE",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/platform/GeofenceMonitor.kt:13"
     },
     {
       "id": "state:PackagesProblem.OTHER",
       "kind": "state",
-      "label": "PackagesProblem Other",
+      "label": "PackagesProblem OTHER",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:150"
     },
     {
       "id": "state:PackagesProblem.RELAY_OUTDATED",
       "kind": "state",
-      "label": "PackagesProblem Relay outdated",
+      "label": "PackagesProblem RELAY_OUTDATED",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:150"
     },
     {
       "id": "state:PackagesProblem.SIGNED_OUT",
       "kind": "state",
-      "label": "PackagesProblem Signed out",
+      "label": "PackagesProblem SIGNED_OUT",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:150"
     },
     {
       "id": "state:PackagesProblem.UNREACHABLE",
       "kind": "state",
-      "label": "PackagesProblem Unreachable",
+      "label": "PackagesProblem UNREACHABLE",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:150"
     },
     {
       "id": "state:ParcelProblem.ATTEMPTED",
       "kind": "state",
-      "label": "ParcelProblem Attempted",
+      "label": "ParcelProblem ATTEMPTED",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:26"
     },
     {
       "id": "state:ParcelProblem.EXCEPTION",
       "kind": "state",
-      "label": "ParcelProblem Exception",
+      "label": "ParcelProblem EXCEPTION",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:26"
     },
     {
       "id": "state:RecorderProblem.LOCATION_REFUSED",
       "kind": "state",
-      "label": "RecorderProblem Location refused",
+      "label": "RecorderProblem LOCATION_REFUSED",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/RunRecording.kt:370"
     },
     {
       "id": "state:RouteAccess.ASK",
       "kind": "state",
-      "label": "RouteAccess Ask",
+      "label": "RouteAccess ASK",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HealthSource.kt:66"
     },
     {
       "id": "state:RouteAccess.NONE",
       "kind": "state",
-      "label": "RouteAccess None",
+      "label": "RouteAccess NONE",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HealthSource.kt:63"
     },
     {
       "id": "state:RouteAccess.READABLE",
       "kind": "state",
-      "label": "RouteAccess Readable",
+      "label": "RouteAccess READABLE",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HealthSource.kt:68"
     },
     {
       "id": "state:SheetProblem.API_DISABLED",
       "kind": "state",
-      "label": "SheetProblem Api disabled",
+      "label": "SheetProblem API_DISABLED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:18"
     },
     {
       "id": "state:SheetProblem.NOT_ALLOWED",
       "kind": "state",
-      "label": "SheetProblem Not allowed",
+      "label": "SheetProblem NOT_ALLOWED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:23"
     },
     {
       "id": "state:SheetProblem.NOT_CONFIGURED",
       "kind": "state",
-      "label": "SheetProblem Not configured",
+      "label": "SheetProblem NOT_CONFIGURED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:9"
     },
     {
       "id": "state:SheetProblem.NOT_FOUND",
       "kind": "state",
-      "label": "SheetProblem Not found",
+      "label": "SheetProblem NOT_FOUND",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:20"
     },
     {
       "id": "state:SheetProblem.NOT_SHARED",
       "kind": "state",
-      "label": "SheetProblem Not shared",
+      "label": "SheetProblem NOT_SHARED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:15"
     },
     {
       "id": "state:SheetProblem.NO_KEY",
       "kind": "state",
-      "label": "SheetProblem No key",
+      "label": "SheetProblem NO_KEY",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:12"
     },
     {
       "id": "state:SheetProblem.OTHER",
       "kind": "state",
-      "label": "SheetProblem Other",
+      "label": "SheetProblem OTHER",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:31"
     },
     {
       "id": "state:SheetProblem.RELAY_OUTDATED",
       "kind": "state",
-      "label": "SheetProblem Relay outdated",
+      "label": "SheetProblem RELAY_OUTDATED",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:26"
     },
     {
       "id": "state:SheetProblem.SIGNED_OUT",
       "kind": "state",
-      "label": "SheetProblem Signed out",
+      "label": "SheetProblem SIGNED_OUT",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:29"
     },
     {
       "id": "state:Signal.CALM",
       "kind": "state",
-      "label": "Signal Calm",
+      "label": "Signal CALM",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/Indicators.kt:180"
     },
     {
       "id": "state:Signal.DANGER",
       "kind": "state",
-      "label": "Signal Danger",
+      "label": "Signal DANGER",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/Indicators.kt:182"
     },
     {
       "id": "state:Signal.WATCH",
       "kind": "state",
-      "label": "Signal Watch",
+      "label": "Signal WATCH",
       "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/Indicators.kt:181"
     },
     {
       "id": "tab:AtlasTab.DAYS",
       "kind": "tab",
-      "label": "Atlas tab Days",
+      "label": "AtlasTab DAYS",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:118"
     },
     {
       "id": "tab:AtlasTab.MAP",
       "kind": "tab",
-      "label": "Atlas tab Map",
+      "label": "AtlasTab MAP",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:117"
     },
     {
       "id": "tab:AtlasTab.PATTERNS",
       "kind": "tab",
-      "label": "Atlas tab Patterns",
+      "label": "AtlasTab PATTERNS",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:121"
     },
     {
       "id": "tab:AtlasTab.PLACES",
       "kind": "tab",
-      "label": "Atlas tab Places",
+      "label": "AtlasTab PLACES",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:119"
     },
     {
       "id": "tab:AtlasTab.TRIPS",
       "kind": "tab",
-      "label": "Atlas tab Trips",
+      "label": "AtlasTab TRIPS",
       "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:120"
     },
     {
       "id": "tab:ChargingTab.CHARGES",
       "kind": "tab",
-      "label": "Charging tab Charges",
+      "label": "ChargingTab CHARGES",
       "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt:112"
     },
     {
       "id": "tab:ChargingTab.OVERVIEW",
       "kind": "tab",
-      "label": "Charging tab Overview",
+      "label": "ChargingTab OVERVIEW",
       "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt:111"
     },
     {
       "id": "tab:ChargingTab.RATES",
       "kind": "tab",
-      "label": "Charging tab Rates",
+      "label": "ChargingTab RATES",
       "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt:113"
     },
     {
       "id": "tab:FinanceTab.BUDGET",
       "kind": "tab",
-      "label": "Finance tab Budget",
+      "label": "FinanceTab BUDGET",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceTab.kt:21"
     },
     {
       "id": "tab:FinanceTab.ECONOMY",
       "kind": "tab",
-      "label": "Finance tab Economy",
+      "label": "FinanceTab ECONOMY",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceTab.kt:23"
     },
     {
       "id": "tab:FinanceTab.MARKETS",
       "kind": "tab",
-      "label": "Finance tab Markets",
+      "label": "FinanceTab MARKETS",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceTab.kt:22"
     },
     {
       "id": "tab:FinanceTab.RISK",
       "kind": "tab",
-      "label": "Finance tab Risk",
+      "label": "FinanceTab RISK",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceTab.kt:24"
     },
     {
       "id": "tab:FinanceTab.WALLET",
       "kind": "tab",
-      "label": "Finance tab Wallet",
+      "label": "FinanceTab WALLET",
       "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceTab.kt:20"
     },
     {
       "id": "tab:FitnessTab.HISTORY",
       "kind": "tab",
-      "label": "Fitness tab History",
+      "label": "FitnessTab HISTORY",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:158"
     },
     {
       "id": "tab:FitnessTab.LIFTS",
       "kind": "tab",
-      "label": "Fitness tab Lifts",
+      "label": "FitnessTab LIFTS",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:157"
     },
     {
       "id": "tab:FitnessTab.PROGRESS",
       "kind": "tab",
-      "label": "Fitness tab Progress",
+      "label": "FitnessTab PROGRESS",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:159"
     },
     {
       "id": "tab:FitnessTab.TODAY",
       "kind": "tab",
-      "label": "Fitness tab Today",
+      "label": "FitnessTab TODAY",
       "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:156"
     },
     {
       "id": "tab:PackagesTab.ALL",
       "kind": "tab",
-      "label": "Packages tab All",
+      "label": "PackagesTab ALL",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:120"
     },
     {
       "id": "tab:PackagesTab.INSIGHTS",
       "kind": "tab",
-      "label": "Packages tab Insights",
+      "label": "PackagesTab INSIGHTS",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:122"
     },
     {
       "id": "tab:PackagesTab.RETURNS",
       "kind": "tab",
-      "label": "Packages tab Returns",
+      "label": "PackagesTab RETURNS",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:121"
     },
     {
       "id": "tab:PackagesTab.TODAY",
       "kind": "tab",
-      "label": "Packages tab Today",
+      "label": "PackagesTab TODAY",
       "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:119"
     },
     {
@@ -1905,25 +1905,25 @@
     {
       "id": "tab:WeatherTab.FORECAST",
       "kind": "tab",
-      "label": "Weather tab Forecast",
+      "label": "WeatherTab FORECAST",
       "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:183"
     },
     {
       "id": "tab:WeatherTab.RADAR",
       "kind": "tab",
-      "label": "Weather tab Radar",
+      "label": "WeatherTab RADAR",
       "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:184"
     },
     {
       "id": "tab:WeatherTab.SKI",
       "kind": "tab",
-      "label": "Weather tab Ski",
+      "label": "WeatherTab SKI",
       "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:185"
     },
     {
       "id": "tab:WeatherTab.TODAY",
       "kind": "tab",
-      "label": "Weather tab Today",
+      "label": "WeatherTab TODAY",
       "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:182"
     }
   ],
@@ -1938,16 +1938,16 @@
       "state": 90,
       "tab": 28
     },
-    "test_tags_per_feature": {
-      "app": 14,
-      "atlas": 41,
-      "car3d": 0,
-      "charging": 37,
-      "finance": 70,
-      "fitness": 167,
-      "packages": 28,
-      "shared": 40,
-      "weather": 80
+    "test_tags_per_root": {
+      "app/src/commonMain": 14,
+      "features/atlas/src/commonMain": 41,
+      "features/car3d/src/commonMain": 0,
+      "features/charging/src/commonMain": 36,
+      "features/finance/src/commonMain": 66,
+      "features/fitness/src/commonMain": 166,
+      "features/packages/src/commonMain": 28,
+      "features/weather/src/commonMain": 79,
+      "shared/src/commonMain": 10
     }
   }
 }

@@ -1,0 +1,25 @@
+# The source inventory of HomeSafe: every tab, page, route, dialog, sheet, menu, overlay, screen and UI state the
+# code declares. `nines inventory --config journeys/inventory.yaml --out journeys/inventory.json` regenerates it.
+roots:
+  - shared/src/commonMain
+  - app/src/commonMain
+  - "features/*/src/commonMain"
+exclude: ["**/*Preview*", "**/*Fixtures*", "**/*Test*/**"]
+skip_annotated: ["@Preview*"]
+rules:
+  - {kind: app, enum: [InnerApp], id: "app:{name}", label: "Drawer app {human}"}
+  - {kind: tab, sealed: [TopLevelRoute], label: "Shell tab {name}"}
+  - {kind: tab, enum: [FinanceTab, WeatherTab, FitnessTab, AtlasTab, PackagesTab, ChargingTab]}
+  - {kind: page, sealed: [FinanceDetail, WeatherPage, FitnessPage, AtlasPage, PackagesPage, ChargingPage],
+     enum: [WalletTopic, SettingsFold, CheckKind]}
+  - {kind: page, declarations: ".*Route$", in: ["**/App.kt", "**/FrigateAppShell.kt", "**/SettingsTabNav.kt"],
+     id_prefix: "route.", label: "Navigation route {name}"}
+  - {kind: modal, calls: [AlertDialog, ModalBottomSheet, DropdownMenu, DatePickerDialog, TimePickerDialog, Dialog, Popup]}
+  - {kind: overlay, calls: [rememberPredictiveBack], label: "Back-owning surface {fun}"}
+  - {kind: screen, functions: ".*Screen$", annotated: "@Composable", top_level: true}
+  - {kind: state, sealed_matching: ".*(UiState|Problem|Access|SensorState|SyncStatus|Signal|LoadState)",
+     enum_matching: ".*(UiState|Problem|Access|SensorState|SyncStatus|Signal|LoadState)"}
+  - {kind: deeplink, declarations: ".*DeepLink$", in: ["**/navigation/**"]}
+  - {kind: deeplink, sealed: [ShellCommand], label: "Shell command {name}"}
+stats:
+  test_tags: 'testTag\(\s*"([^"]+)"'
