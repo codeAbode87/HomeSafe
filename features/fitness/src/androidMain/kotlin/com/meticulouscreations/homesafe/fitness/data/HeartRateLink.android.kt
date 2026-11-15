@@ -20,7 +20,7 @@ import android.os.ParcelUuid
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
+import com.meticulouscreations.homesafe.ActivityAccess
 import com.meticulouscreations.homesafe.PlatformContext
 import com.meticulouscreations.homesafe.fitness.domain.HeartLinkEvent
 import com.meticulouscreations.homesafe.fitness.domain.HeartRateLink
@@ -91,13 +91,12 @@ private fun dropped(reason: String): LinkDropped {
  * What the radio does is logged under `HomeSafeHeartRate`, without addresses.
  */
 @SuppressLint("MissingPermission")
-private class AndroidHeartRateLink(private val context: Context, activity: FragmentActivity?) : HeartRateLink {
+private class AndroidHeartRateLink(private val context: Context, activities: ActivityAccess?) : HeartRateLink {
     private val manager = context.getSystemService(BluetoothManager::class.java)
     private var pendingRequest: CompletableDeferred<Boolean>? = null
 
-    // Registered on the registry directly, as LocalNetworkAccess.android.kt does: the graph is built
-    // too late in onCreate for the lifecycle-bound register().
-    private val permissionLauncher = activity?.activityResultRegistry?.register(
+    // Registered with each Activity that is up (see ActivityAccess.launcher).
+    private val permissionLauncher = activities?.launcher(
         "homesafe.heart_rate",
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { granted ->
@@ -308,4 +307,4 @@ private class AndroidHeartRateLink(private val context: Context, activity: Fragm
 }
 
 actual fun createHeartRateLink(platformContext: PlatformContext): HeartRateLink =
-    AndroidHeartRateLink(platformContext.context.applicationContext, platformContext.context as? FragmentActivity)
+    AndroidHeartRateLink(platformContext.context.applicationContext, platformContext.activities)

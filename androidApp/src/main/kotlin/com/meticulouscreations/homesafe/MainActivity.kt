@@ -20,10 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.meticulouscreations.homesafe.appicon.AppShortcuts
-import com.meticulouscreations.homesafe.di.AppGraph
-import com.meticulouscreations.homesafe.di.createAppGraph
 import com.meticulouscreations.homesafe.navigation.DoorDeepLink
 import com.meticulouscreations.homesafe.navigation.DoorDeepLinks
 import com.meticulouscreations.homesafe.navigation.PackageDeepLink
@@ -39,7 +40,6 @@ import com.meticulouscreations.homesafe.navigation.ParkingDeepLink
 import com.meticulouscreations.homesafe.navigation.ParkingDeepLinks
 import com.meticulouscreations.homesafe.navigation.WeatherDeepLink
 import com.meticulouscreations.homesafe.navigation.WeatherDeepLinks
-import com.meticulouscreations.homesafe.tracing.traceSection
 import com.meticulouscreations.homesafe.ui.LocalShortcutKey
 import com.meticulouscreations.homesafe.ui.ShortcutKey
 import com.meticulouscreations.homesafe.ui.components.LocalPictureInPicture
@@ -49,7 +49,10 @@ import com.meticulouscreations.homesafe.ui.screens.DebugAutofillCredentials
 // BiometricPrompt, which the shared module's BiometricCredentialStore.android.kt uses for
 // biometric login. FragmentActivity extends ComponentActivity, so setContent {} still works.
 class MainActivity : FragmentActivity() {
-    private lateinit var appGraph: AppGraph
+    // One graph across the recreations a font size or language change causes (see AppGraphHolder).
+    private val graphHolder: AppGraphHolder by viewModels {
+        viewModelFactory { initializer { AppGraphHolder(applicationContext) } }
+    }
 
     // Whether the window is the floating mini player a camera's screen handed its video to.
     private var inPictureInPicture by mutableStateOf(false)
@@ -70,13 +73,17 @@ class MainActivity : FragmentActivity() {
 
         // Only on a fresh launch: a recreation re-delivers the intent that started the Activity,
         // and the moment it named was opened the first time round. (A rotation is not one: see
-        // android:configChanges in the manifest. A font-size or language change still is.)
+        // android:configChanges in the manifest. A font-size or language change still is, and
+        // keeps the graph and the navigation, see AppGraphHolder and App.)
         if (savedInstanceState == null) openMomentFrom(intent)
 
         inPictureInPicture = isInPictureInPictureMode
         addOnPictureInPictureModeChangedListener { info -> inPictureInPicture = info.isInPictureInPictureMode }
 
-        appGraph = traceSection("createAppGraph") { createAppGraph(platformContext = PlatformContext(this)) }
+        // Before anything asks the graph for a window: a permission dialog or a biometric prompt
+        // is shown from this Activity, the one that is up.
+        val appGraph = graphHolder.graph
+        graphHolder.activities.attach(this)
         // BuildConfig.TEST_USERNAME etc. are always empty in release builds (see
         // androidApp/build.gradle.kts), so this is null there. Gated on the value rather than
         // BuildConfig.DEBUG so the benchmarkRelease variant — release bytecode, not debuggable —
@@ -102,7 +109,7 @@ class MainActivity : FragmentActivity() {
                     LocalShortcutKey provides if (keyboard) ShortcutKey.Control else null,
                     LocalPictureInPicture provides inPictureInPicture,
                 ) {
-                    App(appGraph, debugAutofillCredentials = debugAutofillCredentials)
+                    App(appGraph, debugAutofillCredentials = debugAutofillCredentials, navigationEpoch = graphHolder.navigationEpoch)
                 }
             }
         }
@@ -170,9 +177,8 @@ class MainActivity : FragmentActivity() {
     }
 
     override fun onDestroy() {
-        // The graph is per Activity but its coroutine scope isn't cancelled; a recreated Activity
-        // builds a new graph, so this one's detection poller must not keep running beside it.
-        if (::appGraph.isInitialized) appGraph.detectionAlertService.stop()
+        // The graph stays (AppGraphHolder), but must not keep this Activity.
+        graphHolder.activities.detach(this)
         super.onDestroy()
     }
 }

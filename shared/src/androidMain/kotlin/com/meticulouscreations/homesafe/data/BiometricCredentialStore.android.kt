@@ -8,6 +8,7 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import com.meticulouscreations.homesafe.ActivityAccess
 import com.meticulouscreations.homesafe.PlatformContext
 import com.meticulouscreations.homesafe.domain.model.SavedCredentials
 import com.meticulouscreations.homesafe.shared.R
@@ -57,13 +58,17 @@ class BiometricAuthException(message: String) : Exception(message)
  * user's enrolled biometrics change, so a newly-enrolled fingerprint/face can never unlock
  * credentials saved under a different one.
  */
-private class AndroidBiometricCredentialStore(private val activity: FragmentActivity) : BiometricCredentialStore {
+private class AndroidBiometricCredentialStore(private val context: Context, private val activities: ActivityAccess) : BiometricCredentialStore {
 
-    private val prefs = activity.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    // The window that is up when a prompt is wanted: the graph outlives the Activity it was made in.
+    private val activity: FragmentActivity
+        get() = checkNotNull(activities.current) { "No Activity is up to show a prompt from" }
+
+    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private val json = Json { ignoreUnknownKeys = true }
 
     override fun isAvailable(): Boolean =
-        BiometricManager.from(activity)
+        BiometricManager.from(context)
             .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
 
     override fun displayName(): StringResource = Res.string.biometric_name_fingerprint
@@ -77,8 +82,8 @@ private class AndroidBiometricCredentialStore(private val activity: FragmentActi
         }
         val authenticatedCipher = authenticate(
             cipher = cipher,
-            title = activity.getString(R.string.biometric_enable_title),
-            subtitle = activity.getString(R.string.biometric_enable_subtitle),
+            title = context.getString(R.string.biometric_enable_title),
+            subtitle = context.getString(R.string.biometric_enable_subtitle),
         )
         val plaintext = json.encodeToString(SavedCredentials.serializer(), credentials).encodeToByteArray()
         val ciphertext = authenticatedCipher.doFinal(plaintext)
@@ -99,8 +104,8 @@ private class AndroidBiometricCredentialStore(private val activity: FragmentActi
         }
         val authenticatedCipher = authenticate(
             cipher = cipher,
-            title = activity.getString(R.string.biometric_sign_in_title),
-            subtitle = activity.getString(R.string.biometric_sign_in_subtitle),
+            title = context.getString(R.string.biometric_sign_in_title),
+            subtitle = context.getString(R.string.biometric_sign_in_subtitle),
         )
         val plaintext = authenticatedCipher.doFinal(ciphertext)
         json.decodeFromString(SavedCredentials.serializer(), plaintext.decodeToString())
@@ -135,7 +140,8 @@ private class AndroidBiometricCredentialStore(private val activity: FragmentActi
     /** Runs a `BiometricPrompt` bound to [cipher] and resumes with the now-unlocked cipher on success. */
     private suspend fun authenticate(cipher: Cipher, title: String, subtitle: String): Cipher =
         suspendCancellableCoroutine { continuation ->
-            val executor = ContextCompat.getMainExecutor(activity)
+            val host = activity
+            val executor = ContextCompat.getMainExecutor(host)
             val callback = object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     val unlockedCipher = result.cryptoObject?.cipher
@@ -160,11 +166,11 @@ private class AndroidBiometricCredentialStore(private val activity: FragmentActi
                 }
             }
 
-            val prompt = BiometricPrompt(activity, executor, callback)
+            val prompt = BiometricPrompt(host, executor, callback)
             val promptInfo = BiometricPrompt.PromptInfo.Builder()
                 .setTitle(title)
                 .setSubtitle(subtitle)
-                .setNegativeButtonText(activity.getString(R.string.biometric_cancel))
+                .setNegativeButtonText(context.getString(R.string.biometric_cancel))
                 .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
                 .build()
 
@@ -193,4 +199,4 @@ private class HeadlessBiometricCredentialStore : BiometricCredentialStore {
 }
 
 actual fun createBiometricCredentialStore(context: PlatformContext): BiometricCredentialStore =
-    (context.context as? FragmentActivity)?.let(::AndroidBiometricCredentialStore) ?: HeadlessBiometricCredentialStore()
+    context.activities?.let { AndroidBiometricCredentialStore(context.context.applicationContext, it) } ?: HeadlessBiometricCredentialStore()

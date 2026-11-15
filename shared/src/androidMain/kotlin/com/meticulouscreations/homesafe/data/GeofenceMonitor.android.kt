@@ -9,7 +9,6 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.CancellationSignal
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -21,6 +20,7 @@ import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
+import com.meticulouscreations.homesafe.ActivityAccess
 import com.meticulouscreations.homesafe.PlatformContext
 import com.meticulouscreations.homesafe.domain.model.HomeLocation
 import com.meticulouscreations.homesafe.domain.platform.GeoPoint
@@ -55,7 +55,7 @@ private const val PREF_ASKED = "asked_for_location"
  */
 private class AndroidGeofenceMonitor(
     private val context: Context,
-    private val activity: ComponentActivity?,
+    private val activities: ActivityAccess?,
 ) : GeofenceMonitor {
 
     override val isSupported = true
@@ -69,14 +69,14 @@ private class AndroidGeofenceMonitor(
     private var resumed: CompletableDeferred<Unit>? = null
 
     init {
-        activity?.lifecycle?.addObserver(
-            LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_RESUME) {
-                    _access.value = currentAccess()
-                    resumed?.complete(Unit)
-                }
-            },
-        )
+        val onResume = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                _access.value = currentAccess()
+                resumed?.complete(Unit)
+            }
+        }
+        // Each Activity that comes up (the graph outlives the one it was made in).
+        activities?.whenAttached { it.lifecycle.addObserver(onResume) }
     }
 
     private fun granted(permission: String) =
@@ -96,7 +96,7 @@ private class AndroidGeofenceMonitor(
         // Permission may have changed behind our back (system settings, `pm grant` on a test
         // device) without a resume to tell us; never ask for what's already granted.
         val before = currentAccess().also { _access.value = it }
-        val activity = activity ?: return
+        val activity = activities?.current ?: return
         val permissions = when (before) {
             LocationAccess.ALWAYS, LocationAccess.UNAVAILABLE -> return
 
@@ -250,5 +250,5 @@ internal fun geofencePendingIntent(context: Context): PendingIntent =
 actual fun createGeofenceMonitor(platformContext: PlatformContext, onTransition: suspend (exited: Boolean) -> Unit): GeofenceMonitor =
     AndroidGeofenceMonitor(
         context = platformContext.context.applicationContext,
-        activity = platformContext.context as? ComponentActivity,
+        activities = platformContext.activities,
     )

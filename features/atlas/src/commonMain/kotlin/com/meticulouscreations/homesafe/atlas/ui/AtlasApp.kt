@@ -54,7 +54,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -81,6 +80,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meticulouscreations.homesafe.atlas.AtlasUiState
 import com.meticulouscreations.homesafe.atlas.AtlasViewModel
 import com.meticulouscreations.homesafe.finance.FinanceLockViewModel
+import com.meticulouscreations.homesafe.navigation.rememberSavedPages
 import com.meticulouscreations.homesafe.text.resolve
 import com.meticulouscreations.homesafe.ui.AppSection
 import com.meticulouscreations.homesafe.ui.LocalAppSections
@@ -204,7 +204,7 @@ fun AtlasAppContent(
     initialPage: AtlasPage? = null,
 ) {
     var tab by rememberSaveable { mutableStateOf(initialTab) }
-    val pages = remember { mutableStateListOf<AtlasPage>().apply { initialPage?.let(::add) } }
+    val pages = rememberSavedPages(listOfNotNull(initialPage), AtlasPageCodec::encode, AtlasPageCodec::decode)
     // Here rather than in the bars, which go while a page is open.
     AssistantScreenContext { "Atlas app, ${tab.name.lowercase()} tab" + (pages.lastOrNull()?.let { ", $it page open" } ?: "") }
     // Held here, above the tabs: the map is left for another tab and found again where it was.

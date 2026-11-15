@@ -60,7 +60,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -110,6 +109,7 @@ import com.meticulouscreations.homesafe.fitness.domain.SECONDS_PER_DAY
 import com.meticulouscreations.homesafe.fitness.domain.WorkoutFocus
 import com.meticulouscreations.homesafe.fitness.ui.shader.ForgeBackground
 import com.meticulouscreations.homesafe.fitness.ui.shader.RecordBurst
+import com.meticulouscreations.homesafe.navigation.rememberSavedPages
 import com.meticulouscreations.homesafe.text.resolve
 import com.meticulouscreations.homesafe.ui.AppSection
 import com.meticulouscreations.homesafe.ui.appPageGutter
@@ -337,7 +337,7 @@ fun FitnessAppContent(
     onShowWorkout: () -> Unit = {},
 ) {
     var tab by rememberSaveable { mutableStateOf(initialTab) }
-    val pages = remember { mutableStateListOf<FitnessPage>().apply { initialPage?.let(::add) } }
+    val pages = rememberSavedPages(listOfNotNull(initialPage), FitnessPageCodec::encode, FitnessPageCodec::decode)
     // Here rather than in the bars, which go while a page is open.
     AssistantScreenContext { "Fitness app, ${tab.name.lowercase()} tab" + (pages.lastOrNull()?.let { ", $it page open" } ?: "") }
     val haptics = LocalHapticFeedback.current
