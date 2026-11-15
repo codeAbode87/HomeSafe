@@ -1,0 +1,124 @@
+nodes:
+  home:
+    title: Home
+    match:
+      all: [{id: home_feed}]
+    checks:
+      - present: {id: shell_menu}
+      - present: {id: bottom_nav_home}
+    weight: 5
+    sources: ["shared/src/commonMain/kotlin/**/HomeLiveViewScreen.kt", "shared/src/commonMain/kotlin/**/HomeGlance.kt"]
+  moments:
+    title: Moments
+    match:
+      all: [{text: "All events"}, {id: bottom_nav_moments}]
+    params:
+      feed:
+        content: {when: "data == 'household'", observe: {text: "That's everything the server still has."}}
+        empty: {when: "data == 'quiet'", observe: {text_contains: "Nothing to show yet"}}
+    checks:
+      - present: {text: "All cameras"}
+      - present: {id: shell_menu}
+    weight: 3
+    sources: ["features/moments/src/commonMain/**/*.kt"]
+  settings:
+    title: Settings
+    match:
+      all: [{id: settings_maps}]
+    # The Household Cars row is hidden under data=quiet (no classifier yet), but nothing on screen marks its absence, so it is no parameter.
+    checks:
+      - present: {id: settings_finance_drawer}
+      - present: {id: shell_menu}
+    weight: 3
+  notifications:
+    title: Notifications
+    group: shell
+    match:
+      all: [{text: "What every app tells this phone"}]
+  away:
+    title: Away mode
+    group: shell
+    match:
+      all: [{text: "Who's home, by the two phones"}]
+  doors:
+    title: Doors
+    group: shell
+    match:
+      all: [{text: "Door sensors and their alerts"}]
+  faces:
+    title: Faces
+    group: shell
+    match:
+      all: [{text: "Teach Frigate who's who"}]
+  household_cars:
+    title: Household cars
+    group: shell
+    match:
+      all: [{text: "Teach Frigate what it's looking at"}]
+  server:
+    title: Server
+    group: shell
+    match:
+      all: [{text: "What Frigate is and is doing"}]
+  camera_detail:
+    title: Camera
+    group: shell
+    match:
+      all: [{id: camera_player_taps}]
+    checks:
+      - present: {text: Timeline}
+      - present: {text: Recent Activity}
+  uptime:
+    title: Uptime
+    group: shell
+    match:
+      all: [{text: "What was reachable, and when"}]
+  drawer:
+    title: Menu drawer
+    group: overlay
+    kind: modal
+    match:
+      all: [{id: shell_drawer}]
+  arrange_menu:
+    title: Route badge menu
+    group: overlay
+    kind: modal
+    match:
+      all: [{text: "Arrange cameras"}]
+  camera_filter:
+    title: Camera filter
+    group: overlay
+    kind: modal
+    match:
+      all: [{text: "All cameras"}, {text: Driveway}]
+      none: [{id: bottom_nav_home}]
+  event_filter:
+    title: Event filter
+    group: overlay
+    kind: modal
+    match:
+      all: [{text: People}, {text: Vehicles}]
+      none: [{id: bottom_nav_home}]
+edges:
+  - {id: bottom_nav_home, from: "@shell", except: [home], to: home, do: [{tap: {id: bottom_nav_home}}]}
+  - {id: bottom_nav_moments, from: "@shell", except: [moments], to: moments, do: [{tap: {id: bottom_nav_moments}}]}
+  - {id: bottom_nav_settings, from: "@shell", except: [settings], to: settings, do: [{tap: {id: bottom_nav_settings}}]}
+  - {id: settings.open_notifications, from: settings, to: notifications, do: [{swipe: down}, {swipe: down}, {swipe: down}, {wait_ms: 800}, {tap: {text: Notifications}}]}
+  - {id: settings.open_away, from: settings, to: away, do: [{swipe: down}, {swipe: down}, {swipe: down}, {wait_ms: 800}, {tap: {text: Away mode}}]}
+  - {id: settings.open_doors, from: settings, to: doors, do: [{swipe: down}, {swipe: down}, {swipe: down}, {wait_ms: 800}, {tap: {text: Doors}}]}
+  - {id: settings.open_faces, from: settings, to: faces, do: [{swipe: down}, {swipe: down}, {swipe: down}, {wait_ms: 800}, {tap: {text: Faces}}]}
+  - {id: settings.open_household_cars, from: settings, to: household_cars, when: "data == 'household'", do: [{swipe: down}, {swipe: down}, {swipe: down}, {wait_ms: 800}, {tap: {text: Household Cars}}]}
+  - {id: settings.open_server, from: settings, to: server, do: [{scroll_to: {text: Server}}, {tap: {text: Server}}]}
+  - {id: notifications.back, from: [notifications, away, doors, faces, household_cars, server], to: settings, do: [back]}
+  - {id: home.open_camera, from: home, to: camera_detail, do: [{tap: {text: Back Yard}}]}
+  - {id: camera_detail.back, from: camera_detail, to: home, do: [back]}
+  - {id: server.open_uptime, from: server, to: uptime, do: [{tap: {text: Uptime}}]}
+  - {id: uptime.back, from: uptime, to: server, do: [back]}
+  - {id: shell.open_drawer, from: home, to: drawer, do: [{tap: {id: shell_menu}}]}
+  - {id: drawer.close, from: drawer, to: home, do: [back]}
+  - {id: shell.open_badge_menu, from: home, to: arrange_menu, do: [{tap: {text: Tailscale}}]}
+  - {id: arrange_menu.close, from: arrange_menu, to: home, do: [back]}
+  - {id: moments.open_camera_filter, from: moments, to: camera_filter, do: [{tap: {text: All cameras}}]}
+  - {id: moments.open_event_filter, from: moments, to: event_filter, do: [{tap: {text: All events}}]}
+  - {id: camera_filter.close, from: camera_filter, to: moments, do: [back]}
+  - {id: event_filter.close, from: event_filter, to: moments, do: [back]}

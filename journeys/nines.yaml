@@ -1,0 +1,45 @@
+# HomeSafe's journey model, for nines (model-based journey testing; see journeys/README.md).
+# The app signs in to the fake Frigate only, with the network closed to everything but localhost.
+app:
+  name: homesafe
+  package: com.meticulouscreations.homesafe.debug
+  apk: ../androidApp/build/outputs/apk/debug/androidApp-debug.apk
+
+include:
+  - {file: shell.yaml, group: shell}
+
+# What is fixed for a whole walk: who signs in, and what the server holds.
+contexts:
+  role:
+    admin: {username: admin, password: correct-horse}
+    viewer: {username: viewer, password: just-looking}
+  data:
+    household: {flag: ""}          # three cameras and a few hours of activity
+    quiet: {flag: "--quiet"}       # cameras, no history
+
+scene:
+  services:
+    # Built by `./gradlew :fake-frigate:installDist`. 127.0.0.1, not ::1: the video player connects there.
+    - cmd: "../fake-frigate/build/install/fake-frigate/bin/fake-frigate --port 8971 --host 127.0.0.1 --advertise localhost {data.flag}"
+      ready: {tcp: 8971}
+      timeout_s: 60
+  launch:
+    fresh: true
+    options: ["--no-network"]      # the debug build has the household's LAN address compiled in
+  start:
+    - type: {into: {id: sign_in_server_url}, text: "http://localhost:8971", clear: true}
+    - type: {into: {id: sign_in_username}, text: "{role.username}", clear: true}
+    - type: {into: {id: sign_in_password}, text: "{role.password}", clear: true}
+    - tap: {id: sign_in_connect}
+    - wait: {present: {id: bottom_nav_home}, timeout_ms: 30000}
+
+oracles:
+  log_fail: ["FATAL EXCEPTION"]
+  unknown_screen: warn
+  settle_ms: 2000
+  step_timeout_ms: 15000
+
+# Live video has no source on the fake, and the shader skies never settle: resilience comes screen by screen.
+resilience: false
+
+start: home
