@@ -1,0 +1,12 @@
+# Atlas, from the drawer. The relay is missing, so it says so and shows what the device kept (nothing).
+nodes:
+  atlas_offline:
+    title: Atlas, offline
+    group: atlas
+    match:
+      all: [{id: atlas_app}, {text_contains: "Couldn't reach the server"}]
+    checks:
+      - present: {id: atlas_back}
+      - present: {text: Atlas}
+edges:
+  - {id: atlas_offline.back, from: atlas_offline, to: home, do: [back]}

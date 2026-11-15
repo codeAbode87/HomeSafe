@@ -1,0 +1,34 @@
+# Weather, from the drawer. Without places it opens on the welcome screen.
+nodes:
+  weather_welcome:
+    title: Weather welcome
+    group: weather
+    match:
+      all: [{id: weather_welcome}]
+    checks:
+      - present: {id: weather_back}
+      - present: {id: weather_welcome_add}
+  weather_places:
+    title: Weather, Places
+    group: weather
+    match:
+      all: [{id: weather_places}]
+    checks:
+      - present: {id: weather_places_search}
+      - present: {id: weather_use_location}
+  weather_settings:
+    title: Weather, Settings
+    group: weather
+    match:
+      all: [{id: weather_settings}]
+    checks:
+      - present: {id: weather_units_temperature_0}
+      - present: {id: weather_back}
+edges:
+  - {id: weather_welcome.back, from: weather_welcome, to: home, do: [back]}
+  - {id: weather_welcome.open_places, from: weather_welcome, to: weather_places, do: [{tap: {id: weather_places_button}}]}
+  - {id: weather_welcome.add_city, from: weather_welcome, to: weather_places, do: [{tap: {id: weather_welcome_add}}]}
+  - {id: weather_welcome.open_settings, from: weather_welcome, to: weather_settings, do: [{tap: {id: weather_settings_button}}]}
+  - {id: weather_places.back, from: weather_places, to: weather_welcome, do: [back]}
+  - {id: weather_settings.back, from: weather_settings, to: weather_welcome, do: [back]}
+  # "Use my location" raises the system location permission dialog: not modelled.

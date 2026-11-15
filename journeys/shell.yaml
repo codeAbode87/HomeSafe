@@ -122,3 +122,9 @@ edges:
   - {id: moments.open_event_filter, from: moments, to: event_filter, do: [{tap: {text: All events}}]}
   - {id: camera_filter.close, from: camera_filter, to: moments, do: [back]}
   - {id: event_filter.close, from: event_filter, to: moments, do: [back]}
+  - {id: drawer.open_fitness, from: drawer, to: fitness_today, do: [{tap: {id: drawer_fitness}}]}
+  - {id: drawer.open_weather, from: drawer, to: weather_welcome, do: [{tap: {id: drawer_weather}}]}
+  - {id: drawer.open_finance, from: drawer, to: finance_unavailable, do: [{tap: {id: drawer_finance}}]}
+  - {id: drawer.open_atlas, from: drawer, to: atlas_offline, do: [{tap: {id: drawer_atlas}}]}
+  - {id: drawer.open_packages, from: drawer, to: packages_unreachable, do: [{tap: {id: drawer_packages}}]}
+  - {id: drawer.open_charging, from: drawer, to: charging_unreachable, do: [{tap: {id: drawer_charging}}]}

@@ -7,6 +7,12 @@ app:
 
 include:
   - {file: shell.yaml, group: shell}
+  - {file: fitness.yaml, group: fitness}
+  - {file: weather.yaml, group: weather}
+  - {file: finance.yaml, group: finance}
+  - {file: atlas.yaml, group: atlas}
+  - {file: packages.yaml, group: packages}
+  - {file: charging.yaml, group: charging}
 
 # What is fixed for a whole walk: who signs in, and what the server holds.
 contexts:

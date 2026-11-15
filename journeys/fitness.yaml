@@ -1,0 +1,132 @@
+# Fitness, from the drawer. Its data is on the phone, so it works with no server. A fresh install has no exercises;
+# `lift` is whether this walk has added one (Bench press, Chest) from the Lifts tab.
+vars:
+  lift: false
+
+nodes:
+  fitness_today:
+    title: Fitness, Today
+    group: fitness
+    match:
+      all: [{id: fitness_app}, {id: fitness_today}]
+    checks:
+      - present: {id: fitness_back}
+      - present: {id: fitness_tab_today}
+    weight: 2
+  fitness_lifts_empty:
+    title: Fitness, Lifts (no exercises)
+    group: fitness
+    match:
+      all: [{id: fitness_lifts}, {text_contains: "No exercises yet"}]
+      none: [{id: fitness_add_exercise_name}]
+    checks:
+      - present: {id: fitness_add_exercise}
+      - present: {id: fitness_lifts_import}
+  fitness_lifts_adding:
+    title: Fitness, Lifts (new exercise form)
+    group: fitness
+    match:
+      all: [{id: fitness_lifts}, {id: fitness_add_exercise_name}]
+    checks:
+      - present: {id: fitness_add_exercise_confirm}
+  fitness_lifts_list:
+    title: Fitness, Lifts (with exercises)
+    group: fitness
+    match:
+      all: [{id: fitness_lifts}, {id: fitness_lifts_sync_status}]
+      none: [{id: fitness_add_exercise_name}]
+    checks:
+      - present: {id: fitness_add_exercise}
+      - present: {id: "fitness_lift_chest/bench-press"}
+  fitness_history:
+    title: Fitness, History
+    group: fitness
+    match:
+      all: [{id: fitness_history}]
+    checks:
+      - present: {id: fitness_history_calendar}
+      - present: {id: fitness_history_previous}
+  fitness_progress:
+    title: Fitness, Progress
+    group: fitness
+    match:
+      all: [{id: fitness_progress}]
+    checks:
+      - present: {id: fitness_phase_card}
+      - present: {id: fitness_weight_card}
+  fitness_lift:
+    title: Fitness, an exercise
+    group: fitness
+    match:
+      all: [{id: fitness_exercise}]
+    checks:
+      - present: {id: fitness_logger_log}
+      - present: {id: fitness_exercise_edit}
+  fitness_edit:
+    title: Fitness, edit an exercise
+    group: fitness
+    match:
+      all: [{id: fitness_edit}]
+    checks:
+      - present: {id: fitness_edit_name}
+  fitness_heart:
+    title: Fitness, Heart rate
+    group: fitness
+    match:
+      all: [{id: fitness_heart_page}]
+    checks:
+      - present: {id: fitness_heart_sensor_card}
+      - present: {id: fitness_heart_save}
+  fitness_runs:
+    title: Fitness, Runs
+    group: fitness
+    match:
+      all: [{id: fitness_runs}]
+    checks:
+      - present: {id: fitness_run_start}
+      - present: {id: fitness_runs_week}
+  fitness_workout:
+    title: Fitness, workout in progress
+    group: fitness
+    match:
+      all: [{id: fitness_workout}]
+    checks:
+      - present: {id: fitness_workout_finish}
+      - present: {text: Cancel workout}
+  fitness_import:
+    title: Fitness, Bring in notes
+    group: fitness
+    match:
+      all: [{id: fitness_import}]
+    checks:
+      - present: {id: fitness_import_text}
+
+edges:
+  - {id: fitness.close, from: fitness_today, to: home, do: [back]}
+  # The tab bar shows on the four tabs only (not on the pushed pages).
+  - {id: fitness.tab_today, from: [fitness_lifts_empty, fitness_lifts_adding, fitness_lifts_list, fitness_history, fitness_progress], to: fitness_today, count: once, do: [{tap: {id: fitness_tab_today}}]}
+  - {id: fitness.tab_lifts_empty, from: [fitness_today, fitness_history, fitness_progress], to: fitness_lifts_empty, when: "not lift", count: once, do: [{tap: {id: fitness_tab_lifts}}]}
+  - {id: fitness.tab_lifts_list, from: [fitness_today, fitness_history, fitness_progress], to: fitness_lifts_list, when: "lift", count: once, do: [{tap: {id: fitness_tab_lifts}}]}
+  - {id: fitness.tab_history, from: [fitness_today, fitness_lifts_empty, fitness_lifts_adding, fitness_lifts_list, fitness_progress], to: fitness_history, count: once, do: [{tap: {id: fitness_tab_history}}]}
+  - {id: fitness.tab_progress, from: [fitness_today, fitness_lifts_empty, fitness_lifts_adding, fitness_lifts_list, fitness_history], to: fitness_progress, count: once, do: [{tap: {id: fitness_tab_progress}}]}
+  - {id: fitness_lifts_empty.open_form, from: fitness_lifts_empty, to: fitness_lifts_adding, do: [{tap: {id: fitness_add_exercise}}]}
+  - id: fitness_lifts_adding.add
+    from: fitness_lifts_adding
+    to: fitness_lifts_list
+    do:
+      - type: {into: {id: fitness_add_exercise_name}, text: "Bench press"}
+      - tap: {text: Chest, index: -1}
+      - tap: {id: fitness_add_exercise_confirm}
+    set: {lift: true}
+  - {id: fitness_lifts_list.open_lift, from: fitness_lifts_list, to: fitness_lift, do: [{tap: {id: "fitness_lift_chest/bench-press"}}]}
+  - {id: fitness_lift.back, from: fitness_lift, to: fitness_lifts_list, do: [back]}
+  - {id: fitness_today.open_heart, from: fitness_today, to: fitness_heart, do: [{tap: {id: fitness_heart_pill}}]}
+  - {id: fitness_heart.back, from: fitness_heart, to: fitness_today, do: [back]}
+  # The Runs door sits under the floating tab bar until the page is scrolled.
+  - {id: fitness_today.open_runs, from: fitness_today, to: fitness_runs, do: [{swipe: up}, {wait_ms: 800}, {tap: {id: fitness_runs_door}}]}
+  - {id: fitness_runs.back, from: fitness_runs, to: fitness_today, do: [back]}
+  - {id: fitness_today.open_import, from: fitness_today, to: fitness_import, when: "not lift", do: [{tap: {id: fitness_today_import}}]}
+  - {id: fitness_import.back, from: fitness_import, to: fitness_today, do: [back]}
+  - {id: fitness_today.start_workout, from: fitness_today, to: fitness_workout, when: "lift", do: [{tap: {id: fitness_day_chest}}]}
+  - {id: fitness_lift.open_edit, from: fitness_lift, to: fitness_edit, do: [{tap: {id: fitness_exercise_edit}}]}
+  - {id: fitness_edit.back, from: fitness_edit, to: fitness_lift, do: [back]}

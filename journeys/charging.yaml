@@ -1,0 +1,13 @@
+# Charging, from the drawer. No relay: it can't reach the server and offers Retry.
+nodes:
+  charging_unreachable:
+    title: Charging, unreachable
+    group: charging
+    match:
+      all: [{id: charging_app}, {id: charging_retry}]
+    checks:
+      - present: {id: charging_back}
+      - present: {text: "Charging"}
+edges:
+  - {id: charging_unreachable.back, from: charging_unreachable, to: home, do: [back]}
+  - {id: charging_unreachable.retry, from: charging_unreachable, to: "=", do: [{tap: {id: charging_retry}}]}

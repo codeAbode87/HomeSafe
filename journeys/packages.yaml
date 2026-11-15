@@ -1,0 +1,13 @@
+# Packages, from the drawer. No relay: it can't reach the server and offers Retry.
+nodes:
+  packages_unreachable:
+    title: Packages, unreachable
+    group: packages
+    match:
+      all: [{id: packages_app}, {text_contains: "Can't reach the server"}]
+    checks:
+      - present: {id: packages_back}
+      - present: {text: Retry}
+edges:
+  - {id: packages_unreachable.back, from: packages_unreachable, to: home, do: [back]}
+  - {id: packages_unreachable.retry, from: packages_unreachable, to: "=", do: [{tap: {text: Retry}}]}
