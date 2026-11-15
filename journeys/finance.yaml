@@ -1,7 +1,18 @@
 # Finance, from the drawer. The fake server has no relay (nothing listens on :8787), so every tab says it could not
 # read its data; the screens are the app's real error states.
 nodes:
+  # With the fake relay on, its routes for the sheet and the budget aren't modelled (yet): the app says the relay is outdated.
+  finance_outdated:
+    title: Finance, Wallet (relay outdated)
+    group: finance
+    requires: "relay == 'on'"
+    match:
+      all: [{id: finance_app}, {text: "Update the server's relay"}]
+    checks:
+      - present: {id: finance_back}
+      - present: {id: finance_tab_wallet}
   finance_unavailable:
+    requires: "relay == 'off'"
     title: Finance, Wallet (sheet unreadable)
     group: finance
     match:
@@ -17,7 +28,7 @@ nodes:
       all: [{id: finance_budget}]
     checks:
       - present: {id: finance_back}
-      - present: {text: "Couldn't read the budget"}
+      - present: {id: finance_tab_wallet}
   finance_markets:
     title: Finance, Markets
     group: finance
@@ -59,15 +70,21 @@ nodes:
       - present: {id: chart_settings_preview}
 
 edges:
-  - {id: finance.close, from: finance_unavailable, to: home, do: [back]}
+  - {id: finance.close, from: [finance_unavailable, finance_outdated], to: home, do: [back]}
   # The tab bar shows on the five tabs, not on the pushed pages.
-  - {id: finance.tab_wallet, from: [finance_budget, finance_markets, finance_economy, finance_risk], to: finance_unavailable, count: once, do: [{tap: {id: finance_tab_wallet}}]}
-  - {id: finance.tab_budget, from: [finance_unavailable, finance_markets, finance_economy, finance_risk], to: finance_budget, count: once, do: [{tap: {id: finance_tab_budget}}]}
-  - {id: finance.tab_markets, from: [finance_unavailable, finance_budget, finance_economy, finance_risk], to: finance_markets, count: once, do: [{tap: {id: finance_tab_markets}}]}
-  - {id: finance.tab_economy, from: [finance_unavailable, finance_budget, finance_markets, finance_risk], to: finance_economy, count: once, do: [{tap: {id: finance_tab_economy}}]}
-  - {id: finance.tab_risk, from: [finance_unavailable, finance_budget, finance_markets, finance_economy], to: finance_risk, count: once, do: [{tap: {id: finance_tab_risk}}]}
+  - {id: finance.tab_wallet, from: [finance_budget, finance_markets, finance_economy, finance_risk], to: finance_unavailable, when: "relay == 'off'", count: once, do: [{tap: {id: finance_tab_wallet}}]}
+  - {id: finance.tab_wallet_on, from: [finance_budget, finance_markets, finance_economy, finance_risk], to: finance_outdated, when: "relay == 'on'", count: once, do: [{tap: {id: finance_tab_wallet}}]}
+  - {id: finance.tab_budget, from: [finance_unavailable, finance_outdated, finance_markets, finance_economy, finance_risk], to: finance_budget, count: once, do: [{tap: {id: finance_tab_budget}}]}
+  - {id: finance.tab_markets, from: [finance_unavailable, finance_outdated, finance_budget, finance_economy, finance_risk], to: finance_markets, count: once, do: [{tap: {id: finance_tab_markets}}]}
+  - {id: finance.tab_economy, from: [finance_unavailable, finance_outdated, finance_budget, finance_markets, finance_risk], to: finance_economy, count: once, do: [{tap: {id: finance_tab_economy}}]}
+  - {id: finance.tab_risk, from: [finance_unavailable, finance_outdated, finance_budget, finance_markets, finance_economy], to: finance_risk, count: once, do: [{tap: {id: finance_tab_risk}}]}
   - {id: finance_unavailable.retry, from: finance_unavailable, to: "=", do: [{tap: {text: Try again}}]}
+  - {id: finance_outdated.retry, from: finance_outdated, to: "=", do: [{tap: {text: Try again}}]}
   - {id: finance_unavailable.open_glossary, from: finance_unavailable, to: finance_glossary, do: [{tap: {id: finance_glossary}}]}
   - {id: finance_unavailable.open_chart_settings, from: finance_unavailable, to: finance_chart_settings, do: [{tap: {id: finance_chart_settings}}]}
-  - {id: finance_glossary.back, from: finance_glossary, to: finance_unavailable, do: [back]}
-  - {id: finance_chart_settings.back, from: finance_chart_settings, to: finance_unavailable, do: [back]}
+  - {id: finance_outdated.open_glossary, from: finance_outdated, to: finance_glossary, do: [{tap: {id: finance_glossary}}]}
+  - {id: finance_outdated.open_chart_settings, from: finance_outdated, to: finance_chart_settings, do: [{tap: {id: finance_chart_settings}}]}
+  - {id: finance_glossary.back, from: finance_glossary, to: finance_unavailable, when: "relay == 'off'", do: [back]}
+  - {id: finance_glossary.back_on, from: finance_glossary, to: finance_outdated, when: "relay == 'on'", do: [back]}
+  - {id: finance_chart_settings.back, from: finance_chart_settings, to: finance_unavailable, when: "relay == 'off'", do: [back]}
+  - {id: finance_chart_settings.back_on, from: finance_chart_settings, to: finance_outdated, when: "relay == 'on'", do: [back]}

@@ -13,7 +13,7 @@ nines look journeys/nines.yaml --at settings         # walk to a node and print 
 ```
 
 The scene starts the fake Frigate on `127.0.0.1:8971` and signs in as `admin` or `viewer` with the household or the
-quiet data set; the app runs with `--no-network`, as everywhere else on apksim. Nothing here signs in to the real
+quiet data set, with or without the fake relay (`relay` context, `--relay`: Packages, Charging and Atlas show content with it and their "can't reach the server" screens without); the app runs with `--no-network`, as everywhere else on apksim. Nothing here signs in to the real
 server.
 
 To add a screen: `nines look` at the node it is reached from, write its node and the edge in (and Back out), run

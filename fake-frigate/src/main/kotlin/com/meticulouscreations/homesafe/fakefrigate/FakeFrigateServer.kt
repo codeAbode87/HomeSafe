@@ -53,13 +53,21 @@ data class RecordedRequest(
  * the first place to look when a journey stalls. Images (snapshots, thumbnails, face and crop
  * files) are all one tiny PNG. Recorded video is real ([FakeVideo]): a camera's recordings and a
  * detection's clip play as HLS (`/vod/…/index.m3u8`) and download as an MP4 (`…/clip.mp4`) of the
- * length asked for, wherever [state] holds recordings for it. Live video (go2rtc, port 1984) and
- * the push relay (port 8787) are deliberately absent, so the app exercises its "unavailable"
- * paths for those.
+ * length asked for, wherever [state] holds recordings for it. Live video (go2rtc, port 1984) is
+ * deliberately absent, and so is the push relay (port 8787) unless [start] is given a `relayPort`
+ * ([FakeRelayServer]), so the app exercises its "unavailable" paths for them.
  */
-class FakeFrigateServer(val state: FakeFrigateState = FakeFrigateState.household()) : AutoCloseable {
+class FakeFrigateServer(
+    val state: FakeFrigateState = FakeFrigateState.household(),
+    /** What the fake relay serves when [start] is given a `relayPort`; the relay is off otherwise. */
+    val relayState: FakeRelayState = FakeRelayState.household(),
+) : AutoCloseable {
 
     private var server: EmbeddedServer<*, *>? = null
+
+    /** The fake relay, once [start] has been given a `relayPort`; null while the relay is off. */
+    var relay: FakeRelayServer? = null
+        private set
 
     /** The port the server listens on; valid after [start]. */
     var port: Int = 0
@@ -85,8 +93,15 @@ class FakeFrigateServer(val state: FakeFrigateState = FakeFrigateState.household
     /**
      * Starts listening on [host]:[port] (0 picks a free port) and returns this server. [advertiseHost]
      * is the host [baseUrl] names — an emulator reaches a server on its host machine at 10.0.2.2.
+     * With a [relayPort] (0 picks a free one, [FakeRelayServer.RELAY_PORT] is where the app looks) the
+     * fake relay starts too, on the same [host], and answers the session cookie this server issues.
      */
-    fun start(port: Int = 0, host: String = "127.0.0.1", advertiseHost: String = host.takeUnless { it == "0.0.0.0" } ?: "127.0.0.1"): FakeFrigateServer {
+    fun start(
+        port: Int = 0,
+        host: String = "127.0.0.1",
+        advertiseHost: String = host.takeUnless { it == "0.0.0.0" } ?: "127.0.0.1",
+        relayPort: Int? = null,
+    ): FakeFrigateServer {
         check(server == null) { "Already started" }
         val engine = embeddedServer(CIO, port = port, host = host) {
             routing {
@@ -99,10 +114,15 @@ class FakeFrigateServer(val state: FakeFrigateState = FakeFrigateState.household
         server = engine
         this.port = runBlocking { engine.engine.resolvedConnectors().first().port }
         advertisedHost = advertiseHost
+        if (relayPort != null) {
+            relay = FakeRelayServer(relayState) { token -> token?.let { synchronized(sessions) { sessions[it] } } }.start(relayPort, host)
+        }
         return this
     }
 
     override fun close() {
+        relay?.close()
+        relay = null
         server?.stop(gracePeriodMillis = 0, timeoutMillis = 1_000)
         server = null
     }
@@ -456,7 +476,7 @@ class FakeFrigateServer(val state: FakeFrigateState = FakeFrigateState.household
         private const val ONGOING_CLIP_SECONDS = 10.0
 
         /** A 1×1 PNG: every image the app loads, so Coil has something real to decode. */
-        private val PIXEL_PNG: ByteArray = Base64.getDecoder().decode(
+        internal val PIXEL_PNG: ByteArray = Base64.getDecoder().decode(
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
         )
     }

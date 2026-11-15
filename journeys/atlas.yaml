@@ -1,12 +1,86 @@
-# Atlas, from the drawer. The relay is missing, so it says so and shows what the device kept (nothing).
 nodes:
   atlas_offline:
     title: Atlas, offline
     group: atlas
+    requires: "relay == 'off'"
     match:
       all: [{id: atlas_app}, {text_contains: "Couldn't reach the server"}]
     checks:
       - present: {id: atlas_back}
       - present: {text: Atlas}
+  atlas_map:
+    title: Atlas, Map
+    group: atlas
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_map}]
+    checks:
+      - present: {id: atlas_map_zoom_in}
+      - present: {id: atlas_tab_days}
+  atlas_days:
+    title: Atlas, Days
+    group: atlas
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_days}]
+    checks:
+      - present: {id: atlas_year_2026}
+      - present: {text: Distance}
+  atlas_places:
+    title: Atlas, Places
+    group: atlas
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_places}]
+    checks:
+      - present: {id: atlas_places_search}
+      - present: {id: atlas_place_row_demo_home}
+  atlas_trips:
+    title: Atlas, Trips
+    group: atlas
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_trips}]
+    checks:
+      - present: {text: "HOW FAR IT REACHES"}
+      - present: {text: "Where you've lived"}
+  atlas_patterns:
+    title: Atlas, Patterns
+    group: atlas
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_patterns}]
+    checks:
+      - present: {text: "YOUR USUAL WEEK"}
+      - present: {text: "YEAR BY YEAR"}
+  atlas_sync:
+    title: Atlas, your history
+    group: atlas
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_sync}]
+    checks:
+      - present: {id: atlas_sync_now}
+      - present: {text: "ON THIS DEVICE"}
+  atlas_place:
+    title: Atlas, one place
+    group: atlas
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_place}]
+    checks:
+      - present: {id: atlas_place_open_in_maps}
+      - present: {id: atlas_back}
 edges:
   - {id: atlas_offline.back, from: atlas_offline, to: home, do: [back]}
+  - {id: atlas.close, from: atlas_map, to: home, do: [back]}
+  # The tab bar shows on the five tabs, not on the pages pushed over them.
+  - {id: atlas.tab_map, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: atlas_map, count: once, do: [{tap: {id: atlas_tab_map}}]}
+  - {id: atlas.tab_days, from: [atlas_map, atlas_places, atlas_trips, atlas_patterns], to: atlas_days, count: once, do: [{tap: {id: atlas_tab_days}}]}
+  - {id: atlas.tab_places, from: [atlas_map, atlas_days, atlas_trips, atlas_patterns], to: atlas_places, count: once, do: [{tap: {id: atlas_tab_places}}]}
+  - {id: atlas.tab_trips, from: [atlas_map, atlas_days, atlas_places, atlas_patterns], to: atlas_trips, count: once, do: [{tap: {id: atlas_tab_trips}}]}
+  - {id: atlas.tab_patterns, from: [atlas_map, atlas_days, atlas_places, atlas_trips], to: atlas_patterns, count: once, do: [{tap: {id: atlas_tab_patterns}}]}
+  - {id: atlas_map.open_sync, from: atlas_map, to: atlas_sync, do: [{tap: {id: atlas_sync_open}}]}
+  - {id: atlas_places.open_place, from: atlas_places, to: atlas_place, do: [{tap: {id: atlas_place_row_demo_home}}]}
+  - {id: atlas_sync.back, from: atlas_sync, to: atlas_map, do: [back]}
+  - {id: atlas_place.back, from: atlas_place, to: atlas_places, do: [back]}

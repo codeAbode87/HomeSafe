@@ -22,11 +22,14 @@ contexts:
   data:
     household: {flag: ""}          # three cameras and a few hours of activity
     quiet: {flag: "--quiet"}       # cameras, no history
+  relay:
+    "off": {flag: ""}              # nothing on :8787: Packages, Charging, Atlas and the sheet can't be reached
+    "on": {flag: "--relay"}        # the fake relay on :8787 with a household's parcels, charges and location history
 
 scene:
   services:
     # Built by `./gradlew :fake-frigate:installDist`. 127.0.0.1, not ::1: the video player connects there.
-    - cmd: "../fake-frigate/build/install/fake-frigate/bin/fake-frigate --port 8971 --host 127.0.0.1 --advertise localhost {data.flag}"
+    - cmd: "../fake-frigate/build/install/fake-frigate/bin/fake-frigate --port 8971 --host 127.0.0.1 --advertise localhost {data.flag} {relay.flag}"
       ready: {tcp: 8971}
       timeout_s: 60
   launch:

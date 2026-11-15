@@ -124,7 +124,11 @@ edges:
   - {id: event_filter.close, from: event_filter, to: moments, do: [back]}
   - {id: drawer.open_fitness, from: drawer, to: fitness_today, do: [{tap: {id: drawer_fitness}}]}
   - {id: drawer.open_weather, from: drawer, to: weather_welcome, do: [{tap: {id: drawer_weather}}]}
-  - {id: drawer.open_finance, from: drawer, to: finance_unavailable, do: [{tap: {id: drawer_finance}}]}
-  - {id: drawer.open_atlas, from: drawer, to: atlas_offline, do: [{tap: {id: drawer_atlas}}]}
-  - {id: drawer.open_packages, from: drawer, to: packages_unreachable, do: [{tap: {id: drawer_packages}}]}
-  - {id: drawer.open_charging, from: drawer, to: charging_unreachable, do: [{tap: {id: drawer_charging}}]}
+  - {id: drawer.open_finance_off, from: drawer, to: finance_unavailable, when: "relay == 'off'", do: [{tap: {id: drawer_finance}}]}
+  - {id: drawer.open_finance_on, from: drawer, to: finance_outdated, when: "relay == 'on'", do: [{tap: {id: drawer_finance}}]}
+  - {id: drawer.open_atlas_off, from: drawer, to: atlas_offline, when: "relay == 'off'", do: [{tap: {id: drawer_atlas}}]}
+  - {id: drawer.open_atlas_on, from: drawer, to: atlas_map, when: "relay == 'on'", do: [{tap: {id: drawer_atlas}}]}
+  - {id: drawer.open_packages_off, from: drawer, to: packages_unreachable, when: "relay == 'off'", do: [{tap: {id: drawer_packages}}]}
+  - {id: drawer.open_packages_on, from: drawer, to: packages_today, when: "relay == 'on'", do: [{tap: {id: drawer_packages}}]}
+  - {id: drawer.open_charging_off, from: drawer, to: charging_unreachable, when: "relay == 'off'", do: [{tap: {id: drawer_charging}}]}
+  - {id: drawer.open_charging_on, from: drawer, to: charging_home, when: "relay == 'on'", do: [{tap: {id: drawer_charging}}]}

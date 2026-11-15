@@ -1,13 +1,69 @@
-# Charging, from the drawer. No relay: it can't reach the server and offers Retry.
+# Charging, from the drawer. Without the relay it can't reach the server and offers Retry; with the fake relay (--relay)
+# it shows an invented household's two cars and their charges: three tabs, a car and a charge pushed over them.
 nodes:
   charging_unreachable:
     title: Charging, unreachable
     group: charging
+    requires: "relay == 'off'"
     match:
       all: [{id: charging_app}, {id: charging_retry}]
     checks:
       - present: {id: charging_back}
       - present: {text: "Charging"}
+  charging_home:
+    title: Charging, Overview
+    group: charging
+    requires: "relay == 'on'"
+    match:
+      all: [{id: charging_overview}]
+    checks:
+      - present: {id: charging_hero}
+      - present: {id: charging_car_car_a}
+  charging_charges:
+    title: Charging, Charges
+    group: charging
+    requires: "relay == 'on'"
+    match:
+      all: [{id: charging_charges}]
+    checks:
+      - present: {id: charging_filter_all}
+      - present: {id: charging_charge_100}
+  charging_rates:
+    title: Charging, Rates
+    group: charging
+    requires: "relay == 'on'"
+    match:
+      all: [{id: charging_rates}]
+    checks:
+      - present: {id: charging_plan_flat_demo}
+      - present: {text: "YOUR PLAN"}
+  charging_car:
+    title: Charging, one car
+    group: charging
+    requires: "relay == 'on'"
+    match:
+      all: [{id: charging_car_page}]
+    checks:
+      - present: {id: charging_car_total}
+      - present: {id: charging_car_see_charges}
+  charging_charge:
+    title: Charging, one charge
+    group: charging
+    requires: "relay == 'on'"
+    match:
+      all: [{id: charging_charge_page}]
+    checks:
+      - present: {id: charging_charge_cost}
+      - present: {text: "Energy"}
 edges:
   - {id: charging_unreachable.back, from: charging_unreachable, to: home, do: [back]}
   - {id: charging_unreachable.retry, from: charging_unreachable, to: "=", do: [{tap: {id: charging_retry}}]}
+  - {id: charging.close, from: charging_home, to: home, do: [back]}
+  # The tab bar shows on the three tabs, not on the pages pushed over them.
+  - {id: charging.tab_overview, from: [charging_charges, charging_rates], to: charging_home, count: once, do: [{tap: {id: charging_tab_overview}}]}
+  - {id: charging.tab_charges, from: [charging_home, charging_rates], to: charging_charges, count: once, do: [{tap: {id: charging_tab_charges}}]}
+  - {id: charging.tab_rates, from: [charging_home, charging_charges], to: charging_rates, count: once, do: [{tap: {id: charging_tab_rates}}]}
+  - {id: charging_home.open_car, from: charging_home, to: charging_car, do: [{tap: {id: charging_car_car_a}}]}
+  - {id: charging_charges.open_charge, from: charging_charges, to: charging_charge, do: [{tap: {id: charging_charge_100}}]}
+  - {id: charging_car.back, from: charging_car, to: charging_home, do: [back]}
+  - {id: charging_charge.back, from: charging_charge, to: charging_charges, do: [back]}

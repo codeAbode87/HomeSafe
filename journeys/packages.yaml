@@ -1,13 +1,90 @@
-# Packages, from the drawer. No relay: it can't reach the server and offers Retry.
+# Packages, from the drawer. Without the relay it can't reach the server and offers Retry; with the fake relay
+# (--relay) it lists three invented parcels, in four tabs, with the parcel, the add form and the settings pushed on top.
 nodes:
   packages_unreachable:
     title: Packages, unreachable
     group: packages
+    requires: "relay == 'off'"
     match:
       all: [{id: packages_app}, {text_contains: "Can't reach the server"}]
     checks:
       - present: {id: packages_back}
       - present: {text: Retry}
+  packages_today:
+    title: Packages, Today
+    group: packages
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_today}]
+    checks:
+      - present: {id: parcel_p1}
+      - present: {id: packages_tab_all}
+  packages_all:
+    title: Packages, All
+    group: packages
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_all}]
+    checks:
+      - present: {id: packages_search}
+      - present: {text: "Search names, shops, numbers"}
+  packages_returns:
+    title: Packages, Returns
+    group: packages
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_returns}]
+    checks:
+      - present: {text: "Nothing to send back"}
+      - present: {id: packages_tab_returns}
+  packages_insights:
+    title: Packages, Insights
+    group: packages
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_insights}]
+    checks:
+      - present: {text: "THE LAST TWELVE MONTHS"}
+      - present: {text: "CARRIERS"}
+  packages_parcel:
+    title: Packages, one parcel
+    group: packages
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_parcel}]
+    checks:
+      - present: {id: parcel_name}
+      - present: {id: parcel_surprise}
+  packages_add:
+    title: Packages, add a package
+    group: packages
+    requires: "relay == 'on'"
+    match:
+      all: [{id: add_tracking}]
+    checks:
+      - present: {id: add_nickname}
+      - present: {id: add_save}
+  packages_setup:
+    title: Packages, settings
+    group: packages
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_setup_page}]
+    checks:
+      - present: {id: notify_shipped}
+      - present: {text: "GIFT SEASON"}
 edges:
   - {id: packages_unreachable.back, from: packages_unreachable, to: home, do: [back]}
   - {id: packages_unreachable.retry, from: packages_unreachable, to: "=", do: [{tap: {text: Retry}}]}
+  - {id: packages.close, from: packages_today, to: home, do: [back]}
+  # The tab bar shows on the four tabs, not on the pages pushed over them.
+  - {id: packages.tab_today, from: [packages_all, packages_returns, packages_insights], to: packages_today, count: once, do: [{tap: {id: packages_tab_today}}]}
+  - {id: packages.tab_all, from: [packages_today, packages_returns, packages_insights], to: packages_all, count: once, do: [{tap: {id: packages_tab_all}}]}
+  - {id: packages.tab_returns, from: [packages_today, packages_all, packages_insights], to: packages_returns, count: once, do: [{tap: {id: packages_tab_returns}}]}
+  - {id: packages.tab_insights, from: [packages_today, packages_all, packages_returns], to: packages_insights, count: once, do: [{tap: {id: packages_tab_insights}}]}
+  - {id: packages_today.open_parcel, from: packages_today, to: packages_parcel, do: [{tap: {id: parcel_p1}}]}
+  - {id: packages_today.add, from: packages_today, to: packages_add, do: [{tap: {id: packages_add}}]}
+  - {id: packages_today.setup, from: packages_today, to: packages_setup, do: [{tap: {id: packages_setup}}]}
+  - {id: packages_parcel.back, from: packages_parcel, to: packages_today, do: [back]}
+  - {id: packages_add.back, from: packages_add, to: packages_today, do: [back]}
+  - {id: packages_setup.back, from: packages_setup, to: packages_today, do: [back]}
