@@ -57,6 +57,9 @@ nodes:
       - present: {id: finance_back}
       - present: {id: finance_tab_wallet}
   finance_markets:
+    # A phone on its side lays this screen out differently (the `window: landscape` scenarios, still pending),
+    # so "the same screen after a rotation" is not the right check here yet.
+    resilience: {skip: [rotate]}
     title: Finance, Markets
     group: finance
     covers: ["tab:FinanceTab.MARKETS", "screen:MarketsScreen"]

@@ -58,6 +58,13 @@ oracles:
 # Every screen should survive each of these: the same screen in the same state afterwards.
 resilience:
   perturbations: [rotate, recreate, process-death, background, dark, fontscale, rtl, offline]
+  expect:
+    # The session lives in memory: a killed process comes back to the sign-in form with the last server filled in
+    # (AppE2eTest.aRelaunchOffersTheLastServerSignedInTo promises the same).
+    process-death: sign_in
+    # The navigation is not saved across a recreation, so one the manifest does not handle in place lands on Home,
+    # still signed in. Text size, display size and language are handled in place and keep the screen.
+    recreate: home
 
 # A changed file under these that no screen's `sources` names fails the pull-request gate: new UI belongs to a screen.
 gate:

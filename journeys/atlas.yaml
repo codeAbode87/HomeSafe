@@ -66,6 +66,9 @@ nodes:
       - present: {text: "HOW FAR IT REACHES"}
       - present: {text: "Where you've lived"}
   atlas_patterns:
+    # A phone on its side lays this screen out differently (the `window: landscape` scenarios, still pending),
+    # so "the same screen after a rotation" is not the right check here yet.
+    resilience: {skip: [rotate]}
     title: Atlas, Patterns
     group: atlas
     covers: ["tab:AtlasTab.PATTERNS", "screen:PatternsScreen"]

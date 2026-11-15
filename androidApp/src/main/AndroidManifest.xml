@@ -35,11 +35,15 @@
              app graph: back to the sign-in screen, the navigation stack gone and every live
              stream reconnecting. Rotating to watch a camera full screen is the case that matters
              most (see CameraDetailScreen), and the mini player below is another: shrinking to it
-             and growing back are resizes too. -->
+             and growing back are resizes too. The text size, the display size and the language
+             are in the list for the same reason: changing one in the system's settings and
+             coming back used to drop whoever it was on Home, with the tab, the page and the open
+             app forgotten, since the navigation is not saved across a recreation. Compose reads
+             all of them from the configuration and draws again. -->
         <!-- supportsPictureInPicture: a camera's screen floats its video in the system's mini
              player when the app is left from it (PictureInPicture.android.kt). -->
         <activity
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|fontScale|density|locale|layoutDirection"
             android:exported="true"
             android:launchMode="singleTask"
             android:name=".MainActivity"

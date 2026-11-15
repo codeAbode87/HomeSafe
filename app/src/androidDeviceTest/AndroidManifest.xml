@@ -17,7 +17,7 @@
              changes, and the Activity of whichever test is running then is recreated. -->
         <activity
             android:name="androidx.activity.ComponentActivity"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode" />
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|fontScale|density|locale|layoutDirection" />
     </application>
 
 </manifest>

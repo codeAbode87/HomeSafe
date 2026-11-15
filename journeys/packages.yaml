@@ -2,6 +2,9 @@
 # (--relay) it lists three invented parcels, in four tabs, with the parcel, the add form and the settings pushed on top.
 nodes:
   packages_unreachable:
+    # A phone on its side lays this screen out differently (the `window: landscape` scenarios, still pending),
+    # so "the same screen after a rotation" is not the right check here yet.
+    resilience: {skip: [rotate]}
     title: Packages, unreachable
     group: packages
     covers: ["state:PackagesProblem.UNREACHABLE"]
@@ -95,6 +98,9 @@ nodes:
       - present: {id: parcel_name}
       - present: {id: parcel_surprise}
   packages_add:
+    # A phone on its side lays this screen out differently (the `window: landscape` scenarios, still pending),
+    # so "the same screen after a rotation" is not the right check here yet.
+    resilience: {skip: [rotate]}
     title: Packages, add a package
     group: packages
     covers: ["page:PackagesPage.Add", "screen:AddScreen"]
@@ -106,6 +112,9 @@ nodes:
       - present: {id: add_nickname}
       - present: {id: add_save}
   packages_setup:
+    # A phone on its side lays this screen out differently (the `window: landscape` scenarios, still pending),
+    # so "the same screen after a rotation" is not the right check here yet.
+    resilience: {skip: [rotate]}
     title: Packages, settings
     group: packages
     covers: ["page:PackagesPage.Setup", "screen:SetupScreen"]

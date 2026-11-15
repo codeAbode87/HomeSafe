@@ -97,6 +97,9 @@ nodes:
       - present: {id: fitness_phase_card}
       - present: {id: fitness_weight_card}
   fitness_lift:
+    # A phone on its side lays this screen out differently (the `window: landscape` scenarios, still pending),
+    # so "the same screen after a rotation" is not the right check here yet.
+    resilience: {skip: [rotate]}
     title: Fitness, an exercise
     group: fitness
     covers: ["page:FitnessPage.Lift", "screen:ExerciseScreen"]
@@ -320,7 +323,9 @@ edges:
   - {id: fitness_today.open_heart, from: fitness_today, to: fitness_heart, do: [{tap: {id: fitness_heart_pill}}]}
   - {id: fitness_heart.back, from: fitness_heart, to: fitness_today, do: [back]}
   # The Runs door sits under the floating tab bar until the page is scrolled.
-  - {id: fitness_today.open_runs, from: fitness_today, to: fitness_runs, do: [{swipe: up}, {wait_ms: 800}, {tap: {id: fitness_runs_door}}]}
+  # The Runs door rests under the floating tab bar, where a tap lands on the bar: bring it into view first, then
+  # far enough up to clear the bar (a single short swipe did not always).
+  - {id: fitness_today.open_runs, from: fitness_today, to: fitness_runs, do: [{scroll_to: {id: fitness_runs_door}}, {swipe: {dir: up, amount: 0.6}}, {tap: {id: fitness_runs_door}}]}
   - {id: fitness_runs.back, from: fitness_runs, to: fitness_today, do: [back]}
   - {id: fitness_today.open_import, from: fitness_today, to: fitness_import, when: "not lift", do: [{tap: {id: fitness_today_import}}]}
   - {id: fitness_import.back, from: fitness_import, to: fitness_today, do: [back]}

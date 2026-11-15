@@ -70,7 +70,7 @@ class MainActivity : FragmentActivity() {
 
         // Only on a fresh launch: a recreation re-delivers the intent that started the Activity,
         // and the moment it named was opened the first time round. (A rotation is not one: see
-        // android:configChanges in the manifest. A font-size or language change still is.)
+        // android:configChanges in the manifest, and neither is a text-size or language change.)
         if (savedInstanceState == null) openMomentFrom(intent)
 
         inPictureInPicture = isInPictureInPictureMode
