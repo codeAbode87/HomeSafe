@@ -18,3 +18,11 @@ server.
 
 To add a screen: `nines look` at the node it is reached from, write its node and the edge in (and Back out), run
 `nines test`. The briefs in nines' `agents/` folder say how, one screen at a time.
+
+## The inventory
+
+`inventory.json` is the code's own list of what the model's denominator should hold: every drawer app, tab, page, route,
+modal, back-owning overlay, `*Screen`, state type and deep link declared in the `commonMain` sources, extracted by text
+analysis alone (no Gradle, no model). Regenerate it with `python3 journeys/inventory.py` from the repo root; CI can run
+`python3 journeys/inventory.py --check`, which exits 1 when the committed file is stale. `nines audit journeys/nines.yaml --inventory journeys/inventory.json`
+lists the inventory items no node of the model covers.

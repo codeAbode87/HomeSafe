@@ -26,6 +26,13 @@ contexts:
     "off": {flag: ""}              # nothing on :8787: Packages, Charging, Atlas and the sheet can't be reached
     "on": {flag: "--relay"}        # the fake relay on :8787 with a household's parcels, charges and location history
 
+  # The window the app lays itself out in. Only the phone has been run: the others stay in the denominator as
+  # pending until a scene sets the size and their screens are verified.
+  window:
+    phone: {}
+    landscape: {pending: "needs a wide window"}      # the nav down the side, a camera full screen
+    wide: {pending: "needs a wide window"}           # from 840dp: the sidebar, two panes, the finance desk
+
 scene:
   services:
     # Built by `./gradlew :fake-frigate:installDist`. 127.0.0.1, not ::1: the video player connects there.
@@ -48,7 +55,8 @@ oracles:
   settle_ms: 2000
   step_timeout_ms: 15000
 
-# Live video has no source on the fake, and the shader skies never settle: resilience comes screen by screen.
-resilience: false
+# Every screen should survive each of these: the same screen in the same state afterwards.
+resilience:
+  perturbations: [rotate, recreate, process-death, background, dark, fontscale, rtl, offline]
 
 start: home

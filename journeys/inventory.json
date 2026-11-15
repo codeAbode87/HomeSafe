@@ -1,0 +1,1953 @@
+{
+  "items": [
+    {
+      "id": "app:ATLAS",
+      "kind": "app",
+      "label": "Drawer app Atlas",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:167"
+    },
+    {
+      "id": "app:CHARGING",
+      "kind": "app",
+      "label": "Drawer app Charging",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:167"
+    },
+    {
+      "id": "app:FINANCE",
+      "kind": "app",
+      "label": "Drawer app Finance",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:167"
+    },
+    {
+      "id": "app:FITNESS",
+      "kind": "app",
+      "label": "Drawer app Fitness",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:167"
+    },
+    {
+      "id": "app:PACKAGES",
+      "kind": "app",
+      "label": "Drawer app Packages",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:167"
+    },
+    {
+      "id": "app:WEATHER",
+      "kind": "app",
+      "label": "Drawer app Weather",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:167"
+    },
+    {
+      "id": "deeplink:DoorDeepLink",
+      "kind": "deeplink",
+      "label": "DoorDeepLink",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/DoorDeepLink.kt:18"
+    },
+    {
+      "id": "deeplink:FinanceDeepLink",
+      "kind": "deeplink",
+      "label": "FinanceDeepLink",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/FinanceDeepLink.kt:15"
+    },
+    {
+      "id": "deeplink:FitnessDeepLink",
+      "kind": "deeplink",
+      "label": "FitnessDeepLink",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/FitnessDeepLink.kt:15"
+    },
+    {
+      "id": "deeplink:MomentDeepLink",
+      "kind": "deeplink",
+      "label": "MomentDeepLink",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/MomentDeepLink.kt:18"
+    },
+    {
+      "id": "deeplink:PackageDeepLink",
+      "kind": "deeplink",
+      "label": "PackageDeepLink",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/PackageDeepLink.kt:14"
+    },
+    {
+      "id": "deeplink:ParkingDeepLink",
+      "kind": "deeplink",
+      "label": "ParkingDeepLink",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/ParkingDeepLink.kt:17"
+    },
+    {
+      "id": "deeplink:ShellCommand.Assistant",
+      "kind": "deeplink",
+      "label": "Shell command Assistant",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/ShellCommands.kt:24"
+    },
+    {
+      "id": "deeplink:ShellCommand.Go",
+      "kind": "deeplink",
+      "label": "Shell command Go",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/ShellCommands.kt:15"
+    },
+    {
+      "id": "deeplink:ShellCommand.Open",
+      "kind": "deeplink",
+      "label": "Shell command Open",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/ShellCommands.kt:18"
+    },
+    {
+      "id": "deeplink:ShellCommand.ToggleSidebar",
+      "kind": "deeplink",
+      "label": "Shell command ToggleSidebar",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/ShellCommands.kt:21"
+    },
+    {
+      "id": "deeplink:WeatherDeepLink",
+      "kind": "deeplink",
+      "label": "WeatherDeepLink",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/WeatherDeepLink.kt:19"
+    },
+    {
+      "id": "modal:AlertRulesSection.QuietHoursRows",
+      "kind": "modal",
+      "label": "AlertDialog",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/AlertRulesSection.kt:329"
+    },
+    {
+      "id": "modal:AssistantOverlay.ModelChip",
+      "kind": "modal",
+      "label": "DropdownMenu",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/assistant/AssistantOverlay.kt:612"
+    },
+    {
+      "id": "modal:BankSyncScreen.UndoDialog",
+      "kind": "modal",
+      "label": "AlertDialog",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/BankSyncScreen.kt:890"
+    },
+    {
+      "id": "modal:BankSyncScreen.UnlinkDialog",
+      "kind": "modal",
+      "label": "AlertDialog",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/BankSyncScreen.kt:874"
+    },
+    {
+      "id": "modal:BudgetScreen.TagSheet",
+      "kind": "modal",
+      "label": "ModalBottomSheet",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/BudgetScreen.kt:2048"
+    },
+    {
+      "id": "modal:CameraDetailScreen.CameraOverflowMenu",
+      "kind": "modal",
+      "label": "DropdownMenu",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/CameraDetailScreen.kt:1344"
+    },
+    {
+      "id": "modal:CameraQuickActions.QualityMenu",
+      "kind": "modal",
+      "label": "DropdownMenu",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/CameraQuickActions.kt:275"
+    },
+    {
+      "id": "modal:CheckupUi.CheckupSheet",
+      "kind": "modal",
+      "label": "ModalBottomSheet",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/CheckupUi.kt:347"
+    },
+    {
+      "id": "modal:ClassifierLabelingScreen.CarProfileDialog",
+      "kind": "modal",
+      "label": "AlertDialog",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/ClassifierLabelingScreen.kt:548"
+    },
+    {
+      "id": "modal:ClassifierLabelingScreen.CarProfileDialog#2",
+      "kind": "modal",
+      "label": "DropdownMenu",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/ClassifierLabelingScreen.kt:558"
+    },
+    {
+      "id": "modal:DetectionZonesScreen.DetectionZonesScreen",
+      "kind": "modal",
+      "label": "AlertDialog",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/DetectionZonesScreen.kt:226"
+    },
+    {
+      "id": "modal:DoorsPairing.DoorRenameDialog",
+      "kind": "modal",
+      "label": "AlertDialog",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/DoorsPairing.kt:141"
+    },
+    {
+      "id": "modal:ExplainSheet.ExplainSheet",
+      "kind": "modal",
+      "label": "ModalBottomSheet",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/ExplainSheet.kt:159"
+    },
+    {
+      "id": "modal:FrigateAppShell.TopBarMenu",
+      "kind": "modal",
+      "label": "DropdownMenu",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:1264"
+    },
+    {
+      "id": "modal:MomentCarTagging.TagCarDialog",
+      "kind": "modal",
+      "label": "AlertDialog",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/MomentCarTagging.kt:167"
+    },
+    {
+      "id": "modal:MomentsScreen.FilterMenuChip",
+      "kind": "modal",
+      "label": "DropdownMenu",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/MomentsScreen.kt:852"
+    },
+    {
+      "id": "modal:MomentsScreen.MomentDayPicker",
+      "kind": "modal",
+      "label": "DatePickerDialog",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/MomentsScreen.kt:714"
+    },
+    {
+      "id": "modal:SecureConnectionScreen.BiometricSaveOfferDialog",
+      "kind": "modal",
+      "label": "AlertDialog",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SecureConnectionScreen.kt:539"
+    },
+    {
+      "id": "modal:SettingsScreen.PresenceDeviceList",
+      "kind": "modal",
+      "label": "AlertDialog",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:741"
+    },
+    {
+      "id": "modal:TypedBalancesScreen.BalanceEditor",
+      "kind": "modal",
+      "label": "AlertDialog",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/TypedBalancesScreen.kt:263"
+    },
+    {
+      "id": "modal:WatchlistUi.AddSymbolSheet",
+      "kind": "modal",
+      "label": "ModalBottomSheet",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WatchlistUi.kt:287"
+    },
+    {
+      "id": "modal:WatchlistUi.PositionEditor",
+      "kind": "modal",
+      "label": "AlertDialog",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WatchlistUi.kt:523"
+    },
+    {
+      "id": "overlay:AssistantOverlay.AssistantLayer",
+      "kind": "overlay",
+      "label": "Back-owning surface AssistantLayer",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/assistant/AssistantOverlay.kt:186"
+    },
+    {
+      "id": "overlay:AtlasApp.AtlasAppContent",
+      "kind": "overlay",
+      "label": "Back-owning surface AtlasAppContent",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:220"
+    },
+    {
+      "id": "overlay:CameraCardZoom.CameraCardZoomOverlay",
+      "kind": "overlay",
+      "label": "Back-owning surface CameraCardZoomOverlay",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/CameraCardZoom.kt:408"
+    },
+    {
+      "id": "overlay:ChargingApp.ChargingAppContent",
+      "kind": "overlay",
+      "label": "Back-owning surface ChargingAppContent",
+      "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt:193"
+    },
+    {
+      "id": "overlay:DetectionZonesScreen.DetectionZonesScreen",
+      "kind": "overlay",
+      "label": "Back-owning surface DetectionZonesScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/DetectionZonesScreen.kt:153"
+    },
+    {
+      "id": "overlay:FinanceApp.FinanceAppContent",
+      "kind": "overlay",
+      "label": "Back-owning surface FinanceAppContent",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:289"
+    },
+    {
+      "id": "overlay:FitnessApp.FitnessAppContent",
+      "kind": "overlay",
+      "label": "Back-owning surface FitnessAppContent",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:353"
+    },
+    {
+      "id": "overlay:PackagesApp.PackagesAppContent",
+      "kind": "overlay",
+      "label": "Back-owning surface PackagesAppContent",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:206"
+    },
+    {
+      "id": "overlay:ParkingMapOverlay.ParkingMapOverlay",
+      "kind": "overlay",
+      "label": "Back-owning surface ParkingMapOverlay",
+      "source": "app/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/ParkingMapOverlay.kt:91"
+    },
+    {
+      "id": "overlay:SettingsTabNav.SettingsTwoPanes",
+      "kind": "overlay",
+      "label": "Back-owning surface SettingsTwoPanes",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsTabNav.kt:152"
+    },
+    {
+      "id": "overlay:ShellDrawer.InnerAppOverlay",
+      "kind": "overlay",
+      "label": "Back-owning surface InnerAppOverlay",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/ShellDrawer.kt:314"
+    },
+    {
+      "id": "overlay:ShellDrawer.ShellDrawer",
+      "kind": "overlay",
+      "label": "Back-owning surface ShellDrawer",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/ShellDrawer.kt:214"
+    },
+    {
+      "id": "overlay:WeatherApp.WeatherAppContent",
+      "kind": "overlay",
+      "label": "Back-owning surface WeatherAppContent",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:380"
+    },
+    {
+      "id": "page:AtlasPage.Day",
+      "kind": "page",
+      "label": "AtlasPage page Day",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:128"
+    },
+    {
+      "id": "page:AtlasPage.PlaceDetail",
+      "kind": "page",
+      "label": "AtlasPage page PlaceDetail",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:130"
+    },
+    {
+      "id": "page:AtlasPage.Sync",
+      "kind": "page",
+      "label": "AtlasPage page Sync",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:136"
+    },
+    {
+      "id": "page:AtlasPage.TripDetail",
+      "kind": "page",
+      "label": "AtlasPage page TripDetail",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:133"
+    },
+    {
+      "id": "page:ChargingPage.Car",
+      "kind": "page",
+      "label": "ChargingPage page Car",
+      "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt:123"
+    },
+    {
+      "id": "page:ChargingPage.Charge",
+      "kind": "page",
+      "label": "ChargingPage page Charge",
+      "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt:120"
+    },
+    {
+      "id": "page:CheckKind.COSTLY_DEBT",
+      "kind": "page",
+      "label": "CheckKind Costly debt",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MoneyCheckup.kt:184"
+    },
+    {
+      "id": "page:CheckKind.DEBT_RATIO",
+      "kind": "page",
+      "label": "CheckKind Debt ratio",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MoneyCheckup.kt:185"
+    },
+    {
+      "id": "page:CheckKind.EMERGENCY_FUND",
+      "kind": "page",
+      "label": "CheckKind Emergency fund",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MoneyCheckup.kt:182"
+    },
+    {
+      "id": "page:CheckKind.RETIREMENT",
+      "kind": "page",
+      "label": "CheckKind Retirement",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MoneyCheckup.kt:186"
+    },
+    {
+      "id": "page:CheckKind.SAVINGS_RATE",
+      "kind": "page",
+      "label": "CheckKind Savings rate",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MoneyCheckup.kt:183"
+    },
+    {
+      "id": "page:FinanceDetail.BankSync",
+      "kind": "page",
+      "label": "FinanceDetail page BankSync",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:154"
+    },
+    {
+      "id": "page:FinanceDetail.BudgetSettings",
+      "kind": "page",
+      "label": "FinanceDetail page BudgetSettings",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:157"
+    },
+    {
+      "id": "page:FinanceDetail.ChartSettings",
+      "kind": "page",
+      "label": "FinanceDetail page ChartSettings",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:160"
+    },
+    {
+      "id": "page:FinanceDetail.Connections",
+      "kind": "page",
+      "label": "FinanceDetail page Connections",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:145"
+    },
+    {
+      "id": "page:FinanceDetail.Glossary",
+      "kind": "page",
+      "label": "FinanceDetail page Glossary",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:148"
+    },
+    {
+      "id": "page:FinanceDetail.IndicatorPage",
+      "kind": "page",
+      "label": "FinanceDetail page IndicatorPage",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:142"
+    },
+    {
+      "id": "page:FinanceDetail.QuotePage",
+      "kind": "page",
+      "label": "FinanceDetail page QuotePage",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:140"
+    },
+    {
+      "id": "page:FinanceDetail.SheetSync",
+      "kind": "page",
+      "label": "FinanceDetail page SheetSync",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:151"
+    },
+    {
+      "id": "page:FinanceDetail.TypedBalances",
+      "kind": "page",
+      "label": "FinanceDetail page TypedBalances",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:163"
+    },
+    {
+      "id": "page:FinanceDetail.WalletPage",
+      "kind": "page",
+      "label": "FinanceDetail page WalletPage",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceApp.kt:166"
+    },
+    {
+      "id": "page:FitnessPage.Edit",
+      "kind": "page",
+      "label": "FitnessPage page Edit",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:170"
+    },
+    {
+      "id": "page:FitnessPage.Heart",
+      "kind": "page",
+      "label": "FitnessPage page Heart",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:175"
+    },
+    {
+      "id": "page:FitnessPage.Import",
+      "kind": "page",
+      "label": "FitnessPage page Import",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:172"
+    },
+    {
+      "id": "page:FitnessPage.Lift",
+      "kind": "page",
+      "label": "FitnessPage page Lift",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:168"
+    },
+    {
+      "id": "page:FitnessPage.Recording",
+      "kind": "page",
+      "label": "FitnessPage page Recording",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:187"
+    },
+    {
+      "id": "page:FitnessPage.Run",
+      "kind": "page",
+      "label": "FitnessPage page Run",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:184"
+    },
+    {
+      "id": "page:FitnessPage.Runs",
+      "kind": "page",
+      "label": "FitnessPage page Runs",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:181"
+    },
+    {
+      "id": "page:FitnessPage.Session",
+      "kind": "page",
+      "label": "FitnessPage page Session",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:178"
+    },
+    {
+      "id": "page:FitnessPage.Workout",
+      "kind": "page",
+      "label": "FitnessPage page Workout",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:166"
+    },
+    {
+      "id": "page:PackagesPage.Add",
+      "kind": "page",
+      "label": "PackagesPage page Add",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:132"
+    },
+    {
+      "id": "page:PackagesPage.Claim",
+      "kind": "page",
+      "label": "PackagesPage page Claim",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:130"
+    },
+    {
+      "id": "page:PackagesPage.Detail",
+      "kind": "page",
+      "label": "PackagesPage page Detail",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:128"
+    },
+    {
+      "id": "page:PackagesPage.Setup",
+      "kind": "page",
+      "label": "PackagesPage page Setup",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:134"
+    },
+    {
+      "id": "page:SettingsFold.APP_ICON",
+      "kind": "page",
+      "label": "SettingsFold App icon",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
+    },
+    {
+      "id": "page:SettingsFold.CAMERAS",
+      "kind": "page",
+      "label": "SettingsFold Cameras",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
+    },
+    {
+      "id": "page:SettingsFold.ECONOMY",
+      "kind": "page",
+      "label": "SettingsFold Economy",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
+    },
+    {
+      "id": "page:SettingsFold.FIGURES",
+      "kind": "page",
+      "label": "SettingsFold Figures",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
+    },
+    {
+      "id": "page:SettingsFold.FINANCE_DRAWER",
+      "kind": "page",
+      "label": "SettingsFold Finance drawer",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
+    },
+    {
+      "id": "page:SettingsFold.MAPS",
+      "kind": "page",
+      "label": "SettingsFold Maps",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt:252"
+    },
+    {
+      "id": "page:WalletTopic.ACCOUNTS",
+      "kind": "page",
+      "label": "WalletTopic Accounts",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:94"
+    },
+    {
+      "id": "page:WalletTopic.CASH_FLOW",
+      "kind": "page",
+      "label": "WalletTopic Cash flow",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:95"
+    },
+    {
+      "id": "page:WalletTopic.DEBT",
+      "kind": "page",
+      "label": "WalletTopic Debt",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:96"
+    },
+    {
+      "id": "page:WalletTopic.HOME",
+      "kind": "page",
+      "label": "WalletTopic Home",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:97"
+    },
+    {
+      "id": "page:WalletTopic.SHEET_CHARTS",
+      "kind": "page",
+      "label": "WalletTopic Sheet charts",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:99"
+    },
+    {
+      "id": "page:WalletTopic.VESTING_TAXES",
+      "kind": "page",
+      "label": "WalletTopic Vesting taxes",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:98"
+    },
+    {
+      "id": "page:WeatherPage.Alert",
+      "kind": "page",
+      "label": "WeatherPage page Alert",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:196"
+    },
+    {
+      "id": "page:WeatherPage.Places",
+      "kind": "page",
+      "label": "WeatherPage page Places",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:191"
+    },
+    {
+      "id": "page:WeatherPage.Settings",
+      "kind": "page",
+      "label": "WeatherPage page Settings",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:193"
+    },
+    {
+      "id": "page:WeatherPage.SkiFind",
+      "kind": "page",
+      "label": "WeatherPage page SkiFind",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:202"
+    },
+    {
+      "id": "page:WeatherPage.SkiRegion",
+      "kind": "page",
+      "label": "WeatherPage page SkiRegion",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:205"
+    },
+    {
+      "id": "page:WeatherPage.SkiResort",
+      "kind": "page",
+      "label": "WeatherPage page SkiResort",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:199"
+    },
+    {
+      "id": "page:WeatherPage.SkiSetup",
+      "kind": "page",
+      "label": "WeatherPage page SkiSetup",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:208"
+    },
+    {
+      "id": "page:route.AppShellRoute",
+      "kind": "page",
+      "label": "Navigation route AppShellRoute",
+      "source": "app/src/commonMain/kotlin/com/meticulouscreations/homesafe/App.kt:40"
+    },
+    {
+      "id": "page:route.AwayRoute",
+      "kind": "page",
+      "label": "Navigation route AwayRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsTabNav.kt:61"
+    },
+    {
+      "id": "page:route.CameraDetailRoute",
+      "kind": "page",
+      "label": "Navigation route CameraDetailRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:1302"
+    },
+    {
+      "id": "page:route.CameraFramingRoute",
+      "kind": "page",
+      "label": "Navigation route CameraFramingRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:1333"
+    },
+    {
+      "id": "page:route.CameraListRoute",
+      "kind": "page",
+      "label": "Navigation route CameraListRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:1287"
+    },
+    {
+      "id": "page:route.CarTaggingRoute",
+      "kind": "page",
+      "label": "Navigation route CarTaggingRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:1345"
+    },
+    {
+      "id": "page:route.CarsHomeRoute",
+      "kind": "page",
+      "label": "Navigation route CarsHomeRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:1351"
+    },
+    {
+      "id": "page:route.ClassifierRoute",
+      "kind": "page",
+      "label": "Navigation route ClassifierRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsTabNav.kt:64"
+    },
+    {
+      "id": "page:route.ClipEditorRoute",
+      "kind": "page",
+      "label": "Navigation route ClipEditorRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:1359"
+    },
+    {
+      "id": "page:route.DetectionZonesRoute",
+      "kind": "page",
+      "label": "Navigation route DetectionZonesRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:1344"
+    },
+    {
+      "id": "page:route.DoorsHomeRoute",
+      "kind": "page",
+      "label": "Navigation route DoorsHomeRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:1348"
+    },
+    {
+      "id": "page:route.DoorsRoute",
+      "kind": "page",
+      "label": "Navigation route DoorsRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsTabNav.kt:76"
+    },
+    {
+      "id": "page:route.FacesRoute",
+      "kind": "page",
+      "label": "Navigation route FacesRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsTabNav.kt:67"
+    },
+    {
+      "id": "page:route.NestCameraRoute",
+      "kind": "page",
+      "label": "Navigation route NestCameraRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FrigateAppShell.kt:1316"
+    },
+    {
+      "id": "page:route.NotificationsRoute",
+      "kind": "page",
+      "label": "Navigation route NotificationsRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsTabNav.kt:58"
+    },
+    {
+      "id": "page:route.SecureConnectionRoute",
+      "kind": "page",
+      "label": "Navigation route SecureConnectionRoute",
+      "source": "app/src/commonMain/kotlin/com/meticulouscreations/homesafe/App.kt:39"
+    },
+    {
+      "id": "page:route.ServerRoute",
+      "kind": "page",
+      "label": "Navigation route ServerRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsTabNav.kt:70"
+    },
+    {
+      "id": "page:route.SettingsHomeRoute",
+      "kind": "page",
+      "label": "Navigation route SettingsHomeRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsTabNav.kt:55"
+    },
+    {
+      "id": "page:route.UptimeRoute",
+      "kind": "page",
+      "label": "Navigation route UptimeRoute",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsTabNav.kt:73"
+    },
+    {
+      "id": "screen:AddScreen",
+      "kind": "screen",
+      "label": "AddScreen",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/AddScreen.kt:54"
+    },
+    {
+      "id": "screen:AlertScreen",
+      "kind": "screen",
+      "label": "AlertScreen",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherSettingsScreen.kt:274"
+    },
+    {
+      "id": "screen:AllScreen",
+      "kind": "screen",
+      "label": "AllScreen",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/AllScreen.kt:39"
+    },
+    {
+      "id": "screen:AtlasLockScreen",
+      "kind": "screen",
+      "label": "AtlasLockScreen",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/SyncScreen.kt:251"
+    },
+    {
+      "id": "screen:AwaySettingsScreen",
+      "kind": "screen",
+      "label": "AwaySettingsScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/AwaySettingsScreen.kt:20"
+    },
+    {
+      "id": "screen:BankSyncScreen",
+      "kind": "screen",
+      "label": "BankSyncScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/BankSyncScreen.kt:230"
+    },
+    {
+      "id": "screen:BudgetScreen",
+      "kind": "screen",
+      "label": "BudgetScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/BudgetScreen.kt:387"
+    },
+    {
+      "id": "screen:BudgetSettingsScreen",
+      "kind": "screen",
+      "label": "BudgetSettingsScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/BudgetSettingsScreen.kt:112"
+    },
+    {
+      "id": "screen:CameraDetailScreen",
+      "kind": "screen",
+      "label": "CameraDetailScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/CameraDetailScreen.kt:214"
+    },
+    {
+      "id": "screen:CameraFramingScreen",
+      "kind": "screen",
+      "label": "CameraFramingScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/CameraFramingScreen.kt:148"
+    },
+    {
+      "id": "screen:CarScreen",
+      "kind": "screen",
+      "label": "CarScreen",
+      "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/CarScreen.kt:60"
+    },
+    {
+      "id": "screen:CarTaggingScreen",
+      "kind": "screen",
+      "label": "CarTaggingScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/CarTaggingScreen.kt:101"
+    },
+    {
+      "id": "screen:CarsScreen",
+      "kind": "screen",
+      "label": "CarsScreen",
+      "source": "app/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/CarsScreen.kt:162"
+    },
+    {
+      "id": "screen:ChargeScreen",
+      "kind": "screen",
+      "label": "ChargeScreen",
+      "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargeScreen.kt:79"
+    },
+    {
+      "id": "screen:ChargesScreen",
+      "kind": "screen",
+      "label": "ChargesScreen",
+      "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargesScreen.kt:71"
+    },
+    {
+      "id": "screen:ChartSettingsScreen",
+      "kind": "screen",
+      "label": "ChartSettingsScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/ChartSettingsScreen.kt:66"
+    },
+    {
+      "id": "screen:ClaimScreen",
+      "kind": "screen",
+      "label": "ClaimScreen",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/ParcelScreen.kt:824"
+    },
+    {
+      "id": "screen:ClassifierLabelingScreen",
+      "kind": "screen",
+      "label": "ClassifierLabelingScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/ClassifierLabelingScreen.kt:142"
+    },
+    {
+      "id": "screen:ClipEditorScreen",
+      "kind": "screen",
+      "label": "ClipEditorScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/ClipEditorScreen.kt:175"
+    },
+    {
+      "id": "screen:ConnectionsScreen",
+      "kind": "screen",
+      "label": "ConnectionsScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/ConnectionsScreen.kt:190"
+    },
+    {
+      "id": "screen:DayScreen",
+      "kind": "screen",
+      "label": "DayScreen",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/DayScreen.kt:135"
+    },
+    {
+      "id": "screen:DaysScreen",
+      "kind": "screen",
+      "label": "DaysScreen",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/DaysScreen.kt:100"
+    },
+    {
+      "id": "screen:DetectionZonesScreen",
+      "kind": "screen",
+      "label": "DetectionZonesScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/DetectionZonesScreen.kt:137"
+    },
+    {
+      "id": "screen:DoorsScreen",
+      "kind": "screen",
+      "label": "DoorsScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/DoorsScreen.kt:78"
+    },
+    {
+      "id": "screen:EconomyScreen",
+      "kind": "screen",
+      "label": "EconomyScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/EconomyScreens.kt:202"
+    },
+    {
+      "id": "screen:EditExerciseScreen",
+      "kind": "screen",
+      "label": "EditExerciseScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/LiftsScreen.kt:444"
+    },
+    {
+      "id": "screen:ExerciseScreen",
+      "kind": "screen",
+      "label": "ExerciseScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/LiftsScreen.kt:281"
+    },
+    {
+      "id": "screen:FaceLibraryScreen",
+      "kind": "screen",
+      "label": "FaceLibraryScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/FaceLibraryScreen.kt:96"
+    },
+    {
+      "id": "screen:FinanceLockScreen",
+      "kind": "screen",
+      "label": "FinanceLockScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceLockScreen.kt:58"
+    },
+    {
+      "id": "screen:ForecastScreen",
+      "kind": "screen",
+      "label": "ForecastScreen",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/ForecastScreen.kt:110"
+    },
+    {
+      "id": "screen:GlossaryScreen",
+      "kind": "screen",
+      "label": "GlossaryScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/GlossaryScreen.kt:52"
+    },
+    {
+      "id": "screen:HeartScreen",
+      "kind": "screen",
+      "label": "HeartScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/HeartScreen.kt:97"
+    },
+    {
+      "id": "screen:HistoryScreen",
+      "kind": "screen",
+      "label": "HistoryScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/HistoryScreen.kt:118"
+    },
+    {
+      "id": "screen:ImportScreen",
+      "kind": "screen",
+      "label": "ImportScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/ImportScreen.kt:77"
+    },
+    {
+      "id": "screen:IndicatorDetailScreen",
+      "kind": "screen",
+      "label": "IndicatorDetailScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/EconomyScreens.kt:922"
+    },
+    {
+      "id": "screen:InsightsScreen",
+      "kind": "screen",
+      "label": "InsightsScreen",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/InsightsScreen.kt:74"
+    },
+    {
+      "id": "screen:LiftsScreen",
+      "kind": "screen",
+      "label": "LiftsScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/LiftsScreen.kt:133"
+    },
+    {
+      "id": "screen:MapScreen",
+      "kind": "screen",
+      "label": "MapScreen",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/MapScreen.kt:82"
+    },
+    {
+      "id": "screen:MarketsScreen",
+      "kind": "screen",
+      "label": "MarketsScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MarketsScreen.kt:124"
+    },
+    {
+      "id": "screen:NestCameraScreen",
+      "kind": "screen",
+      "label": "NestCameraScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/NestCameraScreen.kt:144"
+    },
+    {
+      "id": "screen:NotificationsSettingsScreen",
+      "kind": "screen",
+      "label": "NotificationsSettingsScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/NotificationsSettingsScreen.kt:81"
+    },
+    {
+      "id": "screen:OverviewScreen",
+      "kind": "screen",
+      "label": "OverviewScreen",
+      "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/OverviewScreen.kt:93"
+    },
+    {
+      "id": "screen:ParcelScreen",
+      "kind": "screen",
+      "label": "ParcelScreen",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/ParcelScreen.kt:202"
+    },
+    {
+      "id": "screen:PatternsScreen",
+      "kind": "screen",
+      "label": "PatternsScreen",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/PatternsScreen.kt:117"
+    },
+    {
+      "id": "screen:PlaceScreen",
+      "kind": "screen",
+      "label": "PlaceScreen",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/PlacesScreen.kt:243"
+    },
+    {
+      "id": "screen:PlacesScreen",
+      "kind": "screen",
+      "label": "PlacesScreen",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/PlacesScreen.kt:115"
+    },
+    {
+      "id": "screen:PlacesScreen#2",
+      "kind": "screen",
+      "label": "PlacesScreen",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/PlacesScreen.kt:155"
+    },
+    {
+      "id": "screen:ProgressScreen",
+      "kind": "screen",
+      "label": "ProgressScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/ProgressScreen.kt:107"
+    },
+    {
+      "id": "screen:QuoteDetailScreen",
+      "kind": "screen",
+      "label": "QuoteDetailScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/MarketsScreen.kt:580"
+    },
+    {
+      "id": "screen:RadarScreen",
+      "kind": "screen",
+      "label": "RadarScreen",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/radar/RadarScreen.kt:121"
+    },
+    {
+      "id": "screen:RatesScreen",
+      "kind": "screen",
+      "label": "RatesScreen",
+      "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/RatesScreen.kt:63"
+    },
+    {
+      "id": "screen:RecordingScreen",
+      "kind": "screen",
+      "label": "RecordingScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/RecordingUi.kt:154"
+    },
+    {
+      "id": "screen:ReturnsScreen",
+      "kind": "screen",
+      "label": "ReturnsScreen",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/ReturnsScreen.kt:48"
+    },
+    {
+      "id": "screen:RiskScreen",
+      "kind": "screen",
+      "label": "RiskScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/EconomyScreens.kt:660"
+    },
+    {
+      "id": "screen:RunScreen",
+      "kind": "screen",
+      "label": "RunScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/RunsUi.kt:440"
+    },
+    {
+      "id": "screen:RunsScreen",
+      "kind": "screen",
+      "label": "RunsScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/RunsUi.kt:228"
+    },
+    {
+      "id": "screen:SecureConnectionScreen",
+      "kind": "screen",
+      "label": "SecureConnectionScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SecureConnectionScreen.kt:171"
+    },
+    {
+      "id": "screen:ServerSettingsScreen",
+      "kind": "screen",
+      "label": "ServerSettingsScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/ServerSettingsScreen.kt:33"
+    },
+    {
+      "id": "screen:ServerUptimeScreen",
+      "kind": "screen",
+      "label": "ServerUptimeScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/ServerUptimeScreen.kt:140"
+    },
+    {
+      "id": "screen:SessionScreen",
+      "kind": "screen",
+      "label": "SessionScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/HistoryScreen.kt:436"
+    },
+    {
+      "id": "screen:SetupScreen",
+      "kind": "screen",
+      "label": "SetupScreen",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/SetupScreen.kt:72"
+    },
+    {
+      "id": "screen:SheetSyncScreen",
+      "kind": "screen",
+      "label": "SheetSyncScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/SheetSyncScreen.kt:131"
+    },
+    {
+      "id": "screen:SkiFindScreen",
+      "kind": "screen",
+      "label": "SkiFindScreen",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiFindScreen.kt:175"
+    },
+    {
+      "id": "screen:SkiRegionScreen",
+      "kind": "screen",
+      "label": "SkiRegionScreen",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiFindScreen.kt:213"
+    },
+    {
+      "id": "screen:SkiResortScreen",
+      "kind": "screen",
+      "label": "SkiResortScreen",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiResortScreen.kt:199"
+    },
+    {
+      "id": "screen:SkiScreen",
+      "kind": "screen",
+      "label": "SkiScreen",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiScreen.kt:107"
+    },
+    {
+      "id": "screen:SkiSetupScreen",
+      "kind": "screen",
+      "label": "SkiSetupScreen",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiFindScreen.kt:308"
+    },
+    {
+      "id": "screen:SyncScreen",
+      "kind": "screen",
+      "label": "SyncScreen",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/SyncScreen.kt:106"
+    },
+    {
+      "id": "screen:TodayScreen",
+      "kind": "screen",
+      "label": "TodayScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/TodayScreen.kt:107"
+    },
+    {
+      "id": "screen:TodayScreen#2",
+      "kind": "screen",
+      "label": "TodayScreen",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/TodayScreen.kt:80"
+    },
+    {
+      "id": "screen:TodayScreen#3",
+      "kind": "screen",
+      "label": "TodayScreen",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/TodayScreen.kt:116"
+    },
+    {
+      "id": "screen:TripScreen",
+      "kind": "screen",
+      "label": "TripScreen",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/TripsScreen.kt:245"
+    },
+    {
+      "id": "screen:TripsScreen",
+      "kind": "screen",
+      "label": "TripsScreen",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/TripsScreen.kt:93"
+    },
+    {
+      "id": "screen:TypedBalancesScreen",
+      "kind": "screen",
+      "label": "TypedBalancesScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/TypedBalancesScreen.kt:122"
+    },
+    {
+      "id": "screen:WalletScreen",
+      "kind": "screen",
+      "label": "WalletScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletScreen.kt:198"
+    },
+    {
+      "id": "screen:WalletTopicScreen",
+      "kind": "screen",
+      "label": "WalletTopicScreen",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/WalletHub.kt:412"
+    },
+    {
+      "id": "screen:WeatherSettingsScreen",
+      "kind": "screen",
+      "label": "WeatherSettingsScreen",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherSettingsScreen.kt:96"
+    },
+    {
+      "id": "screen:WorkoutScreen",
+      "kind": "screen",
+      "label": "WorkoutScreen",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/WorkoutScreen.kt:158"
+    },
+    {
+      "id": "screen:rememberOnScreen",
+      "kind": "screen",
+      "label": "rememberOnScreen",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/components/FrameGrid.kt:117"
+    },
+    {
+      "id": "state:AtlasProblem.NOT_ALLOWED",
+      "kind": "state",
+      "label": "AtlasProblem Not allowed",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:17"
+    },
+    {
+      "id": "state:AtlasProblem.OTHER",
+      "kind": "state",
+      "label": "AtlasProblem Other",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:21"
+    },
+    {
+      "id": "state:AtlasProblem.RELAY_OUTDATED",
+      "kind": "state",
+      "label": "AtlasProblem Relay outdated",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:20"
+    },
+    {
+      "id": "state:AtlasProblem.SIGNED_OUT",
+      "kind": "state",
+      "label": "AtlasProblem Signed out",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:11"
+    },
+    {
+      "id": "state:AtlasProblem.UNREACHABLE",
+      "kind": "state",
+      "label": "AtlasProblem Unreachable",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:14"
+    },
+    {
+      "id": "state:AtlasSetupProblem.API_DISABLED",
+      "kind": "state",
+      "label": "AtlasSetupProblem Api disabled",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:30"
+    },
+    {
+      "id": "state:AtlasSetupProblem.EMPTY",
+      "kind": "state",
+      "label": "AtlasSetupProblem Empty",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:36"
+    },
+    {
+      "id": "state:AtlasSetupProblem.FAILED",
+      "kind": "state",
+      "label": "AtlasSetupProblem Failed",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:42"
+    },
+    {
+      "id": "state:AtlasSetupProblem.NOT_SHARED",
+      "kind": "state",
+      "label": "AtlasSetupProblem Not shared",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:33"
+    },
+    {
+      "id": "state:AtlasSetupProblem.NO_KEY",
+      "kind": "state",
+      "label": "AtlasSetupProblem No key",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:39"
+    },
+    {
+      "id": "state:AtlasSetupProblem.OTHER",
+      "kind": "state",
+      "label": "AtlasSetupProblem Other",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/domain/AtlasRepository.kt:43"
+    },
+    {
+      "id": "state:BalanceProblem.BANK_FILLED",
+      "kind": "state",
+      "label": "BalanceProblem Bank filled",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:128"
+    },
+    {
+      "id": "state:BalanceProblem.BUSY",
+      "kind": "state",
+      "label": "BalanceProblem Busy",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:137"
+    },
+    {
+      "id": "state:BalanceProblem.CALCULATED",
+      "kind": "state",
+      "label": "BalanceProblem Calculated",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:125"
+    },
+    {
+      "id": "state:BalanceProblem.CHANGED",
+      "kind": "state",
+      "label": "BalanceProblem Changed",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:122"
+    },
+    {
+      "id": "state:BalanceProblem.NOT_CONNECTED",
+      "kind": "state",
+      "label": "BalanceProblem Not connected",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:143"
+    },
+    {
+      "id": "state:BalanceProblem.NOT_FOUND",
+      "kind": "state",
+      "label": "BalanceProblem Not found",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:131"
+    },
+    {
+      "id": "state:BalanceProblem.NOT_SHARED",
+      "kind": "state",
+      "label": "BalanceProblem Not shared",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:134"
+    },
+    {
+      "id": "state:BalanceProblem.OTHER",
+      "kind": "state",
+      "label": "BalanceProblem Other",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:145"
+    },
+    {
+      "id": "state:BalanceProblem.RELAY_OUTDATED",
+      "kind": "state",
+      "label": "BalanceProblem Relay outdated",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/TypedBalances.kt:140"
+    },
+    {
+      "id": "state:BankProblem.NOT_ALLOWED",
+      "kind": "state",
+      "label": "BankProblem Not allowed",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:291"
+    },
+    {
+      "id": "state:BankProblem.NOT_CONFIGURED",
+      "kind": "state",
+      "label": "BankProblem Not configured",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:297"
+    },
+    {
+      "id": "state:BankProblem.OTHER",
+      "kind": "state",
+      "label": "BankProblem Other",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:311"
+    },
+    {
+      "id": "state:BankProblem.PLAID",
+      "kind": "state",
+      "label": "BankProblem Plaid",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:300"
+    },
+    {
+      "id": "state:BankProblem.RELAY_OUTDATED",
+      "kind": "state",
+      "label": "BankProblem Relay outdated",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:288"
+    },
+    {
+      "id": "state:BankProblem.SIGNED_OUT",
+      "kind": "state",
+      "label": "BankProblem Signed out",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:294"
+    },
+    {
+      "id": "state:BankProblem.TAILSCALE_OFF",
+      "kind": "state",
+      "label": "BankProblem Tailscale off",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:306"
+    },
+    {
+      "id": "state:BankProblem.UNREACHABLE",
+      "kind": "state",
+      "label": "BankProblem Unreachable",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/BankSync.kt:309"
+    },
+    {
+      "id": "state:CameraDetailUiState.Found",
+      "kind": "state",
+      "label": "CameraDetailUiState Found",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/viewmodel/CameraDetailViewModel.kt:89"
+    },
+    {
+      "id": "state:CameraDetailUiState.Loading",
+      "kind": "state",
+      "label": "CameraDetailUiState Loading",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/viewmodel/CameraDetailViewModel.kt:88"
+    },
+    {
+      "id": "state:CameraDetailUiState.NotFound",
+      "kind": "state",
+      "label": "CameraDetailUiState NotFound",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/viewmodel/CameraDetailViewModel.kt:111"
+    },
+    {
+      "id": "state:ConnectUiState.AwaitingBiometrics",
+      "kind": "state",
+      "label": "ConnectUiState AwaitingBiometrics",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/viewmodel/SecureConnectionViewModel.kt:39"
+    },
+    {
+      "id": "state:ConnectUiState.Connecting",
+      "kind": "state",
+      "label": "ConnectUiState Connecting",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/viewmodel/SecureConnectionViewModel.kt:42"
+    },
+    {
+      "id": "state:ConnectUiState.Error",
+      "kind": "state",
+      "label": "ConnectUiState Error",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/viewmodel/SecureConnectionViewModel.kt:50"
+    },
+    {
+      "id": "state:ConnectUiState.Idle",
+      "kind": "state",
+      "label": "ConnectUiState Idle",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/viewmodel/SecureConnectionViewModel.kt:36"
+    },
+    {
+      "id": "state:ConnectUiState.Success",
+      "kind": "state",
+      "label": "ConnectUiState Success",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/viewmodel/SecureConnectionViewModel.kt:49"
+    },
+    {
+      "id": "state:ConnectionProblem.ServerUnreachable",
+      "kind": "state",
+      "label": "ConnectionProblem Server unreachable",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/ConnectionProblem.kt:12"
+    },
+    {
+      "id": "state:ConnectionProblem.TailscaleOff",
+      "kind": "state",
+      "label": "ConnectionProblem Tailscale off",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/ConnectionProblem.kt:9"
+    },
+    {
+      "id": "state:DoorSignal.FAIR",
+      "kind": "state",
+      "label": "DoorSignal Fair",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/Door.kt:62"
+    },
+    {
+      "id": "state:DoorSignal.GOOD",
+      "kind": "state",
+      "label": "DoorSignal Good",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/Door.kt:63"
+    },
+    {
+      "id": "state:DoorSignal.STRONG",
+      "kind": "state",
+      "label": "DoorSignal Strong",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/Door.kt:64"
+    },
+    {
+      "id": "state:DoorSignal.WEAK",
+      "kind": "state",
+      "label": "DoorSignal Weak",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/model/Door.kt:61"
+    },
+    {
+      "id": "state:FitnessSyncStatus.HELD_BACK",
+      "kind": "state",
+      "label": "FitnessSyncStatus Held back",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/FitnessLogSync.kt:23"
+    },
+    {
+      "id": "state:FitnessSyncStatus.SAVED",
+      "kind": "state",
+      "label": "FitnessSyncStatus Saved",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/FitnessLogSync.kt:17"
+    },
+    {
+      "id": "state:FitnessSyncStatus.SIGNED_OUT",
+      "kind": "state",
+      "label": "FitnessSyncStatus Signed out",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/FitnessLogSync.kt:11"
+    },
+    {
+      "id": "state:FitnessSyncStatus.WAITING",
+      "kind": "state",
+      "label": "FitnessSyncStatus Waiting",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/FitnessLogSync.kt:14"
+    },
+    {
+      "id": "state:GpsSignal.GOOD",
+      "kind": "state",
+      "label": "GpsSignal Good",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/RunRecording.kt:66"
+    },
+    {
+      "id": "state:GpsSignal.LOST",
+      "kind": "state",
+      "label": "GpsSignal Lost",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/RunRecording.kt:69"
+    },
+    {
+      "id": "state:GpsSignal.SEARCHING",
+      "kind": "state",
+      "label": "GpsSignal Searching",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/RunRecording.kt:63"
+    },
+    {
+      "id": "state:HealthAccess.CHECKING",
+      "kind": "state",
+      "label": "HealthAccess Checking",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/HealthViewModel.kt:61"
+    },
+    {
+      "id": "state:HealthAccess.MISSING",
+      "kind": "state",
+      "label": "HealthAccess Missing",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/HealthViewModel.kt:55"
+    },
+    {
+      "id": "state:HealthAccess.OFF",
+      "kind": "state",
+      "label": "HealthAccess Off",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/HealthViewModel.kt:64"
+    },
+    {
+      "id": "state:HealthAccess.ON",
+      "kind": "state",
+      "label": "HealthAccess On",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/HealthViewModel.kt:66"
+    },
+    {
+      "id": "state:HealthAccess.UNSUPPORTED",
+      "kind": "state",
+      "label": "HealthAccess Unsupported",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/HealthViewModel.kt:52"
+    },
+    {
+      "id": "state:HeartSensorState.BluetoothOff",
+      "kind": "state",
+      "label": "HeartSensorState BluetoothOff",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HeartRateSensor.kt:31"
+    },
+    {
+      "id": "state:HeartSensorState.Connected",
+      "kind": "state",
+      "label": "HeartSensorState Connected",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HeartRateSensor.kt:45"
+    },
+    {
+      "id": "state:HeartSensorState.Connecting",
+      "kind": "state",
+      "label": "HeartSensorState Connecting",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HeartRateSensor.kt:39"
+    },
+    {
+      "id": "state:HeartSensorState.Lost",
+      "kind": "state",
+      "label": "HeartSensorState Lost",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HeartRateSensor.kt:48"
+    },
+    {
+      "id": "state:HeartSensorState.Off",
+      "kind": "state",
+      "label": "HeartSensorState Off",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HeartRateSensor.kt:26"
+    },
+    {
+      "id": "state:HeartSensorState.PermissionNeeded",
+      "kind": "state",
+      "label": "HeartSensorState PermissionNeeded",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HeartRateSensor.kt:29"
+    },
+    {
+      "id": "state:HeartSensorState.Scanning",
+      "kind": "state",
+      "label": "HeartSensorState Scanning",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HeartRateSensor.kt:37"
+    },
+    {
+      "id": "state:HeartSensorState.Searching",
+      "kind": "state",
+      "label": "HeartSensorState Searching",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HeartRateSensor.kt:34"
+    },
+    {
+      "id": "state:HeartSensorState.Unsupported",
+      "kind": "state",
+      "label": "HeartSensorState Unsupported",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HeartRateSensor.kt:23"
+    },
+    {
+      "id": "state:LocationAccess.ALWAYS",
+      "kind": "state",
+      "label": "LocationAccess Always",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/platform/GeofenceMonitor.kt:14"
+    },
+    {
+      "id": "state:LocationAccess.DENIED",
+      "kind": "state",
+      "label": "LocationAccess Denied",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/platform/GeofenceMonitor.kt:15"
+    },
+    {
+      "id": "state:LocationAccess.NOT_ASKED",
+      "kind": "state",
+      "label": "LocationAccess Not asked",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/platform/GeofenceMonitor.kt:10"
+    },
+    {
+      "id": "state:LocationAccess.UNAVAILABLE",
+      "kind": "state",
+      "label": "LocationAccess Unavailable",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/platform/GeofenceMonitor.kt:9"
+    },
+    {
+      "id": "state:LocationAccess.WHILE_IN_USE",
+      "kind": "state",
+      "label": "LocationAccess While in use",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/domain/platform/GeofenceMonitor.kt:13"
+    },
+    {
+      "id": "state:PackagesProblem.OTHER",
+      "kind": "state",
+      "label": "PackagesProblem Other",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:150"
+    },
+    {
+      "id": "state:PackagesProblem.RELAY_OUTDATED",
+      "kind": "state",
+      "label": "PackagesProblem Relay outdated",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:150"
+    },
+    {
+      "id": "state:PackagesProblem.SIGNED_OUT",
+      "kind": "state",
+      "label": "PackagesProblem Signed out",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:150"
+    },
+    {
+      "id": "state:PackagesProblem.UNREACHABLE",
+      "kind": "state",
+      "label": "PackagesProblem Unreachable",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:150"
+    },
+    {
+      "id": "state:ParcelProblem.ATTEMPTED",
+      "kind": "state",
+      "label": "ParcelProblem Attempted",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:26"
+    },
+    {
+      "id": "state:ParcelProblem.EXCEPTION",
+      "kind": "state",
+      "label": "ParcelProblem Exception",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/domain/PackageModels.kt:26"
+    },
+    {
+      "id": "state:RecorderProblem.LOCATION_REFUSED",
+      "kind": "state",
+      "label": "RecorderProblem Location refused",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/RunRecording.kt:370"
+    },
+    {
+      "id": "state:RouteAccess.ASK",
+      "kind": "state",
+      "label": "RouteAccess Ask",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HealthSource.kt:66"
+    },
+    {
+      "id": "state:RouteAccess.NONE",
+      "kind": "state",
+      "label": "RouteAccess None",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HealthSource.kt:63"
+    },
+    {
+      "id": "state:RouteAccess.READABLE",
+      "kind": "state",
+      "label": "RouteAccess Readable",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/domain/HealthSource.kt:68"
+    },
+    {
+      "id": "state:SheetProblem.API_DISABLED",
+      "kind": "state",
+      "label": "SheetProblem Api disabled",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:18"
+    },
+    {
+      "id": "state:SheetProblem.NOT_ALLOWED",
+      "kind": "state",
+      "label": "SheetProblem Not allowed",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:23"
+    },
+    {
+      "id": "state:SheetProblem.NOT_CONFIGURED",
+      "kind": "state",
+      "label": "SheetProblem Not configured",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:9"
+    },
+    {
+      "id": "state:SheetProblem.NOT_FOUND",
+      "kind": "state",
+      "label": "SheetProblem Not found",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:20"
+    },
+    {
+      "id": "state:SheetProblem.NOT_SHARED",
+      "kind": "state",
+      "label": "SheetProblem Not shared",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:15"
+    },
+    {
+      "id": "state:SheetProblem.NO_KEY",
+      "kind": "state",
+      "label": "SheetProblem No key",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:12"
+    },
+    {
+      "id": "state:SheetProblem.OTHER",
+      "kind": "state",
+      "label": "SheetProblem Other",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:31"
+    },
+    {
+      "id": "state:SheetProblem.RELAY_OUTDATED",
+      "kind": "state",
+      "label": "SheetProblem Relay outdated",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:26"
+    },
+    {
+      "id": "state:SheetProblem.SIGNED_OUT",
+      "kind": "state",
+      "label": "SheetProblem Signed out",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/FinanceRepository.kt:29"
+    },
+    {
+      "id": "state:Signal.CALM",
+      "kind": "state",
+      "label": "Signal Calm",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/Indicators.kt:180"
+    },
+    {
+      "id": "state:Signal.DANGER",
+      "kind": "state",
+      "label": "Signal Danger",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/Indicators.kt:182"
+    },
+    {
+      "id": "state:Signal.WATCH",
+      "kind": "state",
+      "label": "Signal Watch",
+      "source": "features/finance/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/domain/Indicators.kt:181"
+    },
+    {
+      "id": "tab:AtlasTab.DAYS",
+      "kind": "tab",
+      "label": "Atlas tab Days",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:118"
+    },
+    {
+      "id": "tab:AtlasTab.MAP",
+      "kind": "tab",
+      "label": "Atlas tab Map",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:117"
+    },
+    {
+      "id": "tab:AtlasTab.PATTERNS",
+      "kind": "tab",
+      "label": "Atlas tab Patterns",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:121"
+    },
+    {
+      "id": "tab:AtlasTab.PLACES",
+      "kind": "tab",
+      "label": "Atlas tab Places",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:119"
+    },
+    {
+      "id": "tab:AtlasTab.TRIPS",
+      "kind": "tab",
+      "label": "Atlas tab Trips",
+      "source": "features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt:120"
+    },
+    {
+      "id": "tab:ChargingTab.CHARGES",
+      "kind": "tab",
+      "label": "Charging tab Charges",
+      "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt:112"
+    },
+    {
+      "id": "tab:ChargingTab.OVERVIEW",
+      "kind": "tab",
+      "label": "Charging tab Overview",
+      "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt:111"
+    },
+    {
+      "id": "tab:ChargingTab.RATES",
+      "kind": "tab",
+      "label": "Charging tab Rates",
+      "source": "features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt:113"
+    },
+    {
+      "id": "tab:FinanceTab.BUDGET",
+      "kind": "tab",
+      "label": "Finance tab Budget",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceTab.kt:21"
+    },
+    {
+      "id": "tab:FinanceTab.ECONOMY",
+      "kind": "tab",
+      "label": "Finance tab Economy",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceTab.kt:23"
+    },
+    {
+      "id": "tab:FinanceTab.MARKETS",
+      "kind": "tab",
+      "label": "Finance tab Markets",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceTab.kt:22"
+    },
+    {
+      "id": "tab:FinanceTab.RISK",
+      "kind": "tab",
+      "label": "Finance tab Risk",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceTab.kt:24"
+    },
+    {
+      "id": "tab:FinanceTab.WALLET",
+      "kind": "tab",
+      "label": "Finance tab Wallet",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/finance/ui/FinanceTab.kt:20"
+    },
+    {
+      "id": "tab:FitnessTab.HISTORY",
+      "kind": "tab",
+      "label": "Fitness tab History",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:158"
+    },
+    {
+      "id": "tab:FitnessTab.LIFTS",
+      "kind": "tab",
+      "label": "Fitness tab Lifts",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:157"
+    },
+    {
+      "id": "tab:FitnessTab.PROGRESS",
+      "kind": "tab",
+      "label": "Fitness tab Progress",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:159"
+    },
+    {
+      "id": "tab:FitnessTab.TODAY",
+      "kind": "tab",
+      "label": "Fitness tab Today",
+      "source": "features/fitness/src/commonMain/kotlin/com/meticulouscreations/homesafe/fitness/ui/FitnessApp.kt:156"
+    },
+    {
+      "id": "tab:PackagesTab.ALL",
+      "kind": "tab",
+      "label": "Packages tab All",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:120"
+    },
+    {
+      "id": "tab:PackagesTab.INSIGHTS",
+      "kind": "tab",
+      "label": "Packages tab Insights",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:122"
+    },
+    {
+      "id": "tab:PackagesTab.RETURNS",
+      "kind": "tab",
+      "label": "Packages tab Returns",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:121"
+    },
+    {
+      "id": "tab:PackagesTab.TODAY",
+      "kind": "tab",
+      "label": "Packages tab Today",
+      "source": "features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt:119"
+    },
+    {
+      "id": "tab:TopLevelRoute.Home",
+      "kind": "tab",
+      "label": "Shell tab Home",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/TopLevelRoute.kt:20"
+    },
+    {
+      "id": "tab:TopLevelRoute.Moments",
+      "kind": "tab",
+      "label": "Shell tab Moments",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/TopLevelRoute.kt:25"
+    },
+    {
+      "id": "tab:TopLevelRoute.Settings",
+      "kind": "tab",
+      "label": "Shell tab Settings",
+      "source": "shared/src/commonMain/kotlin/com/meticulouscreations/homesafe/navigation/TopLevelRoute.kt:30"
+    },
+    {
+      "id": "tab:WeatherTab.FORECAST",
+      "kind": "tab",
+      "label": "Weather tab Forecast",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:183"
+    },
+    {
+      "id": "tab:WeatherTab.RADAR",
+      "kind": "tab",
+      "label": "Weather tab Radar",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:184"
+    },
+    {
+      "id": "tab:WeatherTab.SKI",
+      "kind": "tab",
+      "label": "Weather tab Ski",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:185"
+    },
+    {
+      "id": "tab:WeatherTab.TODAY",
+      "kind": "tab",
+      "label": "Weather tab Today",
+      "source": "features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt:182"
+    }
+  ],
+  "stats": {
+    "items_per_kind": {
+      "app": 6,
+      "deeplink": 11,
+      "modal": 22,
+      "overlay": 13,
+      "page": 72,
+      "screen": 79,
+      "state": 90,
+      "tab": 28
+    },
+    "test_tags_per_feature": {
+      "app": 14,
+      "atlas": 41,
+      "car3d": 0,
+      "charging": 37,
+      "finance": 70,
+      "fitness": 167,
+      "packages": 28,
+      "shared": 40,
+      "weather": 80
+    }
+  }
+}

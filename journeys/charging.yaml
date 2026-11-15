@@ -4,6 +4,10 @@ nodes:
   charging_unreachable:
     title: Charging, unreachable
     group: charging
+    sources: ["features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt"]
+    params:
+      state:
+        unreachable: {observe: {text_contains: "Couldn't reach the server"}}
     requires: "relay == 'off'"
     match:
       all: [{id: charging_app}, {id: charging_retry}]
@@ -13,6 +17,18 @@ nodes:
   charging_home:
     title: Charging, Overview
     group: charging
+    covers: ["tab:ChargingTab.OVERVIEW", "screen:OverviewScreen", "overlay:ChargingApp.ChargingAppContent"]
+    sources: ["features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/OverviewScreen.kt"]
+    params:
+      state:
+        with_charges: {observe: {id: charging_hero}}
+        no_charges_yet: {observe: {text: "No charges yet"}}
+      live:
+        none: {}
+        charging_now: {observe: {id: charging_live_car_a}}
+      setup:
+        complete: {}
+        still_to_set_up: {observe: {id: charging_setup}}
     requires: "relay == 'on'"
     match:
       all: [{id: charging_overview}]
@@ -22,6 +38,12 @@ nodes:
   charging_charges:
     title: Charging, Charges
     group: charging
+    covers: ["tab:ChargingTab.CHARGES", "screen:ChargesScreen"]
+    sources: ["features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargesScreen.kt"]
+    params:
+      state:
+        with_charges: {observe: {id: charging_charge_100}}
+        no_charges: {observe: {id: charging_filter_all}}
     requires: "relay == 'on'"
     match:
       all: [{id: charging_charges}]
@@ -31,6 +53,12 @@ nodes:
   charging_rates:
     title: Charging, Rates
     group: charging
+    covers: ["tab:ChargingTab.RATES", "screen:RatesScreen"]
+    sources: ["features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/RatesScreen.kt"]
+    params:
+      state:
+        with_plans: {observe: {id: charging_plan_flat_demo}}
+        no_rates_on_server: {observe: {text_contains: "rates aren't on the server yet"}}
     requires: "relay == 'on'"
     match:
       all: [{id: charging_rates}]
@@ -40,6 +68,8 @@ nodes:
   charging_car:
     title: Charging, one car
     group: charging
+    covers: ["page:ChargingPage.Car", "screen:CarScreen"]
+    sources: ["features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/CarScreen.kt"]
     requires: "relay == 'on'"
     match:
       all: [{id: charging_car_page}]
@@ -49,12 +79,52 @@ nodes:
   charging_charge:
     title: Charging, one charge
     group: charging
+    covers: ["page:ChargingPage.Charge", "screen:ChargeScreen"]
+    sources: ["features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargeScreen.kt"]
+    params:
+      state:
+        loaded: {observe: {id: charging_charge_page}}
+        loading_or_gone: {observe: {text: "That charge is no longer on the server. Refresh the list and try again."}}
+      cost_source:
+        editable: {observe: {id: charging_charge_note_field}}
+        from_receipt: {}
     requires: "relay == 'on'"
     match:
       all: [{id: charging_charge_page}]
     checks:
       - present: {id: charging_charge_cost}
       - present: {text: "Energy"}
+  # Not yet tried on a device.
+  charging_waiting:
+    title: Charging, asking the server
+    group: charging
+    kind: screen
+    pending: "needs fixture data"
+    match:
+      all: [{id: charging_app}]
+      none: [{id: charging_retry}]
+      any:
+        - {text: "Asking the server…"}
+        - {text: "Sign in to the server to see what the cars cost to charge."}
+        - {text_contains: "The relay on the server is older"}
+        - {text_contains: "The relay answered"}
+    sources: ["features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt"]
+    params:
+      problem:
+        loading: {observe: {text: "Asking the server…"}}
+        signed_out: {observe: {text: "Sign in to the server to see what the cars cost to charge."}}
+        relay_outdated: {observe: {text_contains: "The relay on the server is older"}}
+  charging_error_banner:
+    title: Charging, refresh failed over the page
+    group: charging
+    kind: modal
+    pending: "needs fixture data"
+    match:
+      all: [{id: charging_error}]
+    params:
+      state:
+        retryable: {observe: {id: charging_error_retry}}
+    sources: ["features/charging/src/commonMain/kotlin/com/meticulouscreations/homesafe/charging/ui/ChargingApp.kt"]
 edges:
   - {id: charging_unreachable.back, from: charging_unreachable, to: home, do: [back]}
   - {id: charging_unreachable.retry, from: charging_unreachable, to: "=", do: [{tap: {id: charging_retry}}]}
@@ -67,3 +137,13 @@ edges:
   - {id: charging_charges.open_charge, from: charging_charges, to: charging_charge, do: [{tap: {id: charging_charge_100}}]}
   - {id: charging_car.back, from: charging_car, to: charging_home, do: [back]}
   - {id: charging_charge.back, from: charging_charge, to: charging_charges, do: [back]}
+  # Not yet tried on a device.
+  - {id: charging_other_tabs.close, from: [charging_charges, charging_rates], to: home, count: once, do: [back], pending: "not yet verified on a device"}
+  - {id: charging_home.open_charge_live, from: charging_home, to: charging_charge, do: [{tap: {id: charging_live_car_a}}], pending: "needs fixture data"}
+  - {id: charging_home.open_rates, from: charging_home, to: charging_rates, do: [{tap: {id: charging_home_card}}], pending: "not yet verified on a device"}
+  - {id: charging_car.see_charges, from: charging_car, to: charging_charges, do: [{tap: {id: charging_car_see_charges}}], pending: "not yet verified on a device"}
+  - {id: charging_tabs.refresh, from: [charging_home, charging_charges, charging_rates], to: "=", count: once, do: [{tap: {id: charging_refresh}}], pending: "not yet verified on a device"}
+  - {id: charging_waiting.back, from: charging_waiting, to: home, do: [back], pending: "needs fixture data"}
+  - {id: charging_page.error_banner, from: [charging_home, charging_charges, charging_rates, charging_car, charging_charge], to: charging_error_banner, count: once, pending: "needs fixture data"}
+  - {id: charging_error_banner.retry, from: charging_error_banner, to: "=", do: [{tap: {id: charging_error_retry}}], pending: "needs fixture data"}
+  - {id: home.open_car_from_notification, from: home, to: charging_charges, pending: "needs a notification or deep link"}

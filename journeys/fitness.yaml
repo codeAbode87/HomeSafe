@@ -7,6 +7,19 @@ nodes:
   fitness_today:
     title: Fitness, Today
     group: fitness
+    covers: ["tab:FitnessTab.TODAY", "screen:TodayScreen", "state:HealthAccess.UNSUPPORTED", "state:HealthAccess.MISSING", "state:HealthAccess.CHECKING", "state:HealthAccess.OFF", "state:HealthAccess.ON"]
+    sources: ["features/fitness/src/commonMain/**/ui/TodayScreen.kt", "features/fitness/src/commonMain/**/ui/BodyUi.kt", "features/fitness/src/commonMain/**/ui/FitnessApp.kt"]
+    params:
+      state:
+        empty: {observe: {id: fitness_today_empty}}
+        workout_open: {observe: {id: fitness_today_resume}}
+        idle: {observe: {id: fitness_day_chest}}
+      health:
+        unsupported: {}
+        missing: {observe: {text: "Get Health Connect"}}
+        checking: {observe: {text: "Reading Health Connect…"}}
+        off: {observe: {text: "Connect Health Connect"}}
+        on: {observe: {id: fitness_body_readiness}}
     match:
       all: [{id: fitness_app}, {id: fitness_today}]
     checks:
@@ -16,6 +29,12 @@ nodes:
   fitness_lifts_empty:
     title: Fitness, Lifts (no exercises)
     group: fitness
+    covers: ["tab:FitnessTab.LIFTS", "screen:LiftsScreen"]
+    sources: ["features/fitness/src/commonMain/**/ui/LiftsScreen.kt"]
+    params:
+      sync:
+        held_back: {observe: {id: fitness_lifts_sync_held_back}}
+        quiet: {}
     match:
       all: [{id: fitness_lifts}, {text_contains: "No exercises yet"}]
       none: [{id: fitness_add_exercise_name}]
@@ -25,6 +44,8 @@ nodes:
   fitness_lifts_adding:
     title: Fitness, Lifts (new exercise form)
     group: fitness
+    covers: ["screen:LiftsScreen"]
+    sources: ["features/fitness/src/commonMain/**/ui/LiftsScreen.kt"]
     match:
       all: [{id: fitness_lifts}, {id: fitness_add_exercise_name}]
     checks:
@@ -32,6 +53,14 @@ nodes:
   fitness_lifts_list:
     title: Fitness, Lifts (with exercises)
     group: fitness
+    covers: ["screen:LiftsScreen", "state:FitnessSyncStatus.SAVED", "state:FitnessSyncStatus.WAITING", "state:FitnessSyncStatus.SIGNED_OUT", "state:FitnessSyncStatus.HELD_BACK"]
+    sources: ["features/fitness/src/commonMain/**/ui/LiftsScreen.kt", "features/fitness/src/commonMain/**/domain/FitnessLogSync.kt"]
+    params:
+      sync:
+        saved: {observe: {text_contains: "Saved to your server"}}
+        waiting: {observe: {text_contains: "goes to your server as soon as"}}
+        signed_out: {observe: {text_contains: "Saved on this device only"}}
+        held_back: {observe: {id: fitness_lifts_sync_held_back}}
     match:
       all: [{id: fitness_lifts}, {id: fitness_lifts_sync_status}]
       none: [{id: fitness_add_exercise_name}]
@@ -41,6 +70,13 @@ nodes:
   fitness_history:
     title: Fitness, History
     group: fitness
+    covers: ["tab:FitnessTab.HISTORY", "screen:HistoryScreen"]
+    sources: ["features/fitness/src/commonMain/**/ui/HistoryScreen.kt"]
+    params:
+      state:
+        empty: {observe: {text: "Finish a workout and it lands here, on the day it was done."}}
+        empty_month: {observe: {text: "Nothing logged this month."}}
+        sessions: {}
     match:
       all: [{id: fitness_history}]
     checks:
@@ -49,6 +85,12 @@ nodes:
   fitness_progress:
     title: Fitness, Progress
     group: fitness
+    covers: ["tab:FitnessTab.PROGRESS", "screen:ProgressScreen"]
+    sources: ["features/fitness/src/commonMain/**/ui/ProgressScreen.kt"]
+    params:
+      heart_door:
+        shown: {observe: {id: fitness_progress_heart}}
+        hidden: {}
     match:
       all: [{id: fitness_progress}]
     checks:
@@ -57,6 +99,12 @@ nodes:
   fitness_lift:
     title: Fitness, an exercise
     group: fitness
+    covers: ["page:FitnessPage.Lift", "screen:ExerciseScreen"]
+    sources: ["features/fitness/src/commonMain/**/ui/LiftsScreen.kt", "features/fitness/src/commonMain/**/ui/SetLogger.kt"]
+    params:
+      state:
+        untrained: {observe: {text: "Nothing yet"}}
+        trained: {}
     match:
       all: [{id: fitness_exercise}]
     checks:
@@ -65,6 +113,12 @@ nodes:
   fitness_edit:
     title: Fitness, edit an exercise
     group: fitness
+    covers: ["page:FitnessPage.Edit", "screen:EditExerciseScreen"]
+    sources: ["features/fitness/src/commonMain/**/ui/LiftsScreen.kt"]
+    params:
+      delete:
+        idle: {observe: {text: "Delete exercise and its sets"}}
+        confirming: {observe: {text: "Tap again to delete for good"}}
     match:
       all: [{id: fitness_edit}]
     checks:
@@ -72,6 +126,20 @@ nodes:
   fitness_heart:
     title: Fitness, Heart rate
     group: fitness
+    covers: ["page:FitnessPage.Heart", "screen:HeartScreen", "state:HeartSensorState.Unsupported", "state:HeartSensorState.Off", "state:HeartSensorState.PermissionNeeded", "state:HeartSensorState.BluetoothOff", "state:HeartSensorState.Searching", "state:HeartSensorState.Scanning", "state:HeartSensorState.Connecting", "state:HeartSensorState.Connected", "state:HeartSensorState.Lost"]
+    sources: ["features/fitness/src/commonMain/**/ui/HeartScreen.kt", "features/fitness/src/commonMain/**/ui/HeartRateUi.kt", "features/fitness/src/commonMain/**/domain/HeartRateSensor.kt"]
+    params:
+      sensor:
+        unsupported: {observe: {id: fitness_heart_sensor_status, text: "Heart rate isn't available on this device."}}
+        off: {observe: {id: fitness_heart_sensor_status, text: "Not connected"}}
+        permission_needed: {observe: {id: fitness_heart_sensor_status, text: "Bluetooth isn't allowed yet"}}
+        bluetooth_off: {observe: {id: fitness_heart_sensor_status, text: "Bluetooth is off"}}
+        searching: {observe: {id: fitness_heart_sensor_status, text: "Looking for sensors…"}}
+      link:
+        idle: {}
+        scanning_or_connecting: {observe: {id: fitness_heart_sensor_status, text_contains: "Connecting to"}}
+        connected: {observe: {id: fitness_heart_sensor_status, text_contains: "Connected"}}
+        lost: {observe: {id: fitness_heart_sensor_status, text_contains: "Trying again"}}
     match:
       all: [{id: fitness_heart_page}]
     checks:
@@ -80,6 +148,17 @@ nodes:
   fitness_runs:
     title: Fitness, Runs
     group: fitness
+    covers: ["page:FitnessPage.Runs", "screen:RunsScreen", "state:RecorderProblem.LOCATION_REFUSED"]
+    sources: ["features/fitness/src/commonMain/**/ui/RunsUi.kt", "features/fitness/src/commonMain/**/ui/RecordingUi.kt"]
+    params:
+      runs:
+        empty: {observe: {id: fitness_runs_empty}}
+        unshared: {observe: {id: fitness_runs_unshared}}
+        listed: {}
+      recorder:
+        ready: {observe: {id: fitness_run_start}}
+        location_refused: {observe: {id: fitness_run_location_refused}}
+        recording: {observe: {id: fitness_run_recording}}
     match:
       all: [{id: fitness_runs}]
     checks:
@@ -88,6 +167,18 @@ nodes:
   fitness_workout:
     title: Fitness, workout in progress
     group: fitness
+    covers: ["page:FitnessPage.Workout", "screen:WorkoutScreen"]
+    sources: ["features/fitness/src/commonMain/**/ui/WorkoutScreen.kt", "features/fitness/src/commonMain/**/ui/SetLogger.kt"]
+    params:
+      sets:
+        none_logged: {observe: {id: fitness_workout_finish, text: "Cancel workout"}}
+        logged: {observe: {id: fitness_workout_cancel}}
+      rest:
+        resting: {observe: {id: fitness_rest}}
+        none: {}
+      heart:
+        wanted: {observe: {id: fitness_heart_notice}}
+        door: {observe: {id: fitness_heart_open}}
     match:
       all: [{id: fitness_workout}]
     checks:
@@ -96,10 +187,116 @@ nodes:
   fitness_import:
     title: Fitness, Bring in notes
     group: fitness
+    covers: ["page:FitnessPage.Import", "screen:ImportScreen"]
+    sources: ["features/fitness/src/commonMain/**/ui/ImportScreen.kt"]
+    params:
+      mode:
+        notes: {observe: {id: fitness_import_text}}
+        log_copy: {observe: {id: fitness_import_copy}}
+        copy_unreadable: {observe: {id: fitness_import_copy_unreadable}}
+      result:
+        reading: {}
+        preview: {observe: {id: fitness_import_preview}}
+        done: {observe: {id: fitness_import_done}}
     match:
       all: [{id: fitness_import}]
     checks:
       - present: {id: fitness_import_text}
+
+  # --- Pages that only exist once there is data, or a device capability ---------------------------------------------
+  fitness_session:
+    title: Fitness, a past workout
+    group: fitness
+    kind: screen
+    pending: "not yet verified on a device"
+    covers: ["page:FitnessPage.Session", "screen:SessionScreen"]
+    sources: ["features/fitness/src/commonMain/**/ui/HistoryScreen.kt"]
+    match:
+      all: [{id: fitness_session}]
+    checks:
+      - present: {id: fitness_session_stats}
+      - present: {id: fitness_session_delete}
+    params:
+      kind:
+        workout: {observe: {text: "Delete workout"}}
+        loose_sets: {observe: {text: "Delete these sets"}}
+      delete:
+        idle: {}
+        confirming: {observe: {text: "Tap again to delete for good"}}
+      heart:
+        summary: {observe: {id: fitness_session_heart}}
+        none: {}
+  fitness_run:
+    title: Fitness, a run
+    group: fitness
+    kind: screen
+    pending: "needs fixture data"
+    covers: ["page:FitnessPage.Run", "screen:RunScreen", "state:RouteAccess.NONE", "state:RouteAccess.ASK", "state:RouteAccess.READABLE"]
+    sources: ["features/fitness/src/commonMain/**/ui/RunsUi.kt"]
+    match:
+      all: [{id: fitness_run}]
+    checks:
+      - present: {id: fitness_run_stats}
+    params:
+      detail:
+        reading: {observe: {id: fitness_run_reading}}
+        loaded: {}
+      route:
+        none: {}
+        ask: {observe: {id: fitness_run_route_ask}}
+        readable: {observe: {id: fitness_run_route}}
+      origin:
+        from_store: {}
+        recorded_here: {observe: {id: fitness_run_delete}}
+        not_counted: {observe: {id: fitness_run_not_counted}}
+  fitness_recording:
+    title: Fitness, recording a run
+    group: fitness
+    kind: screen
+    pending: "needs a device capability"
+    covers: ["page:FitnessPage.Recording", "screen:RecordingScreen", "state:GpsSignal.SEARCHING", "state:GpsSignal.GOOD", "state:GpsSignal.LOST"]
+    sources: ["features/fitness/src/commonMain/**/ui/RecordingUi.kt"]
+    match:
+      all: [{id: fitness_recording}]
+    checks:
+      - present: {id: fitness_recording_time}
+      - present: {id: fitness_recording_finish}
+    params:
+      signal:
+        searching: {observe: {id: fitness_recording_signal, text: "Finding GPS…"}}
+        good: {observe: {id: fitness_recording_signal, text: "Recording"}}
+        lost: {observe: {id: fitness_recording_signal, text_contains: "GPS lost"}}
+        paused: {observe: {id: fitness_recording_signal, text: "Run paused"}}
+      route:
+        drawn: {observe: {id: fitness_recording_route}}
+        none_yet: {}
+      discard:
+        hidden: {observe: {id: fitness_recording_pause}}
+        idle: {observe: {id: fitness_recording_discard, text: "Throw this run away"}}
+        confirming: {observe: {text: "Tap again to throw it away"}}
+  fitness_record_celebration:
+    title: Fitness, record banner
+    group: fitness
+    kind: modal
+    pending: "not yet verified on a device"
+    covers: ["overlay:FitnessApp.FitnessAppContent"]
+    sources: ["features/fitness/src/commonMain/**/ui/FitnessApp.kt", "features/fitness/src/commonMain/**/ui/shader/FitnessShaders.kt"]
+    match:
+      all: [{id: fitness_record_banner}]
+    params:
+      scope:
+        all_time: {}
+        phase_best: {}
+  fitness_health_rationale:
+    title: Fitness, what Health Connect is read for
+    group: fitness
+    kind: screen
+    pending: "needs a notification or deep link"
+    sources: ["features/fitness/src/commonMain/**/ui/BodyUi.kt"]
+    match:
+      all: [{id: fitness_health_rationale}]
+    checks:
+      - present: {id: fitness_health_rationale_done}
 
 edges:
   - {id: fitness.close, from: fitness_today, to: home, do: [back]}
@@ -130,3 +327,59 @@ edges:
   - {id: fitness_today.start_workout, from: fitness_today, to: fitness_workout, when: "lift", do: [{tap: {id: fitness_day_chest}}]}
   - {id: fitness_lift.open_edit, from: fitness_lift, to: fitness_edit, do: [{tap: {id: fitness_exercise_edit}}]}
   - {id: fitness_edit.back, from: fitness_edit, to: fitness_lift, do: [back]}
+
+  # --- Declared from the source, not yet tried (every one pending) --------------------------------------------------
+  # Back out of the pushed pages.
+  - {id: fitness_workout.back, from: fitness_workout, to: fitness_today, do: [back], pending: "not yet verified on a device"}
+  - {id: fitness_session.back, from: fitness_session, to: fitness_history, do: [back], pending: "not yet verified on a device"}
+  - {id: fitness_run.back, from: fitness_run, to: fitness_runs, do: [back], pending: "needs fixture data"}
+  - {id: fitness_recording.back, from: fitness_recording, to: fitness_runs, do: [back], pending: "needs a device capability"}
+  # The top bar's Back is the same control on every page; on a tab it closes the app (fitness.close).
+  - {id: fitness.page_back_arrow, from: [fitness_lift, fitness_edit, fitness_import, fitness_heart, fitness_runs, fitness_workout, fitness_session, fitness_run, fitness_recording], to: fitness_today, count: once, do: [{tap: {id: fitness_back}}], pending: "not yet verified on a device"}
+  # In a wide window the tabs are listed in the shell's sidebar, and one of them closes any open page.
+  - {id: fitness.sidebar_tab, from: [fitness_lift, fitness_edit, fitness_import, fitness_heart, fitness_runs, fitness_workout, fitness_session, fitness_run, fitness_recording], to: fitness_today, count: once, pending: "needs a wide window"}
+  # Today.
+  - {id: fitness_today.phase_pill, from: fitness_today, to: fitness_progress, do: [{tap: {id: fitness_phase_pill}}], pending: "not yet verified on a device"}
+  - {id: fitness_today.add_exercise, from: fitness_today, to: fitness_lifts_empty, when: "not lift", pending: "not yet verified on a device"}
+  - {id: fitness_today.resume_workout, from: fitness_today, to: fitness_workout, when: "lift", do: [{tap: {id: fitness_today_resume}}], pending: "not yet verified on a device"}
+  - {id: fitness_today.open_record_exercise, from: fitness_today, to: fitness_lift, pending: "needs fixture data"}
+  - {id: fitness_today.open_recording, from: fitness_today, to: fitness_recording, do: [{swipe: up}, {wait_ms: 800}, {tap: {id: fitness_runs_door}}], pending: "needs a device capability"}
+  - {id: fitness_today.workout_asked, from: fitness_today, to: fitness_workout, pending: "needs a notification or deep link"}
+  - {id: fitness_today.shared_notes, from: fitness_today, to: fitness_import, pending: "needs a notification or deep link"}
+  - {id: fitness_today.health_connect_rationale, from: fitness_today, to: fitness_health_rationale, pending: "needs a notification or deep link"}
+  - {id: fitness_health_rationale.done, from: fitness_health_rationale, to: fitness_today, do: [{tap: {id: fitness_health_rationale_done}}], pending: "needs a notification or deep link"}
+  # Lifts.
+  - {id: fitness_lifts.open_import, from: [fitness_lifts_empty, fitness_lifts_list], to: fitness_import, do: [{tap: {id: fitness_lifts_import}}], pending: "not yet verified on a device"}
+  - {id: fitness_lifts_adding.close_form, from: fitness_lifts_adding, to: fitness_lifts_empty, when: "not lift", pending: "not yet verified on a device"}
+  # An exercise.
+  - {id: fitness_edit.save, from: fitness_edit, to: fitness_lift, do: [{tap: {id: fitness_edit_save}}], pending: "not yet verified on a device"}
+  - {id: fitness_edit.delete, from: fitness_edit, to: fitness_lifts_empty, do: [{tap: {id: fitness_edit_delete}}, {tap: {id: fitness_edit_delete}}], pending: "not yet verified on a device"}
+  - {id: fitness_lift.log_record, from: fitness_lift, to: fitness_record_celebration, do: [{tap: {id: fitness_logger_log}}], pending: "not yet verified on a device"}
+  - {id: fitness_record_celebration.dismiss_lift, from: fitness_record_celebration, to: fitness_lift, do: [{tap: {id: fitness_record_banner}}], pending: "not yet verified on a device"}
+  - {id: fitness_record_celebration.dismiss_workout, from: fitness_record_celebration, to: fitness_workout, do: [{tap: {id: fitness_record_banner}}], pending: "not yet verified on a device"}
+  # The workout.
+  - {id: fitness_workout.finish, from: fitness_workout, to: fitness_today, do: [{tap: {id: fitness_workout_finish}}], pending: "not yet verified on a device"}
+  - {id: fitness_workout.cancel, from: fitness_workout, to: fitness_today, do: [{tap: {id: fitness_workout_cancel}}, {tap: {id: fitness_workout_cancel}}], pending: "not yet verified on a device"}
+  - {id: fitness_workout.open_exercise, from: fitness_workout, to: fitness_lift, pending: "not yet verified on a device"}
+  - {id: fitness_workout.edit_exercise, from: fitness_workout, to: fitness_edit, pending: "not yet verified on a device"}
+  - {id: fitness_workout.open_heart, from: fitness_workout, to: fitness_heart, do: [{tap: {id: fitness_heart_open}}], pending: "not yet verified on a device"}
+  - {id: fitness_workout.log_record, from: fitness_workout, to: fitness_record_celebration, pending: "not yet verified on a device"}
+  # History.
+  - {id: fitness_history.open_session, from: fitness_history, to: fitness_session, pending: "not yet verified on a device"}
+  - {id: fitness_history.open_workout, from: fitness_history, to: fitness_workout, when: "lift", pending: "not yet verified on a device"}
+  - {id: fitness_session.open_exercise, from: fitness_session, to: fitness_lift, pending: "not yet verified on a device"}
+  - {id: fitness_session.delete, from: fitness_session, to: fitness_history, do: [{tap: {id: fitness_session_delete}}, {tap: {id: fitness_session_delete}}], pending: "not yet verified on a device"}
+  # Progress.
+  - {id: fitness_progress.open_heart, from: fitness_progress, to: fitness_heart, do: [{tap: {id: fitness_progress_heart}}], pending: "not yet verified on a device"}
+  - {id: fitness_progress.open_exercise, from: fitness_progress, to: fitness_lift, pending: "not yet verified on a device"}
+  # Runs.
+  - {id: fitness_runs.open_run, from: fitness_runs, to: fitness_run, pending: "needs fixture data"}
+  - {id: fitness_runs.start_run, from: fitness_runs, to: fitness_recording, do: [{tap: {id: fitness_run_start}}], pending: "needs a device capability"}
+  - {id: fitness_runs.open_recording, from: fitness_runs, to: fitness_recording, do: [{tap: {id: fitness_run_recording}}], pending: "needs a device capability"}
+  - {id: fitness_run.open_heart, from: fitness_run, to: fitness_heart, do: [{tap: {id: fitness_run_open_heart}}], pending: "needs fixture data"}
+  - {id: fitness_run.delete, from: fitness_run, to: fitness_runs, do: [{tap: {id: fitness_run_delete}}, {tap: {id: fitness_run_delete}}], pending: "needs a device capability"}
+  - {id: fitness_recording.finish, from: fitness_recording, to: fitness_runs, do: [{tap: {id: fitness_recording_finish}}], pending: "needs a device capability"}
+  - {id: fitness_recording.discard, from: fitness_recording, to: fitness_runs, do: [{tap: {id: fitness_recording_pause}}, {tap: {id: fitness_recording_discard}}, {tap: {id: fitness_recording_discard}}], pending: "needs a device capability"}
+  # Import.
+  - {id: fitness_import.done, from: fitness_import, to: fitness_today, do: [{tap: {id: fitness_import_done_button}}], pending: "not yet verified on a device"}
+  - {id: fitness_import.cancel_copy, from: fitness_import, to: fitness_today, do: [{tap: {id: fitness_import_copy_cancel}}], pending: "needs a notification or deep link"}

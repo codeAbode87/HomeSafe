@@ -1,8 +1,27 @@
 nodes:
+  # ---- Tabs (verified on a device) ----
   home:
     title: Home
     match:
       all: [{id: home_feed}]
+    covers: ["tab:TopLevelRoute.Home", "page:route.AppShellRoute", "page:route.CameraListRoute", "state:ConnectionProblem.TailscaleOff", "state:ConnectionProblem.ServerUnreachable", "deeplink:ShellCommand.Go"]
+    params:
+      layout:
+        pill: {}
+        rail: {observe: {id: nav_rail}}
+        sidebar: {observe: {id: shell_sidebar}}
+      feed:
+        content: {when: "data == 'household' or data == 'quiet'", observe: {text: "Back Yard"}}
+        loading: {}
+        empty: {observe: {text: "No cameras found on this server."}}
+        all_hidden: {observe: {text_contains: "Every camera here is hidden"}}
+      connection:
+        ok: {}
+        tailscale_off: {observe: {text: "Tailscale isn't connected on this device"}}
+        unreachable: {observe: {text: "Can't reach the server"}}
+      presence:
+        someone_home: {}
+        everyone_away: {observe: {text: "Away mode · nobody home · alerts escalated"}}
     checks:
       - present: {id: shell_menu}
       - present: {id: bottom_nav_home}
@@ -12,10 +31,12 @@ nodes:
     title: Moments
     match:
       all: [{text: "All events"}, {id: bottom_nav_moments}]
+    covers: ["tab:TopLevelRoute.Moments"]
     params:
       feed:
         content: {when: "data == 'household'", observe: {text: "That's everything the server still has."}}
         empty: {when: "data == 'quiet'", observe: {text_contains: "Nothing to show yet"}}
+        error: {observe: {text: "Couldn't reach the server for detections."}}
     checks:
       - present: {text: "All cameras"}
       - present: {id: shell_menu}
@@ -25,66 +46,166 @@ nodes:
     title: Settings
     match:
       all: [{id: settings_maps}]
+    covers: ["tab:TopLevelRoute.Settings", "page:route.SettingsHomeRoute"]
+    params:
+      server_summary:
+        healthy: {observe: {text_contains: "healthy"}}
+        unreachable: {observe: {text_contains: "can't reach the server"}}
+        checking: {observe: {text_contains: "checking…"}}
     # The Household Cars row is hidden under data=quiet (no classifier yet), but nothing on screen marks its absence, so it is no parameter.
     checks:
       - present: {id: settings_finance_drawer}
       - present: {id: shell_menu}
     weight: 3
+    sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt", "shared/src/commonMain/kotlin/**/SettingsTabNav.kt"]
+  # ---- Settings pages (verified on a device) ----
   notifications:
     title: Notifications
     group: shell
     match:
       all: [{text: "What every app tells this phone"}]
+    covers: ["screen:NotificationsSettingsScreen", "page:route.NotificationsRoute"]
+    params:
+      finance_alerts:
+        none: {}
+        loading: {observe: {text: "Reading the budget's alerts…"}}
+        failed: {}
+        ready: {observe: {text: "The month's limit"}}
+      permission:
+        granted: {}
+        blocked: {observe: {text: "Blocked in system settings. Allow notifications for HomeSafe to turn this on."}}
+    sources: ["shared/src/commonMain/kotlin/**/NotificationsSettingsScreen.kt", "shared/src/commonMain/kotlin/**/AlertRulesSection.kt"]
   away:
     title: Away mode
     group: shell
     match:
       all: [{text: "Who's home, by the two phones"}]
+    covers: ["screen:AwaySettingsScreen", "page:route.AwayRoute", "state:LocationAccess.ALWAYS", "state:LocationAccess.WHILE_IN_USE", "state:LocationAccess.DENIED", "state:LocationAccess.NOT_ASKED", "state:LocationAccess.UNAVAILABLE"]
+    params:
+      access:
+        always: {}
+        while_in_use: {observe: {text: "Allow location always"}}
+        denied: {observe: {text: "Allow location in system settings"}}
+        not_asked: {observe: {text: "Allow location"}}
+        unavailable: {observe: {text_contains: "Not available on this platform"}}
+      presence:
+        checking: {observe: {text: "Checking with the relay…"}}
+        relay_unreachable: {observe: {text_contains: "push relay on the Frigate box can't be reached"}}
+        tracked: {observe: {text_contains: "This phone counts as"}}
+        not_tracked: {}
+    sources: ["shared/src/commonMain/kotlin/**/AwaySettingsScreen.kt", "shared/src/commonMain/kotlin/**/SettingsScreen.kt"]
   doors:
     title: Doors
     group: shell
     match:
       all: [{text: "Door sensors and their alerts"}]
+    covers: ["screen:DoorsScreen", "page:route.DoorsRoute", "state:DoorSignal.WEAK", "state:DoorSignal.FAIR", "state:DoorSignal.GOOD", "state:DoorSignal.STRONG"]
+    params:
+      state:
+        unsupported: {observe: {text_contains: "doesn't know about door sensors"}}
+        not_listening: {observe: {text_contains: "can't hear the door sensors"}}
+        none: {observe: {text: "No door sensors yet"}}
+        doors: {observe: {text: "Last 7 days"}}
+      plan:
+        no_plan: {}
+        floor_plan: {observe: {id: doors_plan}}
+    sources: ["shared/src/commonMain/kotlin/**/DoorsScreen.kt", "shared/src/commonMain/kotlin/**/DoorsPairing.kt", "shared/src/commonMain/kotlin/**/DoorsFloorPlan.kt"]
   faces:
     title: Faces
     group: shell
     match:
       all: [{text: "Teach Frigate who's who"}]
+    covers: ["screen:FaceLibraryScreen", "page:route.FacesRoute"]
+    params:
+      people:
+        listed: {when: "data == 'household'", observe: {text_contains: "Alice"}}
+        none: {when: "data == 'quiet'", observe: {text_contains: "Nobody yet"}}
+      queue:
+        waiting: {when: "data == 'household'", observe: {text: "Not one of us"}}
+        empty: {when: "data == 'quiet'", observe: {text: "No faces waiting"}}
+    sources: ["shared/src/commonMain/kotlin/**/FaceLibraryScreen.kt"]
   household_cars:
     title: Household cars
     group: shell
     match:
       all: [{text: "Teach Frigate what it's looking at"}]
+    covers: ["screen:ClassifierLabelingScreen", "page:route.ClassifierRoute"]
+    params:
+      queue:
+        waiting: {}
+        empty: {observe: {text: "Nothing waiting to be labelled"}}
+      training:
+        never_trained: {observe: {text: "Never trained"}}
+        up_to_date: {observe: {text: "Up to date"}}
+      profiles:
+        shown: {observe: {text: "What your cars look like"}}
+        hidden: {}
+    sources: ["shared/src/commonMain/kotlin/**/ClassifierLabelingScreen.kt"]
   server:
     title: Server
     group: shell
     match:
       all: [{text: "What Frigate is and is doing"}]
-  camera_detail:
-    title: Camera
-    group: shell
-    match:
-      all: [{id: camera_player_taps}]
-    checks:
-      - present: {text: Timeline}
-      - present: {text: Recent Activity}
+    covers: ["screen:ServerSettingsScreen", "page:route.ServerRoute"]
+    params:
+      overview:
+        loading: {observe: {text: "Reading server stats…"}}
+        loaded: {observe: {text: "Version"}}
+        failed: {}
+    sources: ["shared/src/commonMain/kotlin/**/ServerSettingsScreen.kt", "shared/src/commonMain/kotlin/**/SettingsScreen.kt"]
   uptime:
     title: Uptime
     group: shell
     match:
       all: [{text: "What was reachable, and when"}]
+    covers: ["screen:ServerUptimeScreen", "page:route.UptimeRoute"]
+    params:
+      state:
+        loading: {observe: {text: "Reading the uptime record…"}}
+        not_kept: {observe: {text_contains: "doesn't keep an uptime record yet"}}
+        failed: {observe: {text_contains: "Couldn't read the uptime record"}}
+        content: {observe: {text: "Outages"}}
+    sources: ["shared/src/commonMain/kotlin/**/ServerUptimeScreen.kt"]
+  # ---- Home's pushed pages ----
+  camera_detail:
+    title: Camera
+    group: shell
+    match:
+      all: [{id: camera_player_taps}]
+    covers: ["screen:CameraDetailScreen", "page:route.CameraDetailRoute", "state:CameraDetailUiState.Found", "state:CameraDetailUiState.Loading", "state:CameraDetailUiState.NotFound", "deeplink:MomentDeepLink"]
+    params:
+      state:
+        found: {observe: {id: camera_player_taps}}
+        not_found: {}
+      recent:
+        loading: {observe: {text: "Looking for recent detections…"}}
+        empty: {when: "data == 'quiet'", observe: {text: "No detections on this camera yet."}}
+        content: {}
+    checks:
+      - present: {text: Timeline}
+      - present: {text: Recent Activity}
+    sources: ["shared/src/commonMain/kotlin/**/CameraDetailScreen.kt", "shared/src/commonMain/kotlin/**/CameraQuickActions.kt"]
+  # ---- Overlays (verified on a device) ----
   drawer:
     title: Menu drawer
     group: overlay
     kind: modal
     match:
       all: [{id: shell_drawer}]
+    # The six apps open from its cards, and a notification's link opens one of them over the shell as well.
+    covers: ["overlay:ShellDrawer.ShellDrawer", "overlay:ShellDrawer.InnerAppOverlay", "app:FINANCE", "app:WEATHER", "app:FITNESS", "app:ATLAS", "app:PACKAGES", "app:CHARGING", "deeplink:FinanceDeepLink", "deeplink:WeatherDeepLink", "deeplink:FitnessDeepLink", "deeplink:PackageDeepLink"]
+    params:
+      finance_card:
+        open: {}
+        locked: {observe: {text: "Locked while offline"}}
+    sources: ["shared/src/commonMain/kotlin/**/ShellDrawer.kt", "app/src/commonMain/kotlin/**/ShellApps.kt"]
   arrange_menu:
     title: Route badge menu
     group: overlay
     kind: modal
     match:
       all: [{text: "Arrange cameras"}]
+    covers: ["modal:FrigateAppShell.TopBarMenu"]
   camera_filter:
     title: Camera filter
     group: overlay
@@ -92,6 +213,7 @@ nodes:
     match:
       all: [{text: "All cameras"}, {text: Driveway}]
       none: [{id: bottom_nav_home}]
+    covers: ["modal:MomentsScreen.FilterMenuChip"]
   event_filter:
     title: Event filter
     group: overlay
@@ -99,7 +221,417 @@ nodes:
     match:
       all: [{text: People}, {text: Vehicles}]
       none: [{id: bottom_nav_home}]
+    covers: ["modal:MomentsScreen.FilterMenuChip"]
+
+  # ================= Declared from the source, not yet tried on a device =================
+  # ---- Sign-in (the walks start after it: the scene signs in by script) ----
+  sign_in:
+    title: Sign in
+    group: signin
+    pending: "not yet verified on a device"
+    match:
+      all: [{id: sign_in_connect}]
+    covers: ["screen:SecureConnectionScreen", "page:route.SecureConnectionRoute", "state:ConnectUiState.Idle", "state:ConnectUiState.AwaitingBiometrics", "state:ConnectUiState.Connecting", "state:ConnectUiState.Error"]
+    params:
+      state:
+        idle: {}
+        connecting: {}
+        awaiting_biometrics: {}
+        error: {observe: {text: "Couldn't connect to server"}}
+      saved_login:
+        none: {}
+        biometric: {observe: {text_contains: "Sign in with"}}
+      tailscale_hint:
+        off: {}
+        active: {observe: {text: "Tailscale Active"}}
+    checks:
+      - present: {id: sign_in_server_url}
+      - present: {id: sign_in_username}
+      - present: {id: sign_in_password}
+      - present: {id: sign_in_apps}
+    sources: ["shared/src/commonMain/kotlin/**/SecureConnectionScreen.kt", "shared/src/commonMain/kotlin/**/SecureConnectionViewModel.kt"]
+  sign_in_biometric_offer:
+    title: Offer to save the login for biometrics
+    group: overlay
+    kind: modal
+    pending: "needs a device capability"
+    match:
+      all: [{text_matches: "(Enable|Update) .* sign-in\\?"}]
+    # Shown after a typed sign-in succeeds (ConnectUiState.Success, not via biometrics) on a device with biometrics enrolled.
+    covers: ["modal:SecureConnectionScreen.BiometricSaveOfferDialog", "state:ConnectUiState.Success"]
+    params:
+      offer:
+        enable: {observe: {text_contains: "Skip retyping your password"}}
+        update: {observe: {text_contains: "instead of the one saved before"}}
+    sources: ["shared/src/commonMain/kotlin/**/SecureConnectionScreen.kt"]
+  sign_in_drawer:
+    title: Menu drawer before signing in
+    group: overlay
+    kind: modal
+    pending: "not yet verified on a device"
+    # The drawer over the sign-in screen: the same shell_drawer, but no cameras to hop to, and the apps open without a server.
+    sources: ["shared/src/commonMain/kotlin/**/ShellDrawer.kt", "shared/src/commonMain/kotlin/**/SecureConnectionScreen.kt"]
+
+  # ---- Shell: top bar menus, assistant, wide windows ----
+  version_menu:
+    title: Route badge menu (version only)
+    group: overlay
+    kind: modal
+    pending: "not yet verified on a device"
+    match:
+      all: [{text_contains: "Version "}]
+      none: [{id: bottom_nav_home}]
+    sources: ["shared/src/commonMain/kotlin/**/FrigateAppShell.kt"]
+  assistant:
+    title: Assistant
+    group: overlay
+    kind: modal
+    pending: "not yet verified on a device"
+    match:
+      any: [{id: assistant_card}, {id: assistant_model}]
+    covers: ["overlay:AssistantOverlay.AssistantLayer", "deeplink:ShellCommand.Assistant"]
+    params:
+      key:
+        missing: {observe: {text_contains: "Claude needs your own API key"}}
+        saved: {observe: {id: assistant_model}}
+    sources: ["shared/src/commonMain/kotlin/**/AssistantOverlay.kt", "shared/src/commonMain/kotlin/**/AssistantTrigger.kt"]
+  assistant_model_menu:
+    title: Assistant model menu
+    group: overlay
+    kind: modal
+    pending: "not yet verified on a device"
+    covers: ["modal:AssistantOverlay.ModelChip"]
+    sources: ["shared/src/commonMain/kotlin/**/AssistantOverlay.kt"]
+  card_quick_look:
+    title: Camera card quick look
+    group: overlay
+    kind: modal
+    pending: "needs a device capability"
+    # A pinch on a Home camera card lifts its video into a layer over the shell (no multitouch on apksim).
+    covers: ["overlay:CameraCardZoom.CameraCardZoomOverlay"]
+    sources: ["shared/src/commonMain/kotlin/**/CameraCardZoom.kt"]
+  shell_sidebar:
+    title: Shell with a sidebar
+    group: wide
+    pending: "needs a wide window"
+    match:
+      all: [{id: shell_sidebar}]
+    covers: ["deeplink:ShellCommand.ToggleSidebar"]
+    params:
+      sidebar:
+        shown: {observe: {text: "Hide sidebar"}}
+        hidden: {observe: {text: "Show sidebar"}}
+    sources: ["shared/src/commonMain/kotlin/**/ShellSidebar.kt", "shared/src/commonMain/kotlin/**/FrigateAppShell.kt"]
+  sidebar_app_host:
+    title: A drawer app beside the sidebar
+    group: wide
+    pending: "needs a wide window"
+    # One of the six apps shown in the content area of a wide window, listed in the sidebar (sidebar_app_<name>).
+    covers: ["deeplink:ShellCommand.Open"]
+    params:
+      app:
+        finance: {}
+        weather: {}
+        fitness: {}
+        atlas: {}
+        packages: {}
+        charging: {}
+    sources: ["app/src/commonMain/kotlin/**/ShellApps.kt", "shared/src/commonMain/kotlin/**/ShellSidebar.kt"]
+  settings_two_panes:
+    title: Settings in two panes
+    group: wide
+    pending: "needs a wide window"
+    match:
+      all: [{text: "Pick a setting, and its page opens here."}]
+    covers: ["overlay:SettingsTabNav.SettingsTwoPanes"]
+    sources: ["shared/src/commonMain/kotlin/**/SettingsTabNav.kt"]
+
+  # ---- Settings: the folds that open in place ----
+  settings_fold_cameras:
+    title: Settings, Cameras fold
+    group: shell
+    pending: "not yet verified on a device"
+    covers: ["page:SettingsFold.CAMERAS"]
+    params:
+      access:
+        admin_editable: {when: "role == 'admin'"}
+        viewer_read_only: {when: "role == 'viewer'", observe: {text_contains: "Signed in as a viewer"}}
+      overview:
+        loading: {observe: {text: "Reading camera pipelines…"}}
+        loaded: {}
+    sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt"]
+  settings_fold_economy:
+    title: Settings, Economy commentary fold
+    group: shell
+    pending: "not yet verified on a device"
+    covers: ["page:SettingsFold.ECONOMY"]
+    sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt", "shared/src/commonMain/kotlin/**/EconomyToneOptions.kt"]
+  settings_fold_finance_drawer:
+    title: Settings, Finance in the menu fold
+    group: shell
+    pending: "not yet verified on a device"
+    covers: ["page:SettingsFold.FINANCE_DRAWER"]
+    sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt", "shared/src/commonMain/kotlin/**/FinanceDrawerOptions.kt"]
+  settings_fold_figures:
+    title: Settings, Exercise figures fold
+    group: shell
+    pending: "not yet verified on a device"
+    covers: ["page:SettingsFold.FIGURES"]
+    sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt", "shared/src/commonMain/kotlin/**/FigureStyleOptions.kt"]
+  settings_fold_maps:
+    title: Settings, Maps fold
+    group: shell
+    pending: "not yet verified on a device"
+    covers: ["page:SettingsFold.MAPS"]
+    params:
+      provider:
+        osm: {}
+        google: {observe: {id: settings_maps_key}}
+    sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt", "shared/src/commonMain/kotlin/**/MapProviderOptions.kt"]
+  settings_fold_app_icon:
+    title: Settings, App icon fold
+    group: shell
+    pending: "not yet verified on a device"
+    covers: ["page:SettingsFold.APP_ICON"]
+    sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt", "shared/src/commonMain/kotlin/**/AppIconOptions.kt"]
+
+  # ---- Settings pages: dialogs ----
+  quiet_hours_dialog:
+    title: Quiet hours time picker
+    group: overlay
+    kind: modal
+    pending: "not yet verified on a device"
+    match:
+      any: [{text: "Quiet from"}, {text: "Quiet until"}]
+    covers: ["modal:AlertRulesSection.QuietHoursRows"]
+    params:
+      end:
+        from: {observe: {text: "Quiet from"}}
+        until: {observe: {text: "Quiet until"}}
+    sources: ["shared/src/commonMain/kotlin/**/AlertRulesSection.kt"]
+  away_remove_device_dialog:
+    title: Remove a tracked phone
+    group: overlay
+    kind: modal
+    pending: "needs a relay route"
+    match:
+      all: [{text_matches: "Remove .*\\?"}, {text: Cancel}]
+    covers: ["modal:SettingsScreen.PresenceDeviceList"]
+    sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt"]
+  car_profile_dialog:
+    title: Describe a household car
+    group: overlay
+    kind: modal
+    pending: "needs a relay route"
+    match:
+      all: [{text: "Licence plate"}]
+    covers: ["modal:ClassifierLabelingScreen.CarProfileDialog"]
+    params:
+      profile:
+        new: {}
+        saved: {observe: {text: Forget}}
+    sources: ["shared/src/commonMain/kotlin/**/ClassifierLabelingScreen.kt"]
+  car_profile_make_menu:
+    title: Car make menu
+    group: overlay
+    kind: modal
+    pending: "needs a relay route"
+    match:
+      all: [{text: "Any make"}]
+      none: [{id: bottom_nav_home}]
+    covers: ["modal:ClassifierLabelingScreen.CarProfileDialog#2"]
+    sources: ["shared/src/commonMain/kotlin/**/ClassifierLabelingScreen.kt"]
+  door_rename_dialog:
+    title: Name a door
+    group: overlay
+    kind: modal
+    pending: "needs a relay route"
+    match:
+      all: [{text: "Name this door"}]
+    covers: ["modal:DoorsPairing.DoorRenameDialog"]
+    sources: ["shared/src/commonMain/kotlin/**/DoorsPairing.kt"]
+
+  # ---- Home's other pages ----
+  home_arranging:
+    title: Home, arranging cameras
+    group: shell
+    pending: "not yet verified on a device"
+    match:
+      all: [{id: home_arrange_done}]
+    params:
+      cameras:
+        shown: {}
+        hidden_badge: {observe: {text: Hidden}}
+    sources: ["shared/src/commonMain/kotlin/**/HomeLiveViewScreen.kt", "shared/src/commonMain/kotlin/**/CameraArrangeControls.kt"]
+  camera_framing:
+    title: Frame a camera's picture
+    group: fullscreen
+    pending: "not yet verified on a device"
+    match:
+      all: [{id: camera_frame_done}]
+    covers: ["screen:CameraFramingScreen", "page:route.CameraFramingRoute"]
+    sources: ["shared/src/commonMain/kotlin/**/CameraFramingScreen.kt"]
+  nest_camera:
+    title: Nest camera
+    group: shell
+    pending: "needs fixture data"
+    match:
+      all: [{text_contains: "Live only. Nest cameras"}]
+    covers: ["screen:NestCameraScreen", "page:route.NestCameraRoute"]
+    sources: ["shared/src/commonMain/kotlin/**/NestCameraScreen.kt"]
+  doors_from_home:
+    title: Doors (from Home)
+    group: shell
+    pending: "needs a relay route"
+    # The same DoorsScreen as `doors`, pushed on Home's stack from the glance row, or by a door notification: Back returns to Home.
+    covers: ["page:route.DoorsHomeRoute", "deeplink:DoorDeepLink"]
+    sources: ["shared/src/commonMain/kotlin/**/DoorsScreen.kt", "shared/src/commonMain/kotlin/**/HomeGlance.kt"]
+  cars_home:
+    title: Cars map
+    group: shell
+    pending: "needs a relay route"
+    match:
+      any: [{id: cars_map}, {text_contains: "No cars yet"}, {text_contains: "know where any car is yet"}]
+    covers: ["screen:CarsScreen", "page:route.CarsHomeRoute"]
+    params:
+      state:
+        map: {observe: {id: cars_map}}
+        no_cars: {observe: {text_contains: "No cars yet"}}
+        no_places: {observe: {text_contains: "know where any car is yet"}}
+    sources: ["app/src/commonMain/kotlin/**/CarsScreen.kt", "app/src/commonMain/kotlin/**/ParkingRules.kt"]
+  cars_model_page:
+    title: A car in 3D
+    group: shell
+    pending: "needs a device capability"
+    match:
+      all: [{id: cars_model_page}]
+    sources: ["app/src/commonMain/kotlin/**/CarsScreen.kt"]
+  parking_map:
+    title: Parking map
+    group: overlay
+    kind: modal
+    pending: "needs a notification or deep link"
+    match:
+      all: [{id: parking_map}]
+    covers: ["overlay:ParkingMapOverlay.ParkingMapOverlay", "deeplink:ParkingDeepLink"]
+    params:
+      when:
+        move_now: {}
+        move_by: {}
+    sources: ["app/src/commonMain/kotlin/**/ParkingMapOverlay.kt", "shared/src/commonMain/kotlin/**/ParkingDeepLink.kt"]
+
+  # ---- Camera screen: menus, the editors it opens ----
+  camera_overflow_menu:
+    title: Camera overflow menu
+    group: overlay
+    kind: modal
+    pending: "not yet verified on a device"
+    match:
+      all: [{text: "Detection zones"}, {text: "Tag cars in view"}]
+      none: [{id: bottom_nav_home}]
+    covers: ["modal:CameraDetailScreen.CameraOverflowMenu"]
+    sources: ["shared/src/commonMain/kotlin/**/CameraDetailScreen.kt"]
+  camera_quality_menu:
+    title: Video quality menu
+    group: overlay
+    kind: modal
+    pending: "not yet verified on a device"
+    match:
+      all: [{text: "Video quality"}, {text: Auto}]
+      none: [{id: bottom_nav_home}]
+    covers: ["modal:CameraQuickActions.QualityMenu"]
+    sources: ["shared/src/commonMain/kotlin/**/CameraQuickActions.kt"]
+  detection_zones:
+    title: Detection zones
+    group: shell
+    pending: "not yet verified on a device"
+    match:
+      all: [{id: detection_zones_canvas}]
+    covers: ["screen:DetectionZonesScreen", "page:route.DetectionZonesRoute"]
+    params:
+      state:
+        loading: {}
+        failed: {}
+        ready: {observe: {id: detection_zones_canvas}}
+      zones:
+        none: {observe: {text: "No zones yet. Tap the frame to outline an area like the driveway."}}
+        some: {}
+    sources: ["shared/src/commonMain/kotlin/**/DetectionZonesScreen.kt", "shared/src/commonMain/kotlin/**/MaskEditorState.kt"]
+  detection_zones_leave_dialog:
+    title: Save zone changes before leaving?
+    group: overlay
+    kind: modal
+    pending: "not yet verified on a device"
+    match:
+      all: [{text: "Save your changes?"}]
+    covers: ["modal:DetectionZonesScreen.DetectionZonesScreen", "overlay:DetectionZonesScreen.DetectionZonesScreen"]
+    params:
+      layer:
+        zones: {observe: {text_contains: "edited this camera's zones"}}
+        ignore_areas: {observe: {text_contains: "edited this camera's ignore areas"}}
+    sources: ["shared/src/commonMain/kotlin/**/DetectionZonesScreen.kt"]
+  car_tagging:
+    title: Tag cars in view
+    group: fullscreen
+    pending: "not yet verified on a device"
+    match:
+      all: [{id: car-tagging}]
+    covers: ["screen:CarTaggingScreen", "page:route.CarTaggingRoute"]
+    params:
+      state:
+        loading: {}
+        failed: {}
+        ready: {observe: {text: "Camera frame"}}
+      tracking:
+        none: {observe: {text: "Frigate isn't tracking any cars here right now."}}
+        some: {}
+    sources: ["shared/src/commonMain/kotlin/**/CarTaggingScreen.kt"]
+  clip_editor:
+    title: Clip editor
+    group: fullscreen
+    pending: "not yet verified on a device"
+    match:
+      any: [{desc: "Close clip editor"}, {id: clip_playhead}]
+    covers: ["screen:ClipEditorScreen", "page:route.ClipEditorRoute"]
+    params:
+      state:
+        finding: {observe: {text: "Finding the recording…"}}
+        ready: {observe: {id: clip_playhead}}
+        failed: {}
+      saving:
+        idle: {}
+        in_background: {observe: {text_contains: "Saving in the background"}}
+    sources: ["shared/src/commonMain/kotlin/**/ClipEditorScreen.kt"]
+  tag_car_dialog:
+    title: Tag a detection's car
+    group: overlay
+    kind: modal
+    pending: "not yet verified on a device"
+    match:
+      any: [{text: "Whose car is this?"}, {text: "Car tagged"}]
+    # From a Moments card, from the camera screen's recent list, or opened on arrival by a notification's "Tag car" button.
+    covers: ["modal:MomentCarTagging.TagCarDialog"]
+    params:
+      state:
+        loading: {observe: {text: "Loading the known cars…"}}
+        none_known: {observe: {text_contains: "doesn't know any cars yet"}}
+        choosing: {}
+        saving: {observe: {text: "Teaching the classifier…"}}
+        done: {observe: {text: "Car tagged"}}
+    sources: ["shared/src/commonMain/kotlin/**/MomentCarTagging.kt"]
+  moments_day_picker:
+    title: Moments, pick a day
+    group: overlay
+    kind: modal
+    pending: "not yet verified on a device"
+    match:
+      all: [{text: Show}, {text: Cancel}]
+      none: [{id: bottom_nav_home}]
+    covers: ["modal:MomentsScreen.MomentDayPicker"]
+    sources: ["shared/src/commonMain/kotlin/**/MomentsScreen.kt"]
+
 edges:
+  # ---- Verified on a device ----
   - {id: bottom_nav_home, from: "@shell", except: [home], to: home, do: [{tap: {id: bottom_nav_home}}]}
   - {id: bottom_nav_moments, from: "@shell", except: [moments], to: moments, do: [{tap: {id: bottom_nav_moments}}]}
   - {id: bottom_nav_settings, from: "@shell", except: [settings], to: settings, do: [{tap: {id: bottom_nav_settings}}]}
@@ -132,3 +664,141 @@ edges:
   - {id: drawer.open_packages_on, from: drawer, to: packages_today, when: "relay == 'on'", do: [{tap: {id: drawer_packages}}]}
   - {id: drawer.open_charging_off, from: drawer, to: charging_unreachable, when: "relay == 'off'", do: [{tap: {id: drawer_charging}}]}
   - {id: drawer.open_charging_on, from: drawer, to: charging_home, when: "relay == 'on'", do: [{tap: {id: drawer_charging}}]}
+
+  # ---- Sign-in ----
+  - {id: sign_in.connect, from: sign_in, to: home, pending: "not yet verified on a device", do: [{tap: {id: sign_in_connect}}, {wait: {present: {id: bottom_nav_home}, timeout_ms: 30000}}]}
+  - {id: sign_in.connect_refused, from: sign_in, to: "=", pending: "not yet verified on a device", do: [{tap: {id: sign_in_connect}}]}
+  - {id: sign_in.offer_biometrics, from: sign_in, to: sign_in_biometric_offer, pending: "needs a device capability", do: [{tap: {id: sign_in_connect}}]}
+  - {id: sign_in.sign_in_with_biometrics, from: sign_in, to: home, pending: "needs a device capability", do: [{tap: {text_contains: "Sign in with"}}]}
+  - {id: sign_in_biometric_offer.accept, from: sign_in_biometric_offer, to: home, pending: "needs a device capability", do: [{tap: {text_matches: "Enable|Update"}}]}
+  - {id: sign_in_biometric_offer.not_now, from: sign_in_biometric_offer, to: home, pending: "needs a device capability", do: [{tap: {text: "Not now"}}]}
+  - {id: sign_in.open_apps, from: sign_in, to: sign_in_drawer, pending: "not yet verified on a device", do: [{tap: {id: sign_in_apps}}]}
+  - {id: sign_in_drawer.close, from: sign_in_drawer, to: sign_in, pending: "not yet verified on a device", do: [back]}
+  - {id: sign_in_drawer.open_fitness, from: sign_in_drawer, to: fitness_today, pending: "not yet verified on a device", do: [{tap: {id: drawer_fitness}}]}
+  - {id: sign_in_drawer.open_weather, from: sign_in_drawer, to: weather_welcome, pending: "not yet verified on a device", do: [{tap: {id: drawer_weather}}]}
+  - {id: sign_in_drawer.open_finance, from: sign_in_drawer, to: finance_unavailable, pending: "not yet verified on a device", do: [{tap: {id: drawer_finance}}]}
+  - {id: sign_in_drawer.open_atlas, from: sign_in_drawer, to: atlas_offline, pending: "not yet verified on a device", do: [{tap: {id: drawer_atlas}}]}
+
+  # ---- Drawer and top bar from the other tabs ----
+  - {id: shell.open_drawer_from_tabs, from: [moments, settings], to: drawer, pending: "not yet verified on a device", do: [{tap: {id: shell_menu}}]}
+  - {id: drawer.close_to_moments, from: drawer, to: moments, pending: "not yet verified on a device", do: [back]}
+  - {id: drawer.close_to_settings, from: drawer, to: settings, pending: "not yet verified on a device", do: [back]}
+  - {id: shell.open_version_menu, from: [moments, settings], to: version_menu, pending: "not yet verified on a device", do: [{tap: {text: Tailscale}}]}
+  - {id: version_menu.close_to_moments, from: version_menu, to: moments, pending: "not yet verified on a device", do: [back]}
+  - {id: version_menu.close_to_settings, from: version_menu, to: settings, pending: "not yet verified on a device", do: [back]}
+  - {id: arrange_menu.start_arranging, from: arrange_menu, to: home_arranging, pending: "not yet verified on a device", do: [{tap: {id: home_arrange_menu_item}}]}
+  - {id: home_arranging.done, from: home_arranging, to: home, pending: "not yet verified on a device", do: [{tap: {id: home_arrange_done}}]}
+  - {id: home_arranging.frame_camera, from: home_arranging, to: camera_framing, pending: "not yet verified on a device", do: [{tap: {id: camera_frame_button, index: 0}}]}
+  - {id: camera_framing.done, from: camera_framing, to: home_arranging, pending: "not yet verified on a device", do: [{tap: {id: camera_frame_done}}]}
+  - {id: camera_framing.back, from: camera_framing, to: home_arranging, pending: "not yet verified on a device", do: [back]}
+
+  # ---- Assistant ----
+  - {id: assistant.open, from: [home, moments, settings], to: assistant, pending: "not yet verified on a device", do: [{long_tap: {id: bottom_nav_home}}]}
+  - {id: assistant.close, from: assistant, to: home, pending: "not yet verified on a device", do: [back]}
+  - {id: assistant.open_model_menu, from: assistant, to: assistant_model_menu, pending: "not yet verified on a device", do: [{tap: {id: assistant_model}}]}
+  - {id: assistant_model_menu.close, from: assistant_model_menu, to: assistant, pending: "not yet verified on a device", do: [back]}
+  - {id: shell_command.assistant, from: "@shell", except: [camera_detail], to: assistant, count: once, pending: "needs a notification or deep link"}
+
+  # ---- Card quick look ----
+  - {id: home.pinch_card, from: home, to: card_quick_look, pending: "needs a device capability"}
+  - {id: card_quick_look.open_camera, from: card_quick_look, to: camera_detail, pending: "needs a device capability"}
+  - {id: card_quick_look.close, from: card_quick_look, to: home, pending: "needs a device capability", do: [back]}
+
+  # ---- Wide windows ----
+  - {id: home.widen, from: home, to: shell_sidebar, pending: "needs a wide window", do: [{device: "size 1200x800"}]}
+  - {id: shell_sidebar.narrow, from: shell_sidebar, to: home, pending: "needs a wide window", do: [{device: "size 411x891"}]}
+  - {id: shell_sidebar.hide, from: shell_sidebar, to: "=", pending: "needs a wide window", do: [{tap: {desc: "Hide sidebar"}}]}
+  - {id: shell_sidebar.open_assistant, from: shell_sidebar, to: assistant, pending: "needs a wide window", do: [{tap: {text: "Ask Claude"}}]}
+  - {id: shell_sidebar.open_settings_two_panes, from: shell_sidebar, to: settings_two_panes, pending: "needs a wide window", do: [{tap: {id: bottom_nav_settings}}]}
+  - {id: settings_two_panes.open_home, from: settings_two_panes, to: shell_sidebar, pending: "needs a wide window", do: [{tap: {id: bottom_nav_home}}]}
+  - {id: sidebar.open_finance, from: shell_sidebar, to: sidebar_app_host, pending: "needs a wide window", do: [{tap: {id: sidebar_app_finance}}]}
+  - {id: sidebar.open_weather, from: shell_sidebar, to: sidebar_app_host, pending: "needs a wide window", do: [{tap: {id: sidebar_app_weather}}]}
+  - {id: sidebar.open_fitness, from: shell_sidebar, to: sidebar_app_host, pending: "needs a wide window", do: [{tap: {id: sidebar_app_fitness}}]}
+  - {id: sidebar.open_atlas, from: shell_sidebar, to: sidebar_app_host, pending: "needs a wide window", do: [{tap: {id: sidebar_app_atlas}}]}
+  - {id: sidebar.open_packages, from: shell_sidebar, to: sidebar_app_host, pending: "needs a wide window", do: [{tap: {id: sidebar_app_packages}}]}
+  - {id: sidebar.open_charging, from: shell_sidebar, to: sidebar_app_host, pending: "needs a wide window", do: [{tap: {id: sidebar_app_charging}}]}
+  - {id: sidebar_app_host.open_home, from: sidebar_app_host, to: shell_sidebar, pending: "needs a wide window", do: [{tap: {id: bottom_nav_home}}]}
+  - {id: shell_command.open_app, from: "@shell", to: sidebar_app_host, count: once, pending: "needs a wide window"}
+
+  # ---- Settings: folds ----
+  - {id: settings.open_fold_cameras, from: settings, to: settings_fold_cameras, pending: "not yet verified on a device", do: [{scroll_to: {text: Cameras}}, {tap: {text: Cameras}}]}
+  - {id: settings_fold_cameras.close, from: settings_fold_cameras, to: settings, pending: "not yet verified on a device", do: [{tap: {text: Cameras}}]}
+  - {id: settings.open_fold_economy, from: settings, to: settings_fold_economy, pending: "not yet verified on a device", do: [{scroll_to: {text: Economy commentary}}, {tap: {text: Economy commentary}}]}
+  - {id: settings_fold_economy.close, from: settings_fold_economy, to: settings, pending: "not yet verified on a device", do: [{tap: {text: Economy commentary}}]}
+  - {id: settings.open_fold_finance_drawer, from: settings, to: settings_fold_finance_drawer, pending: "not yet verified on a device", do: [{scroll_to: {id: settings_finance_drawer}}, {tap: {id: settings_finance_drawer}}]}
+  - {id: settings_fold_finance_drawer.close, from: settings_fold_finance_drawer, to: settings, pending: "not yet verified on a device", do: [{tap: {id: settings_finance_drawer}}]}
+  - {id: settings.open_fold_figures, from: settings, to: settings_fold_figures, pending: "not yet verified on a device", do: [{scroll_to: {text: Exercise figures}}, {tap: {text: Exercise figures}}]}
+  - {id: settings_fold_figures.close, from: settings_fold_figures, to: settings, pending: "not yet verified on a device", do: [{tap: {text: Exercise figures}}]}
+  - {id: settings.open_fold_maps, from: settings, to: settings_fold_maps, pending: "not yet verified on a device", do: [{scroll_to: {id: settings_maps}}, {tap: {id: settings_maps}}]}
+  - {id: settings_fold_maps.close, from: settings_fold_maps, to: settings, pending: "not yet verified on a device", do: [{tap: {id: settings_maps}}]}
+  - {id: settings.open_fold_app_icon, from: settings, to: settings_fold_app_icon, pending: "not yet verified on a device", do: [{scroll_to: {text: App icon}}, {tap: {text: App icon}}]}
+  - {id: settings_fold_app_icon.close, from: settings_fold_app_icon, to: settings, pending: "not yet verified on a device", do: [{tap: {text: App icon}}]}
+
+  # ---- Settings pages: their own dialogs and pushed pages ----
+  - {id: notifications.open_doors, from: notifications, to: doors, pending: "not yet verified on a device", do: [{scroll_to: {text: Doors}}, {tap: {text: Doors}}]}
+  - {id: doors.back_to_notifications, from: doors, to: notifications, pending: "not yet verified on a device", do: [back]}
+  - {id: notifications.open_quiet_hours, from: notifications, to: quiet_hours_dialog, pending: "not yet verified on a device"}
+  - {id: quiet_hours_dialog.close, from: quiet_hours_dialog, to: notifications, pending: "not yet verified on a device", do: [back]}
+  - {id: away.open_remove_device, from: away, to: away_remove_device_dialog, pending: "needs a relay route", do: [{tap: {desc_contains: "Remove "}}]}
+  - {id: away_remove_device_dialog.close, from: away_remove_device_dialog, to: away, pending: "needs a relay route", do: [back]}
+  - {id: household_cars.open_profile, from: household_cars, to: car_profile_dialog, pending: "needs a relay route", do: [{tap: {text_matches: "Describe|Edit"}}]}
+  - {id: car_profile_dialog.open_make_menu, from: car_profile_dialog, to: car_profile_make_menu, pending: "needs a relay route", do: [{tap: {text: "Any make"}}]}
+  - {id: car_profile_make_menu.close, from: car_profile_make_menu, to: car_profile_dialog, pending: "needs a relay route", do: [back]}
+  - {id: car_profile_dialog.close, from: car_profile_dialog, to: household_cars, pending: "needs a relay route", do: [back]}
+  - {id: doors.open_rename, from: doors, to: door_rename_dialog, pending: "needs a relay route", do: [{tap: {desc_contains: "Rename "}}]}
+  - {id: doors_from_home.open_rename, from: doors_from_home, to: door_rename_dialog, pending: "needs a relay route", do: [{tap: {desc_contains: "Rename "}}]}
+  - {id: door_rename_dialog.close_to_doors, from: door_rename_dialog, to: doors, pending: "needs a relay route", do: [back]}
+  - {id: door_rename_dialog.close_to_home_doors, from: door_rename_dialog, to: doors_from_home, pending: "needs a relay route", do: [back]}
+
+  # ---- Home's pushed pages ----
+  - {id: home.open_doors, from: home, to: doors_from_home, pending: "needs a relay route", do: [{tap: {desc: "Show the doors"}}]}
+  - {id: doors_from_home.back, from: doors_from_home, to: home, pending: "needs a relay route", do: [back]}
+  - {id: home.open_cars, from: home, to: cars_home, pending: "needs a relay route", do: [{tap: {desc: "Show the cars on a map"}}]}
+  - {id: cars_home.back, from: cars_home, to: home, pending: "needs a relay route", do: [back]}
+  - {id: cars_home.open_model, from: cars_home, to: cars_model_page, pending: "needs a device capability", do: [{tap: {desc_contains: "in 3D"}}]}
+  - {id: cars_model_page.back, from: cars_model_page, to: cars_home, pending: "needs a device capability", do: [{tap: {id: cars_model_back}}]}
+  - {id: home.open_nest_camera, from: home, to: nest_camera, pending: "needs fixture data"}
+  - {id: nest_camera.back, from: nest_camera, to: home, pending: "needs fixture data", do: [back]}
+  - {id: parking_map.close, from: parking_map, to: home, pending: "needs a notification or deep link", do: [{tap: {id: parking_map_close}}]}
+
+  # ---- Camera screen ----
+  - {id: camera_detail.open_overflow, from: camera_detail, to: camera_overflow_menu, pending: "not yet verified on a device", do: [{tap: {desc: "More options"}}]}
+  - {id: camera_overflow_menu.close, from: camera_overflow_menu, to: camera_detail, pending: "not yet verified on a device", do: [back]}
+  - {id: camera_overflow_menu.open_detection_zones, from: camera_overflow_menu, to: detection_zones, pending: "not yet verified on a device", do: [{tap: {text: "Detection zones"}}]}
+  - {id: camera_overflow_menu.open_tag_cars, from: camera_overflow_menu, to: car_tagging, pending: "not yet verified on a device", do: [{tap: {text: "Tag cars in view"}}]}
+  - {id: camera_detail.open_quality_menu, from: camera_detail, to: camera_quality_menu, pending: "not yet verified on a device", do: [{tap: {desc_contains: "Video quality:"}}]}
+  - {id: camera_quality_menu.close, from: camera_quality_menu, to: camera_detail, pending: "not yet verified on a device", do: [back]}
+  - {id: camera_detail.open_clip_editor, from: camera_detail, to: clip_editor, pending: "not yet verified on a device", do: [{tap: {desc_contains: "Clip a video from"}}]}
+  - {id: clip_editor.close, from: clip_editor, to: camera_detail, pending: "not yet verified on a device", do: [{tap: {desc: "Close clip editor"}}]}
+  - {id: detection_zones.back, from: detection_zones, to: camera_detail, pending: "not yet verified on a device", do: [back]}
+  - {id: detection_zones.back_unsaved, from: detection_zones, to: detection_zones_leave_dialog, pending: "not yet verified on a device", do: [back]}
+  - {id: detection_zones_leave_dialog.keep_editing, from: detection_zones_leave_dialog, to: detection_zones, pending: "not yet verified on a device", do: [{tap: {text: "Keep editing"}}]}
+  - {id: detection_zones_leave_dialog.discard, from: detection_zones_leave_dialog, to: camera_detail, pending: "not yet verified on a device", do: [{tap: {text: Discard}}]}
+  - {id: detection_zones_leave_dialog.save_and_leave, from: detection_zones_leave_dialog, to: camera_detail, pending: "not yet verified on a device", do: [{tap: {text: "Save and leave"}}]}
+  - {id: car_tagging.back, from: car_tagging, to: camera_detail, pending: "not yet verified on a device", do: [back]}
+  - {id: camera_detail.open_tag_car, from: camera_detail, to: tag_car_dialog, pending: "not yet verified on a device", do: [{tap: {text_matches: "Tag (this )?car"}}]}
+  - {id: tag_car_dialog.close_to_camera, from: tag_car_dialog, to: camera_detail, pending: "not yet verified on a device", do: [back]}
+
+  # ---- Moments ----
+  - {id: moments.open_tag_car, from: moments, to: tag_car_dialog, pending: "not yet verified on a device", do: [{tap: {text: "Tag this car"}}]}
+  - {id: tag_car_dialog.close_to_moments, from: tag_car_dialog, to: moments, pending: "not yet verified on a device", do: [back]}
+  - {id: moments.open_full_screen, from: moments, to: camera_detail, pending: "not yet verified on a device", do: [{tap: {desc: "Play full screen"}}]}
+  - {id: moments.open_day_picker, from: moments, to: moments_day_picker, pending: "not yet verified on a device", do: [{tap: {text: "Pick a day"}}]}
+  - {id: moments_day_picker.pick, from: moments_day_picker, to: moments, pending: "not yet verified on a device", do: [{tap: {text: Show}}]}
+  - {id: moments_day_picker.cancel, from: moments_day_picker, to: moments, pending: "not yet verified on a device", do: [{tap: {text: Cancel}}]}
+
+  # ---- From outside the app: notifications and links ----
+  - {id: deeplink.open_moment, from: "@shell", except: [camera_detail], to: camera_detail, count: once, pending: "needs a notification or deep link"}
+  - {id: deeplink.open_moment_tag_car, from: "@shell", to: tag_car_dialog, count: once, pending: "needs a notification or deep link"}
+  - {id: deeplink.open_doors, from: "@shell", to: doors_from_home, count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://doors"}]}
+  - {id: deeplink.open_parking, from: "@shell", to: parking_map, count: once, pending: "needs a notification or deep link"}
+  - {id: deeplink.open_weather, from: "@shell", to: weather_welcome, count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://weather"}]}
+  - {id: deeplink.open_fitness, from: "@shell", to: fitness_today, count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://fitness"}]}
+  - {id: deeplink.open_finance_off, from: "@shell", to: finance_unavailable, when: "relay == 'off'", count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://finance?tab=budget"}]}
+  - {id: deeplink.open_finance_on, from: "@shell", to: finance_outdated, when: "relay == 'on'", count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://finance?tab=budget"}]}
+  - {id: deeplink.open_packages_off, from: "@shell", to: packages_unreachable, when: "relay == 'off'", count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://packages"}]}
+  - {id: deeplink.open_packages_on, from: "@shell", to: packages_today, when: "relay == 'on'", count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://packages"}]}
+
+inventory:
+  ignore:
+    "screen:rememberOnScreen": "a visibility helper in FrameGrid.kt (rememberOnScreen), not a screen"
