@@ -58,6 +58,12 @@ oracles:
 # Every screen should survive each of these: the same screen in the same state afterwards.
 resilience:
   perturbations: [rotate, recreate, process-death, background, dark, fontscale, rtl, offline]
+  # The session lives in memory: a killed process comes back to the sign-in form with the last server filled in
+  # (AppE2eTest.aRelaunchOffersTheLastServerSignedInTo), wherever the user was.
+  expect: {process-death: sign_in}
+  # On its side a phone lays a screen out differently (the nav rail, a camera full screen): the screen must survive
+  # the turn and be itself again upright, and what landscape should look like belongs to the `window` context.
+  lenient: [rotate]
 
 # A changed file under these that no screen's `sources` names fails the pull-request gate: new UI belongs to a screen.
 gate:

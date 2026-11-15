@@ -200,6 +200,8 @@ nodes:
         locked: {observe: {text: "Locked while offline"}}
     sources: ["shared/src/commonMain/kotlin/**/ShellDrawer.kt", "app/src/commonMain/kotlin/**/ShellApps.kt"]
   arrange_menu:
+    # A dropdown closes when the Activity is recreated, as any Android menu does: the screen under it must be there.
+    resilience: {expect: {recreate: home, fontscale: home, rtl: home}}
     title: Route badge menu
     group: overlay
     kind: modal
@@ -207,6 +209,8 @@ nodes:
       all: [{text: "Arrange cameras"}]
     covers: ["modal:FrigateAppShell.TopBarMenu"]
   camera_filter:
+    # A dropdown closes when the Activity is recreated, as any Android menu does: the screen under it must be there.
+    resilience: {expect: {recreate: moments, fontscale: moments, rtl: moments}}
     title: Camera filter
     group: overlay
     kind: modal
@@ -215,6 +219,8 @@ nodes:
       none: [{id: bottom_nav_home}]
     covers: ["modal:MomentsScreen.FilterMenuChip"]
   event_filter:
+    # A dropdown closes when the Activity is recreated, as any Android menu does: the screen under it must be there.
+    resilience: {expect: {recreate: moments, fontscale: moments, rtl: moments}}
     title: Event filter
     group: overlay
     kind: modal
