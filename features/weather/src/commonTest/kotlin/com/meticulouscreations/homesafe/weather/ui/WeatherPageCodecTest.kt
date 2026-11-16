@@ -1,7 +1,7 @@
 package com.meticulouscreations.homesafe.weather.ui
 
-import com.meticulouscreations.homesafe.weather.ski.domain.SkiResortRef
 import com.meticulouscreations.homesafe.navigation.SavedPages
+import com.meticulouscreations.homesafe.weather.ski.domain.SkiResortRef
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

@@ -21,6 +21,15 @@ public fun com.meticulouscreations.homesafe.navigation.rememberBackStackViewMode
     - key: STABLE (String is immutable)
 
 @Composable
+public fun com.meticulouscreations.homesafe.navigation.rememberSavedPages(initial: kotlin.collections.List<T of com.meticulouscreations.homesafe.navigation.rememberSavedPages>, encode: kotlin.Function1<T of com.meticulouscreations.homesafe.navigation.rememberSavedPages, kotlin.collections.List<kotlin.String>?>, decode: kotlin.Function1<kotlin.collections.List<kotlin.String>, T of com.meticulouscreations.homesafe.navigation.rememberSavedPages?>): androidx.compose.runtime.snapshots.SnapshotStateList<T of com.meticulouscreations.homesafe.navigation.rememberSavedPages>
+  skippable: false
+  restartable: false
+  params:
+    - initial: RUNTIME (requires runtime check)
+    - encode: STABLE (function type)
+    - decode: STABLE (function type)
+
+@Composable
 public fun com.meticulouscreations.homesafe.text.resolve(): kotlin.String
   skippable: false
   restartable: false
@@ -3269,6 +3278,12 @@ internal fun com.meticulouscreations.homesafe.ui.screens.rememberCameraVideoOver
 
 @Composable
 internal fun com.meticulouscreations.homesafe.ui.screens.rememberPlacementSwipe(): com.meticulouscreations.homesafe.ui.screens.PlacementSwipe
+  skippable: false
+  restartable: false
+  params:
+
+@Composable
+internal fun com.meticulouscreations.homesafe.ui.screens.rememberShellNavigation(): com.meticulouscreations.homesafe.ui.screens.ShellNavigation
   skippable: false
   restartable: false
   params:

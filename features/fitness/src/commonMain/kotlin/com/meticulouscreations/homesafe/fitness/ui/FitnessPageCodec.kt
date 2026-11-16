@@ -16,19 +16,28 @@ internal object FitnessPageCodec {
 
     fun decode(parts: List<String>): FitnessPage? = when (parts.firstOrNull()) {
         "workout" -> FitnessPage.Workout.takeIf { parts.size == 1 }
+
         "lift" -> if (parts.size == 2) FitnessPage.Lift(parts[1]) else null
+
         "edit" -> if (parts.size == 2) FitnessPage.Edit(parts[1]) else null
+
         "import" -> FitnessPage.Import.takeIf { parts.size == 1 }
+
         "heart" -> FitnessPage.Heart.takeIf { parts.size == 1 }
+
         "session" -> if (parts.size == 3) {
             val workoutId = if (parts[1].isEmpty()) null else parts[1].toLongOrNull() ?: return null
             parts[2].toLongOrNull()?.let { FitnessPage.Session(workoutId, it) }
         } else {
             null
         }
+
         "runs" -> FitnessPage.Runs.takeIf { parts.size == 1 }
+
         "run" -> if (parts.size == 2) FitnessPage.Run(parts[1]) else null
+
         "recording" -> FitnessPage.Recording.takeIf { parts.size == 1 }
+
         else -> null
     }
 }

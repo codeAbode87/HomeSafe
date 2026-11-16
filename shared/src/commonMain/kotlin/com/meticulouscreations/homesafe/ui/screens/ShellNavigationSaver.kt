@@ -113,6 +113,7 @@ internal object ShellNavigationCodec {
      */
     fun encodeHomeRoute(route: Any): List<String>? = when (route) {
         CameraListRoute -> listOf("list")
+
         is CameraDetailRoute -> listOf(
             "detail",
             route.cameraName,
@@ -120,17 +121,25 @@ internal object ShellNavigationCodec {
             route.openedEventId.orEmpty(),
             flag(route.tagCarOnOpen),
         )
+
         is NestCameraRoute -> listOf("nest", route.streamName)
+
         is DetectionZonesRoute -> listOf("zones", route.cameraName)
+
         is CarTaggingRoute -> listOf("tagging", route.cameraName)
+
         is ClipEditorRoute -> listOf("clip", route.cameraName, route.anchorEpochSeconds.toString(), route.originX.toString(), route.originY.toString())
+
         DoorsHomeRoute -> listOf("doors")
+
         CarsHomeRoute -> listOf("cars")
+
         else -> null
     }
 
     fun decodeHomeRoute(parts: List<String>): Any? = when (parts.firstOrNull()) {
         "list" -> CameraListRoute.takeIf { parts.size == 1 }
+
         "detail" -> if (parts.size != 5) {
             null
         } else {
@@ -145,9 +154,13 @@ internal object ShellNavigationCodec {
                 tagCarOnOpen = tagCar,
             )
         }
+
         "nest" -> if (parts.size == 2) NestCameraRoute(parts[1], warmStreamUrl = null, warmWebRtcSignalingUrl = null, warmStillUrl = null) else null
+
         "zones" -> if (parts.size == 2) DetectionZonesRoute(parts[1]) else null
+
         "tagging" -> if (parts.size == 2) CarTaggingRoute(parts[1]) else null
+
         "clip" -> if (parts.size == 5) {
             val anchor = parts[2].toDoubleOrNull()
             val x = parts[3].toFloatOrNull()
@@ -156,8 +169,11 @@ internal object ShellNavigationCodec {
         } else {
             null
         }
+
         "doors" -> DoorsHomeRoute.takeIf { parts.size == 1 }
+
         "cars" -> CarsHomeRoute.takeIf { parts.size == 1 }
+
         else -> null
     }
 

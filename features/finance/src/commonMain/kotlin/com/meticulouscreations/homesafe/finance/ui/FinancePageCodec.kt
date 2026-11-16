@@ -17,14 +17,23 @@ internal object FinancePageCodec {
 
     fun decode(parts: List<String>): FinanceDetail? = when (parts.firstOrNull()) {
         "quote" -> if (parts.size == 2) FinanceDetail.QuotePage(parts[1]) else null
+
         "indicator" -> if (parts.size == 2) FinanceDetail.IndicatorPage(parts[1]) else null
+
         "connections" -> FinanceDetail.Connections.takeIf { parts.size == 1 }
+
         "glossary" -> FinanceDetail.Glossary.takeIf { parts.size == 1 }
+
         "sheetSync" -> FinanceDetail.SheetSync.takeIf { parts.size == 1 }
+
         "bankSync" -> FinanceDetail.BankSync.takeIf { parts.size == 1 }
+
         "budgetSettings" -> FinanceDetail.BudgetSettings.takeIf { parts.size == 1 }
+
         "chartSettings" -> FinanceDetail.ChartSettings.takeIf { parts.size == 1 }
+
         "typedBalances" -> FinanceDetail.TypedBalances.takeIf { parts.size == 1 }
+
         "wallet" -> if (parts.size == 3) {
             val topic = WalletTopic.entries.firstOrNull { it.name == parts[1] }
             val focus = if (parts[2].isEmpty()) null else WalletSection.entries.firstOrNull { it.name == parts[2] } ?: return null
@@ -32,6 +41,7 @@ internal object FinancePageCodec {
         } else {
             null
         }
+
         else -> null
     }
 }
