@@ -155,12 +155,12 @@ nodes:
         relay_problem: {observe: {text_contains: "The relay"}}
 edges:
   - {id: packages_unreachable.back, from: packages_unreachable, to: home, when: "tab == 'home'", do: [back]}
-  - {id: packages_unreachable.back_to_moments, from: packages_unreachable, to: moments, when: "tab == 'moments'", do: [back], pending: "not yet verified on a device"}
-  - {id: packages_unreachable.back_to_settings, from: packages_unreachable, to: settings, when: "tab == 'settings'", do: [back], pending: "not yet verified on a device"}
+  - {id: packages_unreachable.back_to_moments, from: packages_unreachable, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: packages_unreachable.back_to_settings, from: packages_unreachable, to: settings, when: "tab == 'settings'", do: [back]}
   - {id: packages_unreachable.retry, from: packages_unreachable, to: "=", do: [{tap: {text: Retry}}]}
   - {id: packages.close, from: packages_today, to: home, when: "tab == 'home'", do: [back]}
-  - {id: packages.close_to_moments, from: packages_today, to: moments, when: "tab == 'moments'", do: [back], pending: "not yet verified on a device"}
-  - {id: packages.close_to_settings, from: packages_today, to: settings, when: "tab == 'settings'", do: [back], pending: "not yet verified on a device"}
+  - {id: packages.close_to_moments, from: packages_today, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: packages.close_to_settings, from: packages_today, to: settings, when: "tab == 'settings'", do: [back]}
   # The tab bar shows on the four tabs, not on the pages pushed over them.
   - {id: packages.tab_today, from: [packages_all, packages_returns, packages_insights], to: packages_today, set: {packages_tab: today}, count: once, do: [{tap: {id: packages_tab_today}}]}
   - {id: packages.tab_all, from: [packages_today, packages_returns, packages_insights], to: packages_all, set: {packages_tab: all}, count: once, do: [{tap: {id: packages_tab_all}}]}
@@ -182,7 +182,7 @@ edges:
   - {id: packages_setup.back_to_insights, from: packages_setup, to: packages_insights, when: "packages_tab == 'insights'", do: [back]}
   # Not yet tried on a device.
   - {id: packages_other_tabs.close, from: [packages_all, packages_returns, packages_insights], to: home, when: "tab == 'home'", count: once, do: [back]}
-  - {id: packages_other_tabs.close_to_moments, from: [packages_all, packages_returns, packages_insights], to: moments, when: "tab == 'moments'", count: once, do: [back], pending: "not yet verified on a device"}
+  - {id: packages_other_tabs.close_to_moments, from: [packages_all, packages_returns, packages_insights], to: moments, when: "tab == 'moments'", count: once, do: [back]}
   - {id: packages_other_tabs.close_to_settings, from: [packages_all, packages_returns, packages_insights], to: settings, when: "tab == 'settings'", count: once, do: [back], pending: "not yet verified on a device"}
   - {id: packages_tabs.add, from: [packages_all, packages_returns, packages_insights], to: packages_add, count: once, do: [{tap: {id: packages_add}}]}
   - {id: packages_tabs.setup, from: [packages_all, packages_returns, packages_insights], to: packages_setup, count: once, do: [{tap: {id: packages_setup}}]}

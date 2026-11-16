@@ -210,9 +210,9 @@ nodes:
 
 edges:
   - {id: weather_welcome.back, from: weather_welcome, to: home, when: "tab == 'home'", do: [back]}
-  - {id: weather_welcome.back_to_moments, from: weather_welcome, to: moments, when: "tab == 'moments'", do: [back], pending: "not yet verified on a device"}
-  - {id: weather_welcome.back_to_settings, from: weather_welcome, to: settings, when: "tab == 'settings'", do: [back], pending: "not yet verified on a device"}
-  - {id: weather_welcome.back_to_sign_in, from: weather_welcome, to: sign_in, when: "tab == 'sign_in'", do: [back], pending: "not yet verified on a device"}
+  - {id: weather_welcome.back_to_moments, from: weather_welcome, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: weather_welcome.back_to_settings, from: weather_welcome, to: settings, when: "tab == 'settings'", do: [back]}
+  - {id: weather_welcome.back_to_sign_in, from: weather_welcome, to: sign_in, when: "tab == 'sign_in'", do: [back]}
   - {id: weather_welcome.open_places, from: weather_welcome, to: weather_places, do: [{tap: {id: weather_places_button}}]}
   - {id: weather_welcome.add_city, from: weather_welcome, to: weather_places, do: [{tap: {id: weather_welcome_add}}]}
   - {id: weather_welcome.open_settings, from: weather_welcome, to: weather_settings, do: [{tap: {id: weather_settings_button}}]}
@@ -245,9 +245,9 @@ edges:
   - {id: weather_today.open_radar_card, from: weather_today, to: weather_radar, pending: "needs recorded internet", do: [{tap: {id: weather_radar_card}}]}
   - {id: weather_today.open_forecast_row, from: weather_today, to: weather_forecast, pending: "needs recorded internet", do: [{tap: {id: weather_next_wet_day}}]}
   - {id: weather_tabs.close, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: home, when: "tab == 'home'", count: once, do: [{tap: {id: weather_back}}]}
-  - {id: weather_tabs.close_to_moments, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: moments, when: "tab == 'moments'", count: once, do: [{tap: {id: weather_back}}], pending: "not yet verified on a device"}
-  - {id: weather_tabs.close_to_settings, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: settings, when: "tab == 'settings'", count: once, do: [{tap: {id: weather_back}}], pending: "not yet verified on a device"}
-  - {id: weather_tabs.close_to_sign_in, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: sign_in, when: "tab == 'sign_in'", count: once, do: [{tap: {id: weather_back}}], pending: "not yet verified on a device"}
+  - {id: weather_tabs.close_to_moments, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: moments, when: "tab == 'moments'", count: once, do: [{tap: {id: weather_back}}]}
+  - {id: weather_tabs.close_to_settings, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: settings, when: "tab == 'settings'", count: once, do: [{tap: {id: weather_back}}]}
+  - {id: weather_tabs.close_to_sign_in, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: sign_in, when: "tab == 'sign_in'", count: once, do: [{tap: {id: weather_back}}]}
 
   # Places and Settings from the tabs' top bar (the Ski tab's bar has its own buttons).
   - {id: weather_tabs.open_places, from: [weather_today, weather_forecast, weather_radar], to: weather_places, count: once, do: [{tap: {id: weather_places_button}}]}

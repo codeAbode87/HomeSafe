@@ -307,9 +307,9 @@ nodes:
 
 edges:
   - {id: fitness.close, from: fitness_today, to: home, when: "tab == 'home'", do: [back]}
-  - {id: fitness.close_to_moments, from: fitness_today, to: moments, when: "tab == 'moments'", do: [back], pending: "not yet verified on a device"}
-  - {id: fitness.close_to_settings, from: fitness_today, to: settings, when: "tab == 'settings'", do: [back], pending: "not yet verified on a device"}
-  - {id: fitness.close_to_sign_in, from: fitness_today, to: sign_in, when: "tab == 'sign_in'", do: [back], pending: "not yet verified on a device"}
+  - {id: fitness.close_to_moments, from: fitness_today, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: fitness.close_to_settings, from: fitness_today, to: settings, when: "tab == 'settings'", do: [back]}
+  - {id: fitness.close_to_sign_in, from: fitness_today, to: sign_in, when: "tab == 'sign_in'", do: [back]}
   # The tab bar shows on the four tabs only (not on the pushed pages).
   - {id: fitness.tab_today, from: [fitness_lifts_empty, fitness_lifts_adding, fitness_lifts_list, fitness_history, fitness_progress], to: fitness_today, count: once, do: [{tap: {id: fitness_tab_today}}]}
   - {id: fitness.tab_lifts_empty, from: [fitness_today, fitness_history, fitness_progress], to: fitness_lifts_empty, when: "not lift", count: once, do: [{tap: {id: fitness_tab_lifts}}]}
@@ -369,7 +369,7 @@ edges:
   - {id: fitness_lifts_adding.close_form, from: fitness_lifts_adding, to: fitness_lifts_empty, when: "not lift", pending: "the app has no control that closes the Lifts add-exercise form without adding: it ends only by adding"}
   # An exercise.
   - {id: fitness_edit.save, from: fitness_edit, to: fitness_lift, when: "edit_from == 'lift'", do: [{scroll_to: {id: fitness_edit_save}}, {tap: {id: fitness_edit_save}}]}
-  - {id: fitness_edit.save_to_workout, from: fitness_edit, to: fitness_workout, when: "edit_from == 'workout'", do: [{scroll_to: {id: fitness_edit_save}}, {tap: {id: fitness_edit_save}}], pending: "not yet verified on a device"}
+  - {id: fitness_edit.save_to_workout, from: fitness_edit, to: fitness_workout, when: "edit_from == 'workout'", do: [{scroll_to: {id: fitness_edit_save}}, {tap: {id: fitness_edit_save}}]}
   - {id: fitness_edit.delete, from: fitness_edit, to: fitness_lifts_empty, set: {lift: false, workout_open: false}, do: [{scroll_to: {id: fitness_edit_delete}}, {tap: {id: fitness_edit_delete}}, {tap: {id: fitness_edit_delete}}]}
   - {id: fitness_lift.log_record, from: fitness_lift, to: fitness_record_celebration, do: [{tap: {desc: "More weight"}}, {tap: {id: fitness_logger_log}}], pending: "needs a second, heavier set to be a record, and the record banner clears itself 3.6 s later, before the walk can read it"}
   - {id: fitness_record_celebration.dismiss_lift, from: fitness_record_celebration, to: fitness_lift, do: [{tap: {id: fitness_record_banner}}], pending: "needs a second, heavier set to be a record, and the record banner clears itself 3.6 s later, before the walk can read it"}

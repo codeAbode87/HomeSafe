@@ -202,11 +202,11 @@ nodes:
         no_check_available: {observe: {text_contains: "no fingerprint or face to check"}}
 edges:
   - {id: atlas_offline.back, from: atlas_offline, to: home, when: "tab == 'home'", do: [back]}
-  - {id: atlas_offline.back_to_moments, from: atlas_offline, to: moments, when: "tab == 'moments'", do: [back], pending: "not yet verified on a device"}
-  - {id: atlas_offline.back_to_settings, from: atlas_offline, to: settings, when: "tab == 'settings'", do: [back], pending: "not yet verified on a device"}
+  - {id: atlas_offline.back_to_moments, from: atlas_offline, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: atlas_offline.back_to_settings, from: atlas_offline, to: settings, when: "tab == 'settings'", do: [back]}
   - {id: atlas.close, from: atlas_map, to: home, when: "tab == 'home'", do: [back]}
-  - {id: atlas.close_to_moments, from: atlas_map, to: moments, when: "tab == 'moments'", do: [back], pending: "not yet verified on a device"}
-  - {id: atlas.close_to_settings, from: atlas_map, to: settings, when: "tab == 'settings'", do: [back], pending: "not yet verified on a device"}
+  - {id: atlas.close_to_moments, from: atlas_map, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: atlas.close_to_settings, from: atlas_map, to: settings, when: "tab == 'settings'", do: [back]}
   # The tab bar shows on the five tabs, not on the pages pushed over them.
   - {id: atlas.tab_map, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: atlas_map, set: {atlas_tab: map}, count: once, do: [{tap: {id: atlas_tab_map}}]}
   - {id: atlas.tab_days, from: [atlas_map, atlas_places, atlas_trips, atlas_patterns], to: atlas_days, set: {atlas_tab: days}, count: once, do: [{tap: {id: atlas_tab_days}}]}
@@ -226,8 +226,8 @@ edges:
   - {id: atlas_place.back_to_trip, from: atlas_place, to: atlas_trip, when: "atlas_place_from == 'trip'", do: [back], pending: "needs fixture data: the fake relay's history has no trip away from home"}
   # Not yet tried on a device.
   - {id: atlas_other_tabs.close, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: home, when: "tab == 'home'", count: once, do: [back]}
-  - {id: atlas_other_tabs.close_to_moments, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: moments, when: "tab == 'moments'", count: once, do: [back], pending: "not yet verified on a device"}
-  - {id: atlas_other_tabs.close_to_settings, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: settings, when: "tab == 'settings'", count: once, do: [back], pending: "not yet verified on a device"}
+  - {id: atlas_other_tabs.close_to_moments, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: moments, when: "tab == 'moments'", count: once, do: [back]}
+  - {id: atlas_other_tabs.close_to_settings, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: settings, when: "tab == 'settings'", count: once, do: [back]}
   - {id: atlas_tabs.open_sync, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: atlas_sync, count: once, do: [{tap: {id: atlas_sync_open}}]}
   - {id: atlas_map.open_place, from: atlas_map, to: atlas_place, pending: "needs a gesture selectors can't make: a day is one square of the year grid and a place one dot on the map, each tapped at a chosen point"}
   - {id: atlas_days.open_day, from: atlas_days, to: atlas_day, set: {atlas_day_from: days}, pending: "needs a gesture selectors can't make: a day is one square of the year grid and a place one dot on the map, each tapped at a chosen point"}
