@@ -165,10 +165,10 @@ edges:
   - {id: packages_add.back, from: packages_add, to: packages_today, do: [back]}
   - {id: packages_setup.back, from: packages_setup, to: packages_today, do: [back]}
   # Not yet tried on a device.
-  - {id: packages_other_tabs.close, from: [packages_all, packages_returns, packages_insights], to: home, count: once, do: [back], pending: "not yet verified on a device"}
-  - {id: packages_tabs.add, from: [packages_all, packages_returns, packages_insights], to: packages_add, count: once, do: [{tap: {id: packages_add}}], pending: "not yet verified on a device"}
-  - {id: packages_tabs.setup, from: [packages_all, packages_returns, packages_insights], to: packages_setup, count: once, do: [{tap: {id: packages_setup}}], pending: "not yet verified on a device"}
-  - {id: packages_all.open_parcel, from: packages_all, to: packages_parcel, do: [{tap: {id: parcel_p1}}], pending: "not yet verified on a device"}
+  - {id: packages_other_tabs.close, from: [packages_all, packages_returns, packages_insights], to: home, count: once, do: [back]}
+  - {id: packages_tabs.add, from: [packages_all, packages_returns, packages_insights], to: packages_add, count: once, do: [{tap: {id: packages_add}}]}
+  - {id: packages_tabs.setup, from: [packages_all, packages_returns, packages_insights], to: packages_setup, count: once, do: [{tap: {id: packages_setup}}]}
+  - {id: packages_all.open_parcel, from: packages_all, to: packages_parcel, do: [{tap: {id: parcel_p1}}]}
   - {id: packages_returns.open_parcel, from: packages_returns, to: packages_parcel, pending: "needs fixture data"}
   - {id: packages_parcel.open_claim, from: packages_parcel, to: packages_claim, do: [{tap: {id: parcel_claim}}], pending: "not yet verified on a device"}
   - {id: packages_claim.back, from: packages_claim, to: packages_parcel, do: [back], pending: "not yet verified on a device"}

@@ -283,7 +283,6 @@ nodes:
     title: Route badge menu (version only)
     group: overlay
     kind: modal
-    pending: "not yet verified on a device"
     match:
       all: [{text_contains: "Version "}]
       none: [{id: bottom_nav_home}]
@@ -531,7 +530,6 @@ nodes:
     title: Camera overflow menu
     group: overlay
     kind: modal
-    pending: "not yet verified on a device"
     match:
       all: [{text: "Detection zones"}, {text: "Tag cars in view"}]
       none: [{id: bottom_nav_home}]
@@ -541,7 +539,6 @@ nodes:
     title: Video quality menu
     group: overlay
     kind: modal
-    pending: "not yet verified on a device"
     match:
       all: [{text: "Video quality"}, {text: Auto}]
       none: [{id: bottom_nav_home}]
@@ -550,7 +547,6 @@ nodes:
   detection_zones:
     title: Detection zones
     group: shell
-    pending: "not yet verified on a device"
     match:
       all: [{id: detection_zones_canvas}]
     covers: ["screen:DetectionZonesScreen", "page:route.DetectionZonesRoute"]
@@ -579,7 +575,6 @@ nodes:
   car_tagging:
     title: Tag cars in view
     group: fullscreen
-    pending: "not yet verified on a device"
     match:
       all: [{id: car-tagging}]
     covers: ["screen:CarTaggingScreen", "page:route.CarTaggingRoute"]
@@ -595,7 +590,6 @@ nodes:
   clip_editor:
     title: Clip editor
     group: fullscreen
-    pending: "not yet verified on a device"
     match:
       any: [{desc: "Close clip editor"}, {id: clip_playhead}]
     covers: ["screen:ClipEditorScreen", "page:route.ClipEditorRoute"]
@@ -686,10 +680,10 @@ edges:
   - {id: sign_in_drawer.open_atlas, from: sign_in_drawer, to: atlas_offline, pending: "not yet verified on a device", do: [{tap: {id: drawer_atlas}}]}
 
   # ---- Drawer and top bar from the other tabs ----
-  - {id: shell.open_drawer_from_tabs, from: [moments, settings], to: drawer, pending: "not yet verified on a device", do: [{tap: {id: shell_menu}}]}
+  - {id: shell.open_drawer_from_tabs, from: [moments, settings], to: drawer, do: [{tap: {id: shell_menu}}]}
   - {id: drawer.close_to_moments, from: drawer, to: moments, pending: "not yet verified on a device", do: [back]}
   - {id: drawer.close_to_settings, from: drawer, to: settings, pending: "not yet verified on a device", do: [back]}
-  - {id: shell.open_version_menu, from: [moments, settings], to: version_menu, pending: "not yet verified on a device", do: [{tap: {text: Tailscale}}]}
+  - {id: shell.open_version_menu, from: [moments, settings], to: version_menu, do: [{tap: {text: Tailscale}}]}
   - {id: version_menu.close_to_moments, from: version_menu, to: moments, pending: "not yet verified on a device", do: [back]}
   - {id: version_menu.close_to_settings, from: version_menu, to: settings, pending: "not yet verified on a device", do: [back]}
   - {id: arrange_menu.start_arranging, from: arrange_menu, to: home_arranging, pending: "not yet verified on a device", do: [{tap: {id: home_arrange_menu_item}}]}
@@ -741,7 +735,7 @@ edges:
   - {id: settings_fold_app_icon.close, from: settings_fold_app_icon, to: settings, pending: "not yet verified on a device", do: [{tap: {text: App icon}}]}
 
   # ---- Settings pages: their own dialogs and pushed pages ----
-  - {id: notifications.open_doors, from: notifications, to: doors, pending: "not yet verified on a device", do: [{scroll_to: {text: Doors}}, {tap: {text: Doors}}]}
+  - {id: notifications.open_doors, from: notifications, to: doors, do: [{scroll_to: {text: Doors}}, {tap: {text: Doors}}]}
   - {id: doors.back_to_notifications, from: doors, to: notifications, pending: "not yet verified on a device", do: [back]}
   - {id: notifications.open_quiet_hours, from: notifications, to: quiet_hours_dialog, pending: "not yet verified on a device"}
   - {id: quiet_hours_dialog.close, from: quiet_hours_dialog, to: notifications, pending: "not yet verified on a device", do: [back]}
@@ -768,20 +762,20 @@ edges:
   - {id: parking_map.close, from: parking_map, to: home, pending: "needs a notification or deep link", do: [{tap: {id: parking_map_close}}]}
 
   # ---- Camera screen ----
-  - {id: camera_detail.open_overflow, from: camera_detail, to: camera_overflow_menu, pending: "not yet verified on a device", do: [{tap: {desc: "More options"}}]}
-  - {id: camera_overflow_menu.close, from: camera_overflow_menu, to: camera_detail, pending: "not yet verified on a device", do: [back]}
-  - {id: camera_overflow_menu.open_detection_zones, from: camera_overflow_menu, to: detection_zones, pending: "not yet verified on a device", do: [{tap: {text: "Detection zones"}}]}
-  - {id: camera_overflow_menu.open_tag_cars, from: camera_overflow_menu, to: car_tagging, pending: "not yet verified on a device", do: [{tap: {text: "Tag cars in view"}}]}
-  - {id: camera_detail.open_quality_menu, from: camera_detail, to: camera_quality_menu, pending: "not yet verified on a device", do: [{tap: {desc_contains: "Video quality:"}}]}
-  - {id: camera_quality_menu.close, from: camera_quality_menu, to: camera_detail, pending: "not yet verified on a device", do: [back]}
-  - {id: camera_detail.open_clip_editor, from: camera_detail, to: clip_editor, pending: "not yet verified on a device", do: [{tap: {desc_contains: "Clip a video from"}}]}
-  - {id: clip_editor.close, from: clip_editor, to: camera_detail, pending: "not yet verified on a device", do: [{tap: {desc: "Close clip editor"}}]}
-  - {id: detection_zones.back, from: detection_zones, to: camera_detail, pending: "not yet verified on a device", do: [back]}
+  - {id: camera_detail.open_overflow, from: camera_detail, to: camera_overflow_menu, do: [{tap: {desc: "More options"}}]}
+  - {id: camera_overflow_menu.close, from: camera_overflow_menu, to: camera_detail, do: [back]}
+  - {id: camera_overflow_menu.open_detection_zones, from: camera_overflow_menu, to: detection_zones, do: [{tap: {text: "Detection zones"}}]}
+  - {id: camera_overflow_menu.open_tag_cars, from: camera_overflow_menu, to: car_tagging, do: [{tap: {text: "Tag cars in view"}}]}
+  - {id: camera_detail.open_quality_menu, from: camera_detail, to: camera_quality_menu, do: [{tap: {desc_contains: "Video quality:"}}]}
+  - {id: camera_quality_menu.close, from: camera_quality_menu, to: camera_detail, do: [back]}
+  - {id: camera_detail.open_clip_editor, from: camera_detail, to: clip_editor, do: [{tap: {desc_contains: "Clip a video from"}}]}
+  - {id: clip_editor.close, from: clip_editor, to: camera_detail, do: [{tap: {desc: "Close clip editor"}}]}
+  - {id: detection_zones.back, from: detection_zones, to: camera_detail, do: [back]}
   - {id: detection_zones.back_unsaved, from: detection_zones, to: detection_zones_leave_dialog, pending: "not yet verified on a device", do: [back]}
   - {id: detection_zones_leave_dialog.keep_editing, from: detection_zones_leave_dialog, to: detection_zones, pending: "not yet verified on a device", do: [{tap: {text: "Keep editing"}}]}
   - {id: detection_zones_leave_dialog.discard, from: detection_zones_leave_dialog, to: camera_detail, pending: "not yet verified on a device", do: [{tap: {text: Discard}}]}
   - {id: detection_zones_leave_dialog.save_and_leave, from: detection_zones_leave_dialog, to: camera_detail, pending: "not yet verified on a device", do: [{tap: {text: "Save and leave"}}]}
-  - {id: car_tagging.back, from: car_tagging, to: camera_detail, pending: "not yet verified on a device", do: [back]}
+  - {id: car_tagging.back, from: car_tagging, to: camera_detail, do: [back]}
   - {id: camera_detail.open_tag_car, from: camera_detail, to: tag_car_dialog, pending: "not yet verified on a device", do: [{tap: {text_matches: "Tag (this )?car"}}]}
   - {id: tag_car_dialog.close_to_camera, from: tag_car_dialog, to: camera_detail, pending: "not yet verified on a device", do: [back]}
 

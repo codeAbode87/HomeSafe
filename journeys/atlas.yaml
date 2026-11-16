@@ -209,7 +209,7 @@ edges:
   - {id: atlas_sync.back, from: atlas_sync, to: atlas_map, do: [back]}
   - {id: atlas_place.back, from: atlas_place, to: atlas_places, do: [back]}
   # Not yet tried on a device.
-  - {id: atlas_other_tabs.close, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: home, count: once, do: [back], pending: "not yet verified on a device"}
+  - {id: atlas_other_tabs.close, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: home, count: once, do: [back]}
   - {id: atlas_tabs.open_sync, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: atlas_sync, count: once, do: [{tap: {id: atlas_sync_open}}], pending: "not yet verified on a device"}
   - {id: atlas_map.open_place, from: atlas_map, to: atlas_place, pending: "not yet verified on a device"}
   - {id: atlas_days.open_day, from: atlas_days, to: atlas_day, pending: "not yet verified on a device"}

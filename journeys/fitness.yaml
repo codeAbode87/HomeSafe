@@ -339,7 +339,7 @@ edges:
   # In a wide window the tabs are listed in the shell's sidebar, and one of them closes any open page.
   - {id: fitness.sidebar_tab, from: [fitness_lift, fitness_edit, fitness_import, fitness_heart, fitness_runs, fitness_workout, fitness_session, fitness_run, fitness_recording], to: fitness_today, count: once, pending: "needs a wide window"}
   # Today.
-  - {id: fitness_today.phase_pill, from: fitness_today, to: fitness_progress, do: [{tap: {id: fitness_phase_pill}}], pending: "not yet verified on a device"}
+  - {id: fitness_today.phase_pill, from: fitness_today, to: fitness_progress, do: [{tap: {id: fitness_phase_pill}}]}
   - {id: fitness_today.add_exercise, from: fitness_today, to: fitness_lifts_empty, when: "not lift", pending: "not yet verified on a device"}
   - {id: fitness_today.resume_workout, from: fitness_today, to: fitness_workout, when: "lift", do: [{tap: {id: fitness_today_resume}}], pending: "not yet verified on a device"}
   - {id: fitness_today.open_record_exercise, from: fitness_today, to: fitness_lift, pending: "needs fixture data"}
@@ -349,7 +349,7 @@ edges:
   - {id: fitness_today.health_connect_rationale, from: fitness_today, to: fitness_health_rationale, pending: "needs a notification or deep link"}
   - {id: fitness_health_rationale.done, from: fitness_health_rationale, to: fitness_today, do: [{tap: {id: fitness_health_rationale_done}}], pending: "needs a notification or deep link"}
   # Lifts.
-  - {id: fitness_lifts.open_import, from: [fitness_lifts_empty, fitness_lifts_list], to: fitness_import, do: [{tap: {id: fitness_lifts_import}}], pending: "not yet verified on a device"}
+  - {id: fitness_lifts.open_import, from: [fitness_lifts_empty, fitness_lifts_list], to: fitness_import, do: [{tap: {id: fitness_lifts_import}}]}
   - {id: fitness_lifts_adding.close_form, from: fitness_lifts_adding, to: fitness_lifts_empty, when: "not lift", pending: "not yet verified on a device"}
   # An exercise.
   - {id: fitness_edit.save, from: fitness_edit, to: fitness_lift, do: [{tap: {id: fitness_edit_save}}], pending: "not yet verified on a device"}
@@ -358,11 +358,11 @@ edges:
   - {id: fitness_record_celebration.dismiss_lift, from: fitness_record_celebration, to: fitness_lift, do: [{tap: {id: fitness_record_banner}}], pending: "not yet verified on a device"}
   - {id: fitness_record_celebration.dismiss_workout, from: fitness_record_celebration, to: fitness_workout, do: [{tap: {id: fitness_record_banner}}], pending: "not yet verified on a device"}
   # The workout.
-  - {id: fitness_workout.finish, from: fitness_workout, to: fitness_today, do: [{tap: {id: fitness_workout_finish}}], pending: "not yet verified on a device"}
+  - {id: fitness_workout.finish, from: fitness_workout, to: fitness_today, do: [{tap: {id: fitness_workout_finish}}]}
   - {id: fitness_workout.cancel, from: fitness_workout, to: fitness_today, do: [{tap: {id: fitness_workout_cancel}}, {tap: {id: fitness_workout_cancel}}], pending: "not yet verified on a device"}
   - {id: fitness_workout.open_exercise, from: fitness_workout, to: fitness_lift, pending: "not yet verified on a device"}
   - {id: fitness_workout.edit_exercise, from: fitness_workout, to: fitness_edit, pending: "not yet verified on a device"}
-  - {id: fitness_workout.open_heart, from: fitness_workout, to: fitness_heart, do: [{tap: {id: fitness_heart_open}}], pending: "not yet verified on a device"}
+  - {id: fitness_workout.open_heart, from: fitness_workout, to: fitness_heart, do: [{tap: {id: fitness_heart_open}}]}
   - {id: fitness_workout.log_record, from: fitness_workout, to: fitness_record_celebration, pending: "not yet verified on a device"}
   # History.
   - {id: fitness_history.open_session, from: fitness_history, to: fitness_session, pending: "not yet verified on a device"}

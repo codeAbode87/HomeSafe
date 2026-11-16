@@ -138,11 +138,11 @@ edges:
   - {id: charging_car.back, from: charging_car, to: charging_home, do: [back]}
   - {id: charging_charge.back, from: charging_charge, to: charging_charges, do: [back]}
   # Not yet tried on a device.
-  - {id: charging_other_tabs.close, from: [charging_charges, charging_rates], to: home, count: once, do: [back], pending: "not yet verified on a device"}
+  - {id: charging_other_tabs.close, from: [charging_charges, charging_rates], to: home, count: once, do: [back]}
   - {id: charging_home.open_charge_live, from: charging_home, to: charging_charge, do: [{tap: {id: charging_live_car_a}}], pending: "needs fixture data"}
   - {id: charging_home.open_rates, from: charging_home, to: charging_rates, do: [{tap: {id: charging_home_card}}], pending: "not yet verified on a device"}
-  - {id: charging_car.see_charges, from: charging_car, to: charging_charges, do: [{tap: {id: charging_car_see_charges}}], pending: "not yet verified on a device"}
-  - {id: charging_tabs.refresh, from: [charging_home, charging_charges, charging_rates], to: "=", count: once, do: [{tap: {id: charging_refresh}}], pending: "not yet verified on a device"}
+  - {id: charging_car.see_charges, from: charging_car, to: charging_charges, do: [{tap: {id: charging_car_see_charges}}]}
+  - {id: charging_tabs.refresh, from: [charging_home, charging_charges, charging_rates], to: "=", count: once, do: [{tap: {id: charging_refresh}}]}
   - {id: charging_waiting.back, from: charging_waiting, to: home, do: [back], pending: "needs fixture data"}
   - {id: charging_page.error_banner, from: [charging_home, charging_charges, charging_rates, charging_car, charging_charge], to: charging_error_banner, count: once, pending: "needs fixture data"}
   - {id: charging_error_banner.retry, from: charging_error_banner, to: "=", do: [{tap: {id: charging_error_retry}}], pending: "needs fixture data"}
