@@ -1,5 +1,11 @@
 # Finance, from the drawer. The fake server has no relay (nothing listens on :8787), so every tab says it could not
 # read its data; the screens are the app's real error states.
+vars:
+  # Where the jargon buster and chart settings were opened from, which Back returns to.
+  finance_from: {initial: page, values: [page, budget, tab]}
+  # Where the explainer sheet was opened from, which closing it returns to.
+  explain_from: {initial: tab, values: [tab, glossary]}
+
 nodes:
   # With the fake relay on, its routes for the sheet and the budget aren't modelled (yet): the app says the relay is outdated.
   finance_outdated:
@@ -354,8 +360,10 @@ nodes:
     title: Finance, Explainer sheet
     group: finance
     kind: modal
-    pending: "not yet verified on a device"
     covers: ["modal:ExplainSheet.ExplainSheet"]
+    # The sheet's own headings (its scrim's description is the platform's, so it is translated under another locale).
+    match:
+      any: [{text: "WHY IT MATTERS"}, {text: "AN EVERYDAY COMPARISON"}]
     sources: ["features/finance/src/commonMain/**/ui/ExplainSheet.kt"]
   finance_add_symbol_sheet:
     title: Finance, Add to watchlist
@@ -475,7 +483,9 @@ nodes:
 
 
 edges:
-  - {id: finance.close, from: [finance_unavailable, finance_outdated], to: home, do: [back]}
+  - {id: finance.close, from: [finance_unavailable, finance_outdated], to: home, when: "tab == 'home'", do: [back]}
+  - {id: finance.close_to_moments, from: [finance_unavailable, finance_outdated], to: moments, when: "tab == 'moments'", do: [back], pending: "not yet verified on a device"}
+  - {id: finance.close_to_settings, from: [finance_unavailable, finance_outdated], to: settings, when: "tab == 'settings'", do: [back], pending: "not yet verified on a device"}
   # The tab bar shows on the five tabs, not on the pushed pages.
   - {id: finance.tab_wallet, from: [finance_budget, finance_markets, finance_economy, finance_risk], to: finance_unavailable, when: "relay == 'off'", count: once, do: [{tap: {id: finance_tab_wallet}}]}
   - {id: finance.tab_wallet_on, from: [finance_budget, finance_markets, finance_economy, finance_risk], to: finance_outdated, when: "relay == 'on'", count: once, do: [{tap: {id: finance_tab_wallet}}]}
@@ -485,33 +495,42 @@ edges:
   - {id: finance.tab_risk, from: [finance_unavailable, finance_outdated, finance_budget, finance_markets, finance_economy], to: finance_risk, count: once, do: [{tap: {id: finance_tab_risk}}]}
   - {id: finance_unavailable.retry, from: finance_unavailable, to: "=", do: [{tap: {text: Try again}}]}
   - {id: finance_outdated.retry, from: finance_outdated, to: "=", do: [{tap: {text: Try again}}]}
-  - {id: finance_unavailable.open_glossary, from: finance_unavailable, to: finance_glossary, do: [{tap: {id: finance_glossary}}]}
-  - {id: finance_unavailable.open_chart_settings, from: finance_unavailable, to: finance_chart_settings, do: [{tap: {id: finance_chart_settings}}]}
-  - {id: finance_outdated.open_glossary, from: finance_outdated, to: finance_glossary, do: [{tap: {id: finance_glossary}}]}
-  - {id: finance_outdated.open_chart_settings, from: finance_outdated, to: finance_chart_settings, do: [{tap: {id: finance_chart_settings}}]}
-  - {id: finance_glossary.back, from: finance_glossary, to: finance_unavailable, when: "relay == 'off'", do: [back]}
-  - {id: finance_glossary.back_on, from: finance_glossary, to: finance_outdated, when: "relay == 'on'", do: [back]}
-  - {id: finance_chart_settings.back, from: finance_chart_settings, to: finance_unavailable, when: "relay == 'off'", do: [back]}
-  - {id: finance_chart_settings.back_on, from: finance_chart_settings, to: finance_outdated, when: "relay == 'on'", do: [back]}
+  - {id: finance_unavailable.open_glossary, from: finance_unavailable, to: finance_glossary, set: {finance_from: page}, do: [{tap: {id: finance_glossary}}]}
+  - {id: finance_unavailable.open_chart_settings, from: finance_unavailable, to: finance_chart_settings, set: {finance_from: page}, do: [{tap: {id: finance_chart_settings}}]}
+  - {id: finance_outdated.open_glossary, from: finance_outdated, to: finance_glossary, set: {finance_from: page}, do: [{tap: {id: finance_glossary}}]}
+  - {id: finance_outdated.open_chart_settings, from: finance_outdated, to: finance_chart_settings, set: {finance_from: page}, do: [{tap: {id: finance_chart_settings}}]}
+  - {id: finance_glossary.back, from: finance_glossary, to: finance_unavailable, when: "relay == 'off' and finance_from == 'page'", do: [back]}
+  - {id: finance_glossary.back_on, from: finance_glossary, to: finance_outdated, when: "relay == 'on' and finance_from == 'page'", do: [back]}
+  - {id: finance_chart_settings.back, from: finance_chart_settings, to: finance_unavailable, when: "relay == 'off' and finance_from == 'page'", do: [back]}
+  - {id: finance_chart_settings.back_on, from: finance_chart_settings, to: finance_outdated, when: "relay == 'on' and finance_from == 'page'", do: [back]}
 
   # --- Added for the denominator: none of these has been tried on a device ---
   # The app opens, closes and locks.
   - {id: drawer.open_finance_locked, from: drawer, to: finance_lock, do: [{tap: {id: drawer_finance}}], pending: "needs a device capability"}
   - {id: finance_lock.unlock, from: finance_lock, to: finance_wallet, do: [{tap: {id: finance_unlock}}], pending: "needs a device capability"}
-  - {id: finance_lock.close, from: finance_lock, to: home, do: [{tap: {id: finance_back}}], pending: "needs a device capability"}
+  - {id: finance_lock.close, from: finance_lock, to: home, when: "tab == 'home'", do: [{tap: {id: finance_back}}], pending: "needs a device capability"}
+  - {id: finance_lock.close_to_moments, from: finance_lock, to: moments, when: "tab == 'moments'", do: [{tap: {id: finance_back}}], pending: "needs a device capability"}
+  - {id: finance_lock.close_to_settings, from: finance_lock, to: settings, when: "tab == 'settings'", do: [{tap: {id: finance_back}}], pending: "needs a device capability"}
+  - {id: finance_lock.close_to_sign_in, from: finance_lock, to: sign_in, when: "tab == 'sign_in'", do: [{tap: {id: finance_back}}], pending: "needs a device capability"}
   - {id: drawer.open_finance_wallet, from: drawer, to: finance_wallet, do: [{tap: {id: drawer_finance}}], pending: "needs a relay route"}
   - {id: drawer.open_finance_setup, from: drawer, to: finance_wallet_setup, do: [{tap: {id: drawer_finance}}], pending: "needs a relay route"}
-  - {id: finance.close_tabs, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], to: home, do: [back]}
+  - {id: finance.close_tabs, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], to: home, when: "tab == 'home'", do: [back]}
+  - {id: finance.close_tabs_to_moments, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], to: moments, when: "tab == 'moments'", do: [back], pending: "not yet verified on a device"}
+  - {id: finance.close_tabs_to_settings, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], to: settings, when: "tab == 'settings'", do: [back], pending: "not yet verified on a device"}
   # The tab bar, from the tabs the existing edges do not start from.
   - {id: finance.tab_wallet_loaded, from: [finance_budget, finance_markets, finance_economy, finance_risk], to: finance_wallet, count: once, do: [{tap: {id: finance_tab_wallet}}], pending: "needs a relay route"}
-  - {id: finance.tab_budget_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_budget, count: once, do: [{tap: {id: finance_tab_budget}}], pending: "not yet verified on a device"}
-  - {id: finance.tab_markets_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_markets, count: once, do: [{tap: {id: finance_tab_markets}}], pending: "not yet verified on a device"}
-  - {id: finance.tab_economy_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_economy, count: once, do: [{tap: {id: finance_tab_economy}}], pending: "not yet verified on a device"}
-  - {id: finance.tab_risk_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_risk, count: once, do: [{tap: {id: finance_tab_risk}}], pending: "not yet verified on a device"}
+  - {id: finance.tab_budget_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_budget, count: once, do: [{tap: {id: finance_tab_budget}}], pending: "needs a relay route"}
+  - {id: finance.tab_markets_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_markets, count: once, do: [{tap: {id: finance_tab_markets}}], pending: "needs a relay route"}
+  - {id: finance.tab_economy_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_economy, count: once, do: [{tap: {id: finance_tab_economy}}], pending: "needs a relay route"}
+  - {id: finance.tab_risk_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_risk, count: once, do: [{tap: {id: finance_tab_risk}}], pending: "needs a relay route"}
   - {id: finance.tab_wallet_setup, from: [finance_budget, finance_markets, finance_economy, finance_risk], to: finance_wallet_setup, count: once, do: [{tap: {id: finance_tab_wallet}}], pending: "needs a relay route"}
   # The top bar's two icons, on the tabs.
-  - {id: finance.tabs_open_glossary, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], except: [finance_unavailable, finance_outdated], to: finance_glossary, count: once, do: [{tap: {id: finance_glossary}}]}
-  - {id: finance.tabs_open_chart_settings, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], except: [finance_unavailable, finance_outdated], to: finance_chart_settings, count: once, do: [{tap: {id: finance_chart_settings}}]}
+  - {id: finance.tabs_open_glossary, from: [finance_wallet, finance_wallet_setup, finance_markets, finance_economy, finance_risk], except: [finance_unavailable, finance_outdated, finance_budget], to: finance_glossary, count: once, set: {finance_from: tab}, do: [{tap: {id: finance_glossary}}]}
+  - {id: finance.budget_open_glossary, from: finance_budget, to: finance_glossary, set: {finance_from: budget}, do: [{tap: {id: finance_glossary}}], pending: "not yet verified on a device"}
+  - {id: finance_glossary.back_to_budget, from: finance_glossary, to: finance_budget, when: "finance_from == 'budget'", do: [back], pending: "not yet verified on a device"}
+  - {id: finance.tabs_open_chart_settings, from: [finance_wallet, finance_wallet_setup, finance_markets, finance_economy, finance_risk], except: [finance_unavailable, finance_outdated, finance_budget], to: finance_chart_settings, count: once, set: {finance_from: tab}, do: [{tap: {id: finance_chart_settings}}]}
+  - {id: finance.budget_open_chart_settings, from: finance_budget, to: finance_chart_settings, set: {finance_from: budget}, do: [{tap: {id: finance_chart_settings}}], pending: "not yet verified on a device"}
+  - {id: finance_chart_settings.back_to_budget, from: finance_chart_settings, to: finance_budget, when: "finance_from == 'budget'", do: [back], pending: "not yet verified on a device"}
   - {id: finance.glossary_back_to_tab, from: finance_glossary, to: finance_wallet, do: [back], pending: "needs a relay route"}
   - {id: finance.chart_settings_back_to_tab, from: finance_chart_settings, to: finance_wallet, do: [back], pending: "needs a relay route"}
   # Pushed pages: Back (the top bar's arrow or the detail pill) pops one page; the pill's other half hops to the cameras.
@@ -571,9 +590,10 @@ edges:
   - {id: finance_economy.open_connections, from: finance_economy, to: finance_connections, do: [{tap: {text: "HOW IT ALL CONNECTS"}}], pending: "needs recorded internet"}
   - {id: finance_economy.open_indicator, from: [finance_economy, finance_risk], to: finance_indicator, pending: "needs recorded internet"}
   # The explainer sheet: any ⓘ opens it; its link to a chart opens the indicator page.
-  - {id: finance.open_explainer, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], except: [finance_unavailable, finance_outdated], to: finance_explain_sheet, count: once, pending: "not yet verified on a device"}
-  - {id: finance_glossary.open_term, from: finance_glossary, to: finance_explain_sheet, pending: "not yet verified on a device"}
-  - {id: finance_explain_sheet.close, from: finance_explain_sheet, to: finance_economy, do: [back], pending: "not yet verified on a device"}
+  - {id: finance.open_explainer, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], except: [finance_unavailable, finance_outdated], to: finance_explain_sheet, set: {explain_from: tab}, count: once, pending: "needs recorded internet: the ⓘ marks that open an explainer sit on the Markets and Economy pages, which draw from the internet"}
+  - {id: finance_glossary.open_term, from: finance_glossary, to: finance_explain_sheet, set: {explain_from: glossary}, do: [{tap: {cls: View, clickable: true, index: 0}}]}
+  - {id: finance_explain_sheet.close, from: finance_explain_sheet, to: finance_economy, when: "explain_from == 'tab'", do: [back], pending: "needs recorded internet: the ⓘ marks that open an explainer sit on the Markets and Economy pages, which draw from the internet"}
+  - {id: finance_explain_sheet.close_to_glossary, from: finance_explain_sheet, to: finance_glossary, when: "explain_from == 'glossary'", do: [back]}
   - {id: finance_explain_sheet.open_chart, from: finance_explain_sheet, to: finance_indicator, pending: "needs recorded internet"}
   # A budget alert's notification opens Budget (homesafe://finance?tab=budget)
   - {id: finance.notification_budget, from: home, to: finance_budget, do: [{open: "homesafe://finance?tab=budget"}], pending: "needs a notification or deep link"}

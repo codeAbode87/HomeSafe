@@ -1,3 +1,7 @@
+vars:
+  # The tab the parcel, add and setup pages were opened from, which Back returns to.
+  packages_tab: {initial: today, values: [today, all, returns, insights]}
+
 # Packages, from the drawer. Without the relay it can't reach the server and offers Retry; with the fake relay
 # (--relay) it lists three invented parcels, in four tabs, with the parcel, the add form and the settings pushed on top.
 nodes:
@@ -121,7 +125,7 @@ nodes:
     title: Packages, report a problem
     group: packages
     kind: screen
-    pending: "not yet verified on a device"
+    pending: "needs fixture data: Report a problem shows only on a late, problem or delivered parcel, and the fake relay's parcel is on its way"
     requires: "relay == 'on'"
     match:
       all: [{id: claim_text}]
@@ -150,28 +154,45 @@ nodes:
         signed_out: {observe: {text: "Sign in to your server to see your packages."}}
         relay_problem: {observe: {text_contains: "The relay"}}
 edges:
-  - {id: packages_unreachable.back, from: packages_unreachable, to: home, do: [back]}
+  - {id: packages_unreachable.back, from: packages_unreachable, to: home, when: "tab == 'home'", do: [back]}
+  - {id: packages_unreachable.back_to_moments, from: packages_unreachable, to: moments, when: "tab == 'moments'", do: [back], pending: "not yet verified on a device"}
+  - {id: packages_unreachable.back_to_settings, from: packages_unreachable, to: settings, when: "tab == 'settings'", do: [back], pending: "not yet verified on a device"}
   - {id: packages_unreachable.retry, from: packages_unreachable, to: "=", do: [{tap: {text: Retry}}]}
-  - {id: packages.close, from: packages_today, to: home, do: [back]}
+  - {id: packages.close, from: packages_today, to: home, when: "tab == 'home'", do: [back]}
+  - {id: packages.close_to_moments, from: packages_today, to: moments, when: "tab == 'moments'", do: [back], pending: "not yet verified on a device"}
+  - {id: packages.close_to_settings, from: packages_today, to: settings, when: "tab == 'settings'", do: [back], pending: "not yet verified on a device"}
   # The tab bar shows on the four tabs, not on the pages pushed over them.
-  - {id: packages.tab_today, from: [packages_all, packages_returns, packages_insights], to: packages_today, count: once, do: [{tap: {id: packages_tab_today}}]}
-  - {id: packages.tab_all, from: [packages_today, packages_returns, packages_insights], to: packages_all, count: once, do: [{tap: {id: packages_tab_all}}]}
-  - {id: packages.tab_returns, from: [packages_today, packages_all, packages_insights], to: packages_returns, count: once, do: [{tap: {id: packages_tab_returns}}]}
-  - {id: packages.tab_insights, from: [packages_today, packages_all, packages_returns], to: packages_insights, count: once, do: [{tap: {id: packages_tab_insights}}]}
+  - {id: packages.tab_today, from: [packages_all, packages_returns, packages_insights], to: packages_today, set: {packages_tab: today}, count: once, do: [{tap: {id: packages_tab_today}}]}
+  - {id: packages.tab_all, from: [packages_today, packages_returns, packages_insights], to: packages_all, set: {packages_tab: all}, count: once, do: [{tap: {id: packages_tab_all}}]}
+  - {id: packages.tab_returns, from: [packages_today, packages_all, packages_insights], to: packages_returns, set: {packages_tab: returns}, count: once, do: [{tap: {id: packages_tab_returns}}]}
+  - {id: packages.tab_insights, from: [packages_today, packages_all, packages_returns], to: packages_insights, set: {packages_tab: insights}, count: once, do: [{tap: {id: packages_tab_insights}}]}
   - {id: packages_today.open_parcel, from: packages_today, to: packages_parcel, do: [{tap: {id: parcel_p1}}]}
   - {id: packages_today.add, from: packages_today, to: packages_add, do: [{tap: {id: packages_add}}]}
   - {id: packages_today.setup, from: packages_today, to: packages_setup, do: [{tap: {id: packages_setup}}]}
-  - {id: packages_parcel.back, from: packages_parcel, to: packages_today, do: [back]}
-  - {id: packages_add.back, from: packages_add, to: packages_today, do: [back]}
-  - {id: packages_setup.back, from: packages_setup, to: packages_today, do: [back]}
+  - {id: packages_parcel.back, from: packages_parcel, to: packages_today, when: "packages_tab == 'today'", do: [back]}
+  - {id: packages_parcel.back_to_all, from: packages_parcel, to: packages_all, when: "packages_tab == 'all'", do: [back]}
+  - {id: packages_parcel.back_to_returns, from: packages_parcel, to: packages_returns, when: "packages_tab == 'returns'", do: [back], pending: "needs fixture data: the fake relay has no returns"}
+  - {id: packages_add.back, from: packages_add, to: packages_today, when: "packages_tab == 'today'", do: [back]}
+  - {id: packages_add.back_to_all, from: packages_add, to: packages_all, when: "packages_tab == 'all'", do: [back]}
+  - {id: packages_add.back_to_returns, from: packages_add, to: packages_returns, when: "packages_tab == 'returns'", do: [back]}
+  - {id: packages_add.back_to_insights, from: packages_add, to: packages_insights, when: "packages_tab == 'insights'", do: [back]}
+  - {id: packages_setup.back, from: packages_setup, to: packages_today, when: "packages_tab == 'today'", do: [back]}
+  - {id: packages_setup.back_to_all, from: packages_setup, to: packages_all, when: "packages_tab == 'all'", do: [back]}
+  - {id: packages_setup.back_to_returns, from: packages_setup, to: packages_returns, when: "packages_tab == 'returns'", do: [back]}
+  - {id: packages_setup.back_to_insights, from: packages_setup, to: packages_insights, when: "packages_tab == 'insights'", do: [back]}
   # Not yet tried on a device.
-  - {id: packages_other_tabs.close, from: [packages_all, packages_returns, packages_insights], to: home, count: once, do: [back]}
+  - {id: packages_other_tabs.close, from: [packages_all, packages_returns, packages_insights], to: home, when: "tab == 'home'", count: once, do: [back]}
+  - {id: packages_other_tabs.close_to_moments, from: [packages_all, packages_returns, packages_insights], to: moments, when: "tab == 'moments'", count: once, do: [back], pending: "not yet verified on a device"}
+  - {id: packages_other_tabs.close_to_settings, from: [packages_all, packages_returns, packages_insights], to: settings, when: "tab == 'settings'", count: once, do: [back], pending: "not yet verified on a device"}
   - {id: packages_tabs.add, from: [packages_all, packages_returns, packages_insights], to: packages_add, count: once, do: [{tap: {id: packages_add}}]}
   - {id: packages_tabs.setup, from: [packages_all, packages_returns, packages_insights], to: packages_setup, count: once, do: [{tap: {id: packages_setup}}]}
   - {id: packages_all.open_parcel, from: packages_all, to: packages_parcel, do: [{tap: {id: parcel_p1}}]}
   - {id: packages_returns.open_parcel, from: packages_returns, to: packages_parcel, pending: "needs fixture data"}
-  - {id: packages_parcel.open_claim, from: packages_parcel, to: packages_claim, do: [{tap: {id: parcel_claim}}], pending: "not yet verified on a device"}
-  - {id: packages_claim.back, from: packages_claim, to: packages_parcel, do: [back], pending: "not yet verified on a device"}
-  - {id: packages_blocked.back, from: packages_blocked, to: home, do: [back], pending: "needs fixture data"}
+  - {id: packages_parcel.open_claim, from: packages_parcel, to: packages_claim, do: [{tap: {id: parcel_claim}}], pending: "needs fixture data: Report a problem shows only on a late, problem or delivered parcel, and the fake relay's parcel is on its way"}
+  - {id: packages_claim.back, from: packages_claim, to: packages_parcel, do: [back], pending: "needs fixture data: Report a problem shows only on a late, problem or delivered parcel, and the fake relay's parcel is on its way"}
+  - {id: packages_blocked.back, from: packages_blocked, to: home, when: "tab == 'home'", do: [back], pending: "needs fixture data"}
+  - {id: packages_blocked.back_to_moments, from: packages_blocked, to: moments, when: "tab == 'moments'", do: [back], pending: "needs fixture data"}
+  - {id: packages_blocked.back_to_settings, from: packages_blocked, to: settings, when: "tab == 'settings'", do: [back], pending: "needs fixture data"}
+  - {id: packages_blocked.back_to_sign_in, from: packages_blocked, to: sign_in, when: "tab == 'sign_in'", do: [back], pending: "needs fixture data"}
   - {id: packages_today.empty_add, from: packages_today, to: packages_add, pending: "needs fixture data"}
   - {id: home.open_parcel_from_notification, from: home, to: packages_parcel, pending: "needs a notification or deep link"}

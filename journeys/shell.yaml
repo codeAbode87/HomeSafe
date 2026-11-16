@@ -1,9 +1,16 @@
+vars:
+  # Whether the doors page was opened from Notifications (Back returns there) or from Settings.
+  via_notifications: false
+  # Which of the three tabs the shell is on, for the menus whose Back returns to it.
+  tab: {initial: home, values: [home, moments, settings, sign_in]}
+
 nodes:
   # ---- Tabs (verified on a device) ----
   home:
     title: Home
     match:
       all: [{id: home_feed}]
+      none: [{id: home_arrange_done}]
     covers: ["tab:TopLevelRoute.Home", "page:route.AppShellRoute", "page:route.CameraListRoute", "state:ConnectionProblem.TailscaleOff", "state:ConnectionProblem.ServerUnreachable", "deeplink:ShellCommand.Go"]
     params:
       layout:
@@ -192,6 +199,7 @@ nodes:
     kind: modal
     match:
       all: [{id: shell_drawer}]
+      none: [{id: drawer_atlas_locked}]
     # The six apps open from its cards, and a notification's link opens one of them over the shell as well.
     covers: ["overlay:ShellDrawer.ShellDrawer", "overlay:ShellDrawer.InnerAppOverlay", "app:FINANCE", "app:WEATHER", "app:FITNESS", "app:ATLAS", "app:PACKAGES", "app:CHARGING", "deeplink:FinanceDeepLink", "deeplink:WeatherDeepLink", "deeplink:FitnessDeepLink", "deeplink:PackageDeepLink"]
     params:
@@ -234,7 +242,6 @@ nodes:
   sign_in:
     title: Sign in
     group: signin
-    pending: "not yet verified on a device"
     match:
       all: [{id: sign_in_connect}]
     covers: ["screen:SecureConnectionScreen", "page:route.SecureConnectionRoute", "state:ConnectUiState.Idle", "state:ConnectUiState.AwaitingBiometrics", "state:ConnectUiState.Connecting", "state:ConnectUiState.Error"]
@@ -271,27 +278,34 @@ nodes:
         update: {observe: {text_contains: "instead of the one saved before"}}
     sources: ["shared/src/commonMain/kotlin/**/SecureConnectionScreen.kt"]
   sign_in_drawer:
+    # A dropdown, drawer or overlay closes when the Activity is recreated: the screen under it must be there.
+    resilience: {expect: {recreate: sign_in, fontscale: sign_in, rtl: sign_in}}
     title: Menu drawer before signing in
     group: overlay
     kind: modal
-    pending: "not yet verified on a device"
+    priority: 1
+    match:
+      all: [{id: shell_drawer}, {id: drawer_atlas_locked}]
     # The drawer over the sign-in screen: the same shell_drawer, but no cameras to hop to, and the apps open without a server.
     sources: ["shared/src/commonMain/kotlin/**/ShellDrawer.kt", "shared/src/commonMain/kotlin/**/SecureConnectionScreen.kt"]
 
   # ---- Shell: top bar menus, assistant, wide windows ----
   version_menu:
+    # A dropdown, drawer or overlay closes when the Activity is recreated: the screen under it must be there.
+    resilience: {expect: {recreate: moments, fontscale: moments, rtl: moments}}
     title: Route badge menu (version only)
     group: overlay
     kind: modal
     match:
       all: [{text_contains: "Version "}]
-      none: [{id: bottom_nav_home}]
+      none: [{id: bottom_nav_home}, {text: "Arrange cameras"}]
     sources: ["shared/src/commonMain/kotlin/**/FrigateAppShell.kt"]
   assistant:
+    # A dropdown, drawer or overlay closes when the Activity is recreated: the screen under it must be there.
+    resilience: {expect: {recreate: home, fontscale: home, rtl: home}}
     title: Assistant
     group: overlay
     kind: modal
-    pending: "not yet verified on a device"
     match:
       any: [{id: assistant_card}, {id: assistant_model}]
     covers: ["overlay:AssistantOverlay.AssistantLayer", "deeplink:ShellCommand.Assistant"]
@@ -304,7 +318,7 @@ nodes:
     title: Assistant model menu
     group: overlay
     kind: modal
-    pending: "not yet verified on a device"
+    pending: "needs a relay route: the fake relay has no key vault, so the assistant never shows its model chip"
     covers: ["modal:AssistantOverlay.ModelChip"]
     sources: ["shared/src/commonMain/kotlin/**/AssistantOverlay.kt"]
   card_quick_look:
@@ -355,7 +369,9 @@ nodes:
   settings_fold_cameras:
     title: Settings, Cameras fold
     group: shell
-    pending: "not yet verified on a device"
+    priority: 1
+    match:
+      any: [{text: "Reading camera pipelines…"}, {text: "Object detection"}, {text: "Motion detection"}]
     covers: ["page:SettingsFold.CAMERAS"]
     params:
       access:
@@ -368,25 +384,33 @@ nodes:
   settings_fold_economy:
     title: Settings, Economy commentary fold
     group: shell
-    pending: "not yet verified on a device"
+    priority: 1
+    match:
+      any: [{text_contains: "How Finance describes the economy"}]
     covers: ["page:SettingsFold.ECONOMY"]
     sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt", "shared/src/commonMain/kotlin/**/EconomyToneOptions.kt"]
   settings_fold_finance_drawer:
     title: Settings, Finance in the menu fold
     group: shell
-    pending: "not yet verified on a device"
+    priority: 1
+    match:
+      any: [{text_contains: "What the Finance card in the menu shows"}]
     covers: ["page:SettingsFold.FINANCE_DRAWER"]
     sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt", "shared/src/commonMain/kotlin/**/FinanceDrawerOptions.kt"]
   settings_fold_figures:
     title: Settings, Exercise figures fold
     group: shell
-    pending: "not yet verified on a device"
+    priority: 1
+    match:
+      any: [{text_contains: "How Fitness draws the movement"}]
     covers: ["page:SettingsFold.FIGURES"]
     sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt", "shared/src/commonMain/kotlin/**/FigureStyleOptions.kt"]
   settings_fold_maps:
     title: Settings, Maps fold
     group: shell
-    pending: "not yet verified on a device"
+    priority: 1
+    match:
+      any: [{text_contains: "Which map the weather radar"}]
     covers: ["page:SettingsFold.MAPS"]
     params:
       provider:
@@ -396,7 +420,9 @@ nodes:
   settings_fold_app_icon:
     title: Settings, App icon fold
     group: shell
-    pending: "not yet verified on a device"
+    priority: 1
+    match:
+      any: [{text_contains: "How the app looks on your home screen"}]
     covers: ["page:SettingsFold.APP_ICON"]
     sources: ["shared/src/commonMain/kotlin/**/SettingsScreen.kt", "shared/src/commonMain/kotlin/**/AppIconOptions.kt"]
 
@@ -405,7 +431,7 @@ nodes:
     title: Quiet hours time picker
     group: overlay
     kind: modal
-    pending: "not yet verified on a device"
+    pending: "needs a device capability: the quiet-hours rows show only once camera notifications are on, and apksim doesn't grant the notification permission"
     match:
       any: [{text: "Quiet from"}, {text: "Quiet until"}]
     covers: ["modal:AlertRulesSection.QuietHoursRows"]
@@ -460,7 +486,6 @@ nodes:
   home_arranging:
     title: Home, arranging cameras
     group: shell
-    pending: "not yet verified on a device"
     match:
       all: [{id: home_arrange_done}]
     params:
@@ -469,9 +494,10 @@ nodes:
         hidden_badge: {observe: {text: Hidden}}
     sources: ["shared/src/commonMain/kotlin/**/HomeLiveViewScreen.kt", "shared/src/commonMain/kotlin/**/CameraArrangeControls.kt"]
   camera_framing:
+    # A dropdown, drawer or overlay closes when the Activity is recreated: the screen under it must be there.
+    resilience: {expect: {recreate: home_arranging, fontscale: home_arranging, rtl: home_arranging}}
     title: Frame a camera's picture
     group: fullscreen
-    pending: "not yet verified on a device"
     match:
       all: [{id: camera_frame_done}]
     covers: ["screen:CameraFramingScreen", "page:route.CameraFramingRoute"]
@@ -527,6 +553,8 @@ nodes:
 
   # ---- Camera screen: menus, the editors it opens ----
   camera_overflow_menu:
+    # A dropdown, drawer or overlay closes when the Activity is recreated: the screen under it must be there.
+    resilience: {expect: {recreate: camera_detail, fontscale: camera_detail, rtl: camera_detail, rotate: camera_detail}}
     title: Camera overflow menu
     group: overlay
     kind: modal
@@ -536,6 +564,8 @@ nodes:
     covers: ["modal:CameraDetailScreen.CameraOverflowMenu"]
     sources: ["shared/src/commonMain/kotlin/**/CameraDetailScreen.kt"]
   camera_quality_menu:
+    # A dropdown, drawer or overlay closes when the Activity is recreated: the screen under it must be there.
+    resilience: {expect: {recreate: camera_detail, fontscale: camera_detail, rtl: camera_detail, rotate: camera_detail}}
     title: Video quality menu
     group: overlay
     kind: modal
@@ -563,7 +593,7 @@ nodes:
     title: Save zone changes before leaving?
     group: overlay
     kind: modal
-    pending: "not yet verified on a device"
+    pending: "needs a gesture selectors can't make: the leave prompt shows only once a polygon is drawn, which takes taps at chosen points on the frame"
     match:
       all: [{text: "Save your changes?"}]
     covers: ["modal:DetectionZonesScreen.DetectionZonesScreen", "overlay:DetectionZonesScreen.DetectionZonesScreen"]
@@ -606,7 +636,7 @@ nodes:
     title: Tag a detection's car
     group: overlay
     kind: modal
-    pending: "not yet verified on a device"
+    pending: "needs fixture data: the fake Frigate's only car event is a routine parking visit, so no moment offers Tag car"
     match:
       any: [{text: "Whose car is this?"}, {text: "Car tagged"}]
     # From a Moments card, from the camera screen's recent list, or opened on arrival by a notification's "Tag car" button.
@@ -620,10 +650,11 @@ nodes:
         done: {observe: {text: "Car tagged"}}
     sources: ["shared/src/commonMain/kotlin/**/MomentCarTagging.kt"]
   moments_day_picker:
+    # A dropdown, drawer or overlay closes when the Activity is recreated: the screen under it must be there.
+    resilience: {expect: {recreate: moments, fontscale: moments, rtl: moments}}
     title: Moments, pick a day
     group: overlay
     kind: modal
-    pending: "not yet verified on a device"
     match:
       all: [{text: Show}, {text: Cancel}]
       none: [{id: bottom_nav_home}]
@@ -632,22 +663,28 @@ nodes:
 
 edges:
   # ---- Verified on a device ----
-  - {id: bottom_nav_home, from: "@shell", except: [home], to: home, do: [{tap: {id: bottom_nav_home}}]}
-  - {id: bottom_nav_moments, from: "@shell", except: [moments], to: moments, do: [{tap: {id: bottom_nav_moments}}]}
-  - {id: bottom_nav_settings, from: "@shell", except: [settings], to: settings, do: [{tap: {id: bottom_nav_settings}}]}
+  - {id: bottom_nav_home, from: "@shell", except: [home_arranging, home], to: home, set: {tab: home}, do: [{tap: {id: bottom_nav_home}}]}
+  - {id: bottom_nav_moments, from: "@shell", except: [home_arranging, moments], to: moments, set: {tab: moments}, do: [{tap: {id: bottom_nav_moments}}]}
+  - {id: bottom_nav_settings, from: "@shell", except: [home_arranging, settings, settings_fold_cameras, settings_fold_economy, settings_fold_finance_drawer, settings_fold_figures, settings_fold_maps, settings_fold_app_icon], to: settings, set: {tab: settings}, do: [{tap: {id: bottom_nav_settings}}]}
+  # Tapping Settings on Settings changes nothing: an open fold stays open.
+  # Arranging cameras keeps the nav inert until Done.
+  - {id: bottom_nav_home_in_arranging, from: home_arranging, to: "=", do: [{tap: {id: bottom_nav_home}}]}
+  - {id: bottom_nav_settings_in_fold, from: [settings_fold_cameras, settings_fold_economy, settings_fold_finance_drawer, settings_fold_figures, settings_fold_maps], to: "=", do: [{tap: {id: bottom_nav_settings}}]}
+  - {id: bottom_nav_settings_in_app_icon_fold, from: settings_fold_app_icon, to: "=", do: [{tap: {id: bottom_nav_settings}}, {wait_ms: 800}, {swipe: up}, {wait_ms: 800}]}
   - {id: settings.open_notifications, from: settings, to: notifications, do: [{swipe: down}, {swipe: down}, {swipe: down}, {wait_ms: 800}, {tap: {text: Notifications}}]}
   - {id: settings.open_away, from: settings, to: away, do: [{swipe: down}, {swipe: down}, {swipe: down}, {wait_ms: 800}, {tap: {text: Away mode}}]}
-  - {id: settings.open_doors, from: settings, to: doors, do: [{swipe: down}, {swipe: down}, {swipe: down}, {wait_ms: 800}, {tap: {text: Doors}}]}
+  - {id: settings.open_doors, from: settings, to: doors, set: {via_notifications: false}, do: [{swipe: down}, {swipe: down}, {swipe: down}, {wait_ms: 800}, {tap: {text: Doors}}]}
   - {id: settings.open_faces, from: settings, to: faces, do: [{swipe: down}, {swipe: down}, {swipe: down}, {wait_ms: 800}, {tap: {text: Faces}}]}
   - {id: settings.open_household_cars, from: settings, to: household_cars, when: "data == 'household'", do: [{swipe: down}, {swipe: down}, {swipe: down}, {wait_ms: 800}, {tap: {text: Household Cars}}]}
   - {id: settings.open_server, from: settings, to: server, do: [{scroll_to: {text: Server}}, {tap: {text: Server}}]}
-  - {id: notifications.back, from: [notifications, away, doors, faces, household_cars, server], to: settings, do: [back]}
+  - {id: notifications.back, from: [notifications, away, faces, household_cars, server], to: settings, do: [back]}
+  - {id: doors.back, from: doors, to: settings, when: "not via_notifications", do: [back]}
   - {id: home.open_camera, from: home, to: camera_detail, do: [{tap: {text: Back Yard}}]}
   - {id: camera_detail.back, from: camera_detail, to: home, do: [back]}
   - {id: server.open_uptime, from: server, to: uptime, do: [{tap: {text: Uptime}}]}
   - {id: uptime.back, from: uptime, to: server, do: [back]}
   - {id: shell.open_drawer, from: home, to: drawer, do: [{tap: {id: shell_menu}}]}
-  - {id: drawer.close, from: drawer, to: home, do: [back]}
+  - {id: drawer.close, from: drawer, to: home, when: "tab == 'home'", do: [back]}
   - {id: shell.open_badge_menu, from: home, to: arrange_menu, do: [{tap: {text: Tailscale}}]}
   - {id: arrange_menu.close, from: arrange_menu, to: home, do: [back]}
   - {id: moments.open_camera_filter, from: moments, to: camera_filter, do: [{tap: {text: All cameras}}]}
@@ -655,48 +692,53 @@ edges:
   - {id: camera_filter.close, from: camera_filter, to: moments, do: [back]}
   - {id: event_filter.close, from: event_filter, to: moments, do: [back]}
   - {id: drawer.open_fitness, from: drawer, to: fitness_today, do: [{tap: {id: drawer_fitness}}]}
-  - {id: drawer.open_weather, from: drawer, to: weather_welcome, do: [{tap: {id: drawer_weather}}]}
+  - {id: drawer.open_weather, from: drawer, to: weather_welcome, when: "not weather_place", do: [{tap: {id: drawer_weather}}]}
+  - {id: drawer.open_weather_place, from: drawer, to: weather_today, when: "weather_place", do: [{tap: {id: drawer_weather}}]}
   - {id: drawer.open_finance_off, from: drawer, to: finance_unavailable, when: "relay == 'off'", do: [{tap: {id: drawer_finance}}]}
   - {id: drawer.open_finance_on, from: drawer, to: finance_outdated, when: "relay == 'on'", do: [{tap: {id: drawer_finance}}]}
   - {id: drawer.open_atlas_off, from: drawer, to: atlas_offline, when: "relay == 'off'", do: [{tap: {id: drawer_atlas}}]}
-  - {id: drawer.open_atlas_on, from: drawer, to: atlas_map, when: "relay == 'on'", do: [{tap: {id: drawer_atlas}}]}
+  - {id: drawer.open_atlas_on, from: drawer, to: atlas_map, when: "relay == 'on'", set: {atlas_tab: map}, do: [{tap: {id: drawer_atlas}}]}
   - {id: drawer.open_packages_off, from: drawer, to: packages_unreachable, when: "relay == 'off'", do: [{tap: {id: drawer_packages}}]}
-  - {id: drawer.open_packages_on, from: drawer, to: packages_today, when: "relay == 'on'", do: [{tap: {id: drawer_packages}}]}
+  - {id: drawer.open_packages_on, from: drawer, to: packages_today, when: "relay == 'on'", set: {packages_tab: today}, do: [{tap: {id: drawer_packages}}]}
   - {id: drawer.open_charging_off, from: drawer, to: charging_unreachable, when: "relay == 'off'", do: [{tap: {id: drawer_charging}}]}
   - {id: drawer.open_charging_on, from: drawer, to: charging_home, when: "relay == 'on'", do: [{tap: {id: drawer_charging}}]}
 
   # ---- Sign-in ----
-  - {id: sign_in.connect, from: sign_in, to: home, pending: "not yet verified on a device", do: [{tap: {id: sign_in_connect}}, {wait: {present: {id: bottom_nav_home}, timeout_ms: 30000}}]}
-  - {id: sign_in.connect_refused, from: sign_in, to: "=", pending: "not yet verified on a device", do: [{tap: {id: sign_in_connect}}]}
+  # The way back to the sign-in screen: a killed process returns to it, with the last server filled in.
+  - {id: home.restart_app, from: home, to: sign_in, do: [{device: "process-death"}]}
+  - {id: sign_in.connect, from: sign_in, to: home, set: {tab: home}, do: [{type: {into: {id: sign_in_username}, text: "{role.username}", clear: true}}, {type: {into: {id: sign_in_password}, text: "{role.password}", clear: true}}, {tap: {id: sign_in_connect}}, {wait: {present: {id: bottom_nav_home}, timeout_ms: 30000}}]}
+  - {id: sign_in.connect_refused, from: sign_in, to: "=", do: [{tap: {id: sign_in_connect}}]}
   - {id: sign_in.offer_biometrics, from: sign_in, to: sign_in_biometric_offer, pending: "needs a device capability", do: [{tap: {id: sign_in_connect}}]}
   - {id: sign_in.sign_in_with_biometrics, from: sign_in, to: home, pending: "needs a device capability", do: [{tap: {text_contains: "Sign in with"}}]}
   - {id: sign_in_biometric_offer.accept, from: sign_in_biometric_offer, to: home, pending: "needs a device capability", do: [{tap: {text_matches: "Enable|Update"}}]}
   - {id: sign_in_biometric_offer.not_now, from: sign_in_biometric_offer, to: home, pending: "needs a device capability", do: [{tap: {text: "Not now"}}]}
-  - {id: sign_in.open_apps, from: sign_in, to: sign_in_drawer, pending: "not yet verified on a device", do: [{tap: {id: sign_in_apps}}]}
-  - {id: sign_in_drawer.close, from: sign_in_drawer, to: sign_in, pending: "not yet verified on a device", do: [back]}
-  - {id: sign_in_drawer.open_fitness, from: sign_in_drawer, to: fitness_today, pending: "not yet verified on a device", do: [{tap: {id: drawer_fitness}}]}
-  - {id: sign_in_drawer.open_weather, from: sign_in_drawer, to: weather_welcome, pending: "not yet verified on a device", do: [{tap: {id: drawer_weather}}]}
-  - {id: sign_in_drawer.open_finance, from: sign_in_drawer, to: finance_unavailable, pending: "not yet verified on a device", do: [{tap: {id: drawer_finance}}]}
-  - {id: sign_in_drawer.open_atlas, from: sign_in_drawer, to: atlas_offline, pending: "not yet verified on a device", do: [{tap: {id: drawer_atlas}}]}
+  - {id: sign_in.open_apps, from: sign_in, to: sign_in_drawer, do: [{tap: {id: sign_in_apps}}]}
+  - {id: sign_in_drawer.close, from: sign_in_drawer, to: sign_in, do: [back]}
+  - {id: sign_in_drawer.open_fitness, from: sign_in_drawer, to: fitness_today, set: {tab: sign_in}, do: [{tap: {id: drawer_fitness}}]}
+  - {id: sign_in_drawer.open_weather, from: sign_in_drawer, to: weather_welcome, when: "not weather_place", set: {tab: sign_in}, do: [{tap: {id: drawer_weather}}]}
+  - {id: sign_in_drawer.open_finance, from: sign_in_drawer, to: finance_lock, pending: "needs a device capability: signed out, the app opens behind its biometric lock", set: {tab: sign_in}, do: [{tap: {id: drawer_finance}}]}
+  - {id: sign_in_drawer.open_atlas, from: sign_in_drawer, to: atlas_lock, pending: "needs a device capability: signed out, the app opens behind its biometric lock", set: {tab: sign_in}, do: [{tap: {id: drawer_atlas}}]}
 
   # ---- Drawer and top bar from the other tabs ----
   - {id: shell.open_drawer_from_tabs, from: [moments, settings], to: drawer, do: [{tap: {id: shell_menu}}]}
-  - {id: drawer.close_to_moments, from: drawer, to: moments, pending: "not yet verified on a device", do: [back]}
-  - {id: drawer.close_to_settings, from: drawer, to: settings, pending: "not yet verified on a device", do: [back]}
+  - {id: drawer.close_to_moments, from: drawer, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: drawer.close_to_settings, from: drawer, to: settings, when: "tab == 'settings'", do: [back]}
   - {id: shell.open_version_menu, from: [moments, settings], to: version_menu, do: [{tap: {text: Tailscale}}]}
-  - {id: version_menu.close_to_moments, from: version_menu, to: moments, pending: "not yet verified on a device", do: [back]}
-  - {id: version_menu.close_to_settings, from: version_menu, to: settings, pending: "not yet verified on a device", do: [back]}
-  - {id: arrange_menu.start_arranging, from: arrange_menu, to: home_arranging, pending: "not yet verified on a device", do: [{tap: {id: home_arrange_menu_item}}]}
-  - {id: home_arranging.done, from: home_arranging, to: home, pending: "not yet verified on a device", do: [{tap: {id: home_arrange_done}}]}
-  - {id: home_arranging.frame_camera, from: home_arranging, to: camera_framing, pending: "not yet verified on a device", do: [{tap: {id: camera_frame_button, index: 0}}]}
-  - {id: camera_framing.done, from: camera_framing, to: home_arranging, pending: "not yet verified on a device", do: [{tap: {id: camera_frame_done}}]}
-  - {id: camera_framing.back, from: camera_framing, to: home_arranging, pending: "not yet verified on a device", do: [back]}
+  - {id: version_menu.close_to_moments, from: version_menu, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: version_menu.close_to_settings, from: version_menu, to: settings, when: "tab == 'settings'", do: [back]}
+  - {id: arrange_menu.start_arranging, from: arrange_menu, to: home_arranging, do: [{tap: {text: "Arrange cameras"}}]}
+  - {id: home_arranging.done, from: home_arranging, to: home, do: [{tap: {id: home_arrange_done}}]}
+  - {id: home_arranging.frame_camera, from: home_arranging, to: camera_framing, do: [{tap: {id: camera_frame_button, index: 0}}]}
+  - {id: camera_framing.done, from: camera_framing, to: home_arranging, do: [{tap: {id: camera_frame_done}}]}
+  - {id: camera_framing.back, from: camera_framing, to: home_arranging, do: [back]}
 
   # ---- Assistant ----
-  - {id: assistant.open, from: [home, moments, settings], to: assistant, pending: "not yet verified on a device", do: [{long_tap: {id: bottom_nav_home}}]}
-  - {id: assistant.close, from: assistant, to: home, pending: "not yet verified on a device", do: [back]}
-  - {id: assistant.open_model_menu, from: assistant, to: assistant_model_menu, pending: "not yet verified on a device", do: [{tap: {id: assistant_model}}]}
-  - {id: assistant_model_menu.close, from: assistant_model_menu, to: assistant, pending: "not yet verified on a device", do: [back]}
+  - {id: assistant.open, from: [home, moments, settings], to: assistant, do: [{long_tap: {id: bottom_nav_home}}]}
+  - {id: assistant.close, from: assistant, to: home, when: "tab == 'home'", do: [back]}
+  - {id: assistant.close_to_moments, from: assistant, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: assistant.close_to_settings, from: assistant, to: settings, when: "tab == 'settings'", do: [back]}
+  - {id: assistant.open_model_menu, from: assistant, to: assistant_model_menu, pending: "needs a relay route: the fake relay has no key vault, so the assistant never shows its model chip", do: [{tap: {id: assistant_model}}]}
+  - {id: assistant_model_menu.close, from: assistant_model_menu, to: assistant, pending: "needs a relay route: the fake relay has no key vault, so the assistant never shows its model chip", do: [back]}
   - {id: shell_command.assistant, from: "@shell", except: [camera_detail], to: assistant, count: once, pending: "needs a notification or deep link"}
 
   # ---- Card quick look ----
@@ -721,24 +763,24 @@ edges:
   - {id: shell_command.open_app, from: "@shell", to: sidebar_app_host, count: once, pending: "needs a wide window"}
 
   # ---- Settings: folds ----
-  - {id: settings.open_fold_cameras, from: settings, to: settings_fold_cameras, pending: "not yet verified on a device", do: [{scroll_to: {text: Cameras}}, {tap: {text: Cameras}}]}
-  - {id: settings_fold_cameras.close, from: settings_fold_cameras, to: settings, pending: "not yet verified on a device", do: [{tap: {text: Cameras}}]}
-  - {id: settings.open_fold_economy, from: settings, to: settings_fold_economy, pending: "not yet verified on a device", do: [{scroll_to: {text: Economy commentary}}, {tap: {text: Economy commentary}}]}
-  - {id: settings_fold_economy.close, from: settings_fold_economy, to: settings, pending: "not yet verified on a device", do: [{tap: {text: Economy commentary}}]}
-  - {id: settings.open_fold_finance_drawer, from: settings, to: settings_fold_finance_drawer, pending: "not yet verified on a device", do: [{scroll_to: {id: settings_finance_drawer}}, {tap: {id: settings_finance_drawer}}]}
-  - {id: settings_fold_finance_drawer.close, from: settings_fold_finance_drawer, to: settings, pending: "not yet verified on a device", do: [{tap: {id: settings_finance_drawer}}]}
-  - {id: settings.open_fold_figures, from: settings, to: settings_fold_figures, pending: "not yet verified on a device", do: [{scroll_to: {text: Exercise figures}}, {tap: {text: Exercise figures}}]}
-  - {id: settings_fold_figures.close, from: settings_fold_figures, to: settings, pending: "not yet verified on a device", do: [{tap: {text: Exercise figures}}]}
-  - {id: settings.open_fold_maps, from: settings, to: settings_fold_maps, pending: "not yet verified on a device", do: [{scroll_to: {id: settings_maps}}, {tap: {id: settings_maps}}]}
-  - {id: settings_fold_maps.close, from: settings_fold_maps, to: settings, pending: "not yet verified on a device", do: [{tap: {id: settings_maps}}]}
-  - {id: settings.open_fold_app_icon, from: settings, to: settings_fold_app_icon, pending: "not yet verified on a device", do: [{scroll_to: {text: App icon}}, {tap: {text: App icon}}]}
-  - {id: settings_fold_app_icon.close, from: settings_fold_app_icon, to: settings, pending: "not yet verified on a device", do: [{tap: {text: App icon}}]}
+  - {id: settings.open_fold_cameras, from: settings, to: settings_fold_cameras, do: [{scroll_to: {text: Cameras}}, {tap: {text: Cameras}}]}
+  - {id: settings_fold_cameras.close, from: settings_fold_cameras, to: settings, do: [{tap: {text: Cameras}}]}
+  - {id: settings.open_fold_economy, from: settings, to: settings_fold_economy, do: [{scroll_to: {text: Economy commentary}}, {tap: {text: Economy commentary}}]}
+  - {id: settings_fold_economy.close, from: settings_fold_economy, to: settings, do: [{tap: {text: Economy commentary}}]}
+  - {id: settings.open_fold_finance_drawer, from: settings, to: settings_fold_finance_drawer, do: [{scroll_to: {text: "Finance in the menu"}}, {tap: {text: "Finance in the menu"}}]}
+  - {id: settings_fold_finance_drawer.close, from: settings_fold_finance_drawer, to: settings, do: [{tap: {text: "Finance in the menu"}}]}
+  - {id: settings.open_fold_figures, from: settings, to: settings_fold_figures, do: [{scroll_to: {text: Exercise figures}}, {tap: {text: Exercise figures}}]}
+  - {id: settings_fold_figures.close, from: settings_fold_figures, to: settings, do: [{tap: {text: Exercise figures}}]}
+  - {id: settings.open_fold_maps, from: settings, to: settings_fold_maps, do: [{scroll_to: {text: Maps}}, {tap: {text: Maps}}]}
+  - {id: settings_fold_maps.close, from: settings_fold_maps, to: settings, do: [{tap: {text: Maps}}]}
+  - {id: settings.open_fold_app_icon, from: settings, to: settings_fold_app_icon, do: [{scroll_to: {text: App icon}}, {tap: {text: App icon}}, {wait_ms: 800}, {swipe: up}, {wait_ms: 800}]}
+  - {id: settings_fold_app_icon.close, from: settings_fold_app_icon, to: settings, do: [{scroll_to: {text: App icon}}, {tap: {text: App icon}}]}
 
   # ---- Settings pages: their own dialogs and pushed pages ----
-  - {id: notifications.open_doors, from: notifications, to: doors, do: [{scroll_to: {text: Doors}}, {tap: {text: Doors}}]}
-  - {id: doors.back_to_notifications, from: doors, to: notifications, pending: "not yet verified on a device", do: [back]}
-  - {id: notifications.open_quiet_hours, from: notifications, to: quiet_hours_dialog, pending: "not yet verified on a device"}
-  - {id: quiet_hours_dialog.close, from: quiet_hours_dialog, to: notifications, pending: "not yet verified on a device", do: [back]}
+  - {id: notifications.open_doors, from: notifications, to: doors, set: {via_notifications: true}, do: [{scroll_to: {text: Doors}}, {tap: {text: Doors}}]}
+  - {id: doors.back_to_notifications, from: doors, to: notifications, when: "via_notifications", set: {via_notifications: false}, do: [back]}
+  - {id: notifications.open_quiet_hours, from: notifications, to: quiet_hours_dialog, pending: "needs a device capability: the quiet-hours rows show only once camera notifications are on, and apksim doesn't grant the notification permission"}
+  - {id: quiet_hours_dialog.close, from: quiet_hours_dialog, to: notifications, pending: "needs a device capability: the quiet-hours rows show only once camera notifications are on, and apksim doesn't grant the notification permission", do: [back]}
   - {id: away.open_remove_device, from: away, to: away_remove_device_dialog, pending: "needs a relay route", do: [{tap: {desc_contains: "Remove "}}]}
   - {id: away_remove_device_dialog.close, from: away_remove_device_dialog, to: away, pending: "needs a relay route", do: [back]}
   - {id: household_cars.open_profile, from: household_cars, to: car_profile_dialog, pending: "needs a relay route", do: [{tap: {text_matches: "Describe|Edit"}}]}
@@ -771,31 +813,31 @@ edges:
   - {id: camera_detail.open_clip_editor, from: camera_detail, to: clip_editor, do: [{tap: {desc_contains: "Clip a video from"}}]}
   - {id: clip_editor.close, from: clip_editor, to: camera_detail, do: [{tap: {desc: "Close clip editor"}}]}
   - {id: detection_zones.back, from: detection_zones, to: camera_detail, do: [back]}
-  - {id: detection_zones.back_unsaved, from: detection_zones, to: detection_zones_leave_dialog, pending: "not yet verified on a device", do: [back]}
-  - {id: detection_zones_leave_dialog.keep_editing, from: detection_zones_leave_dialog, to: detection_zones, pending: "not yet verified on a device", do: [{tap: {text: "Keep editing"}}]}
-  - {id: detection_zones_leave_dialog.discard, from: detection_zones_leave_dialog, to: camera_detail, pending: "not yet verified on a device", do: [{tap: {text: Discard}}]}
-  - {id: detection_zones_leave_dialog.save_and_leave, from: detection_zones_leave_dialog, to: camera_detail, pending: "not yet verified on a device", do: [{tap: {text: "Save and leave"}}]}
+  - {id: detection_zones.back_unsaved, from: detection_zones, to: detection_zones_leave_dialog, pending: "needs a gesture selectors can't make: the leave prompt shows only once a polygon is drawn, which takes taps at chosen points on the frame", do: [back]}
+  - {id: detection_zones_leave_dialog.keep_editing, from: detection_zones_leave_dialog, to: detection_zones, pending: "needs a gesture selectors can't make: the leave prompt shows only once a polygon is drawn, which takes taps at chosen points on the frame", do: [{tap: {text: "Keep editing"}}]}
+  - {id: detection_zones_leave_dialog.discard, from: detection_zones_leave_dialog, to: camera_detail, pending: "needs a gesture selectors can't make: the leave prompt shows only once a polygon is drawn, which takes taps at chosen points on the frame", do: [{tap: {text: Discard}}]}
+  - {id: detection_zones_leave_dialog.save_and_leave, from: detection_zones_leave_dialog, to: camera_detail, pending: "needs a gesture selectors can't make: the leave prompt shows only once a polygon is drawn, which takes taps at chosen points on the frame", do: [{tap: {text: "Save and leave"}}]}
   - {id: car_tagging.back, from: car_tagging, to: camera_detail, do: [back]}
-  - {id: camera_detail.open_tag_car, from: camera_detail, to: tag_car_dialog, pending: "not yet verified on a device", do: [{tap: {text_matches: "Tag (this )?car"}}]}
-  - {id: tag_car_dialog.close_to_camera, from: tag_car_dialog, to: camera_detail, pending: "not yet verified on a device", do: [back]}
+  - {id: camera_detail.open_tag_car, from: camera_detail, to: tag_car_dialog, pending: "needs fixture data: the fake Frigate's only car event is a routine parking visit, so no moment offers Tag car", do: [{tap: {text_matches: "Tag (this )?car"}}]}
+  - {id: tag_car_dialog.close_to_camera, from: tag_car_dialog, to: camera_detail, pending: "needs fixture data: the fake Frigate's only car event is a routine parking visit, so no moment offers Tag car", do: [back]}
 
   # ---- Moments ----
-  - {id: moments.open_tag_car, from: moments, to: tag_car_dialog, pending: "not yet verified on a device", do: [{tap: {text: "Tag this car"}}]}
-  - {id: tag_car_dialog.close_to_moments, from: tag_car_dialog, to: moments, pending: "not yet verified on a device", do: [back]}
-  - {id: moments.open_full_screen, from: moments, to: camera_detail, pending: "not yet verified on a device", do: [{tap: {desc: "Play full screen"}}]}
-  - {id: moments.open_day_picker, from: moments, to: moments_day_picker, pending: "not yet verified on a device", do: [{tap: {text: "Pick a day"}}]}
-  - {id: moments_day_picker.pick, from: moments_day_picker, to: moments, pending: "not yet verified on a device", do: [{tap: {text: Show}}]}
-  - {id: moments_day_picker.cancel, from: moments_day_picker, to: moments, pending: "not yet verified on a device", do: [{tap: {text: Cancel}}]}
+  - {id: moments.open_tag_car, from: moments, to: tag_car_dialog, pending: "needs fixture data: the fake Frigate's only car event is a routine parking visit, so no moment offers Tag car", do: [{tap: {text: "Tag this car"}}]}
+  - {id: tag_car_dialog.close_to_moments, from: tag_car_dialog, to: moments, pending: "needs fixture data: the fake Frigate's only car event is a routine parking visit, so no moment offers Tag car", do: [back]}
+  - {id: moments.open_full_screen, from: moments, to: camera_detail, do: [{tap: {text_matches: "\\d+:\\d\\d", index: 0}}, {tap: {desc: "Play full screen"}}]}
+  - {id: moments.open_day_picker, from: moments, to: moments_day_picker, do: [{tap: {desc: "Pick a day"}}]}
+  - {id: moments_day_picker.pick, from: moments_day_picker, to: moments, do: [{tap: {text: Show}}]}
+  - {id: moments_day_picker.cancel, from: moments_day_picker, to: moments, do: [{tap: {text: Cancel}}]}
 
   # ---- From outside the app: notifications and links ----
   - {id: deeplink.open_moment, from: "@shell", except: [camera_detail], to: camera_detail, count: once, pending: "needs a notification or deep link"}
   - {id: deeplink.open_moment_tag_car, from: "@shell", to: tag_car_dialog, count: once, pending: "needs a notification or deep link"}
   - {id: deeplink.open_doors, from: "@shell", to: doors_from_home, count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://doors"}]}
   - {id: deeplink.open_parking, from: "@shell", to: parking_map, count: once, pending: "needs a notification or deep link"}
-  - {id: deeplink.open_weather, from: "@shell", to: weather_welcome, count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://weather"}]}
+  - {id: deeplink.open_weather, from: "@shell", to: weather_welcome, when: "not weather_place", count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://weather"}]}
   - {id: deeplink.open_fitness, from: "@shell", to: fitness_today, count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://fitness"}]}
-  - {id: deeplink.open_finance_off, from: "@shell", to: finance_unavailable, when: "relay == 'off'", count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://finance?tab=budget"}]}
-  - {id: deeplink.open_finance_on, from: "@shell", to: finance_outdated, when: "relay == 'on'", count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://finance?tab=budget"}]}
+  - {id: deeplink.open_finance_off, from: "@shell", to: finance_budget, when: "relay == 'off'", count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://finance?tab=budget"}]}
+  - {id: deeplink.open_finance_on, from: "@shell", to: finance_budget, when: "relay == 'on'", count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://finance?tab=budget"}]}
   - {id: deeplink.open_packages_off, from: "@shell", to: packages_unreachable, when: "relay == 'off'", count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://packages"}]}
   - {id: deeplink.open_packages_on, from: "@shell", to: packages_today, when: "relay == 'on'", count: once, pending: "needs a notification or deep link", do: [{open: "homesafe://packages"}]}
 

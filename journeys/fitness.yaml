@@ -2,6 +2,13 @@
 # `lift` is whether this walk has added one (Bench press, Chest) from the Lifts tab.
 vars:
   lift: false
+  # Whether a workout has been started and not yet finished or cancelled: Today then offers to resume it.
+  workout_open: false
+  # Where an exercise's page and its edit form were opened from, which Back returns to.
+  lift_from: {initial: lifts, values: [lifts, workout]}
+  edit_from: {initial: lift, values: [lift, workout]}
+  heart_from: {initial: today, values: [today, progress, workout]}
+  import_from: {initial: today, values: [today, lifts]}
 
 nodes:
   fitness_today:
@@ -208,7 +215,7 @@ nodes:
     title: Fitness, a past workout
     group: fitness
     kind: screen
-    pending: "not yet verified on a device"
+    pending: "needs fixture data: History lists a workout only once one is finished with a logged set"
     covers: ["page:FitnessPage.Session", "screen:SessionScreen"]
     sources: ["features/fitness/src/commonMain/**/ui/HistoryScreen.kt"]
     match:
@@ -278,7 +285,7 @@ nodes:
     title: Fitness, record banner
     group: fitness
     kind: modal
-    pending: "not yet verified on a device"
+    pending: "needs a second, heavier set to be a record, and the record banner clears itself 3.6 s later, before the walk can read it"
     covers: ["overlay:FitnessApp.FitnessAppContent"]
     sources: ["features/fitness/src/commonMain/**/ui/FitnessApp.kt", "features/fitness/src/commonMain/**/ui/shader/FitnessShaders.kt"]
     match:
@@ -299,7 +306,10 @@ nodes:
       - present: {id: fitness_health_rationale_done}
 
 edges:
-  - {id: fitness.close, from: fitness_today, to: home, do: [back]}
+  - {id: fitness.close, from: fitness_today, to: home, when: "tab == 'home'", do: [back]}
+  - {id: fitness.close_to_moments, from: fitness_today, to: moments, when: "tab == 'moments'", do: [back], pending: "not yet verified on a device"}
+  - {id: fitness.close_to_settings, from: fitness_today, to: settings, when: "tab == 'settings'", do: [back], pending: "not yet verified on a device"}
+  - {id: fitness.close_to_sign_in, from: fitness_today, to: sign_in, when: "tab == 'sign_in'", do: [back], pending: "not yet verified on a device"}
   # The tab bar shows on the four tabs only (not on the pushed pages).
   - {id: fitness.tab_today, from: [fitness_lifts_empty, fitness_lifts_adding, fitness_lifts_list, fitness_history, fitness_progress], to: fitness_today, count: once, do: [{tap: {id: fitness_tab_today}}]}
   - {id: fitness.tab_lifts_empty, from: [fitness_today, fitness_history, fitness_progress], to: fitness_lifts_empty, when: "not lift", count: once, do: [{tap: {id: fitness_tab_lifts}}]}
@@ -315,33 +325,39 @@ edges:
       - tap: {text: Chest, index: -1}
       - tap: {id: fitness_add_exercise_confirm}
     set: {lift: true}
-  - {id: fitness_lifts_list.open_lift, from: fitness_lifts_list, to: fitness_lift, do: [{tap: {id: "fitness_lift_chest/bench-press"}}]}
-  - {id: fitness_lift.back, from: fitness_lift, to: fitness_lifts_list, do: [back]}
-  - {id: fitness_today.open_heart, from: fitness_today, to: fitness_heart, do: [{tap: {id: fitness_heart_pill}}]}
-  - {id: fitness_heart.back, from: fitness_heart, to: fitness_today, do: [back]}
+  - {id: fitness_lifts_list.open_lift, from: fitness_lifts_list, to: fitness_lift, set: {lift_from: lifts}, do: [{tap: {id: "fitness_lift_chest/bench-press"}}]}
+  - {id: fitness_lift.back_to_workout, from: fitness_lift, to: fitness_workout, when: "lift_from == 'workout'", do: [back]}
+  - {id: fitness_lift.back, from: fitness_lift, to: fitness_lifts_list, when: "lift_from == 'lifts'", do: [back]}
+  - {id: fitness_today.open_heart, from: fitness_today, to: fitness_heart, set: {heart_from: today}, do: [{tap: {id: fitness_heart_pill}}]}
+  - {id: fitness_heart.back_to_progress, from: fitness_heart, to: fitness_progress, when: "heart_from == 'progress'", do: [back]}
+  - {id: fitness_heart.back_to_workout, from: fitness_heart, to: fitness_workout, when: "heart_from == 'workout'", do: [back]}
+  - {id: fitness_heart.back, from: fitness_heart, to: fitness_today, when: "heart_from == 'today'", do: [back]}
   # The Runs door sits under the floating tab bar until the page is scrolled.
-  - {id: fitness_today.open_runs, from: fitness_today, to: fitness_runs, do: [{swipe: up}, {wait_ms: 800}, {tap: {id: fitness_runs_door}}]}
+  - {id: fitness_today.open_runs, from: fitness_today, to: fitness_runs, do: [{scroll_to: {id: fitness_runs_door}}, {swipe: up}, {wait_ms: 800}, {tap: {id: fitness_runs_door}}]}
   - {id: fitness_runs.back, from: fitness_runs, to: fitness_today, do: [back]}
-  - {id: fitness_today.open_import, from: fitness_today, to: fitness_import, when: "not lift", do: [{tap: {id: fitness_today_import}}]}
-  - {id: fitness_import.back, from: fitness_import, to: fitness_today, do: [back]}
-  - {id: fitness_today.start_workout, from: fitness_today, to: fitness_workout, when: "lift", do: [{tap: {id: fitness_day_chest}}]}
-  - {id: fitness_lift.open_edit, from: fitness_lift, to: fitness_edit, do: [{tap: {id: fitness_exercise_edit}}]}
-  - {id: fitness_edit.back, from: fitness_edit, to: fitness_lift, do: [back]}
+  - {id: fitness_today.open_import, from: fitness_today, to: fitness_import, when: "not lift", set: {import_from: today}, do: [{tap: {id: fitness_today_import}}]}
+  - {id: fitness_import.back_to_lifts_empty, from: fitness_import, to: fitness_lifts_empty, when: "import_from == 'lifts' and not lift", do: [back]}
+  - {id: fitness_import.back_to_lifts_list, from: fitness_import, to: fitness_lifts_list, when: "import_from == 'lifts' and lift", do: [back]}
+  - {id: fitness_import.back, from: fitness_import, to: fitness_today, when: "import_from == 'today'", do: [back]}
+  - {id: fitness_today.start_workout, from: fitness_today, to: fitness_workout, when: "lift and not workout_open", set: {workout_open: true}, do: [{tap: {id: fitness_day_chest}}]}
+  - {id: fitness_lift.open_edit, from: fitness_lift, to: fitness_edit, set: {edit_from: lift}, do: [{tap: {id: fitness_exercise_edit}}]}
+  - {id: fitness_edit.back_to_workout, from: fitness_edit, to: fitness_workout, when: "edit_from == 'workout'", do: [back]}
+  - {id: fitness_edit.back, from: fitness_edit, to: fitness_lift, when: "edit_from == 'lift'", do: [back]}
 
   # --- Declared from the source, not yet tried (every one pending) --------------------------------------------------
   # Back out of the pushed pages.
-  - {id: fitness_workout.back, from: fitness_workout, to: fitness_today, do: [back], pending: "not yet verified on a device"}
-  - {id: fitness_session.back, from: fitness_session, to: fitness_history, do: [back], pending: "not yet verified on a device"}
+  - {id: fitness_workout.back, from: fitness_workout, to: fitness_today, do: [back]}
+  - {id: fitness_session.back, from: fitness_session, to: fitness_history, do: [back], pending: "needs fixture data: History lists a workout only once one is finished with a logged set"}
   - {id: fitness_run.back, from: fitness_run, to: fitness_runs, do: [back], pending: "needs fixture data"}
   - {id: fitness_recording.back, from: fitness_recording, to: fitness_runs, do: [back], pending: "needs a device capability"}
   # The top bar's Back is the same control on every page; on a tab it closes the app (fitness.close).
-  - {id: fitness.page_back_arrow, from: [fitness_lift, fitness_edit, fitness_import, fitness_heart, fitness_runs, fitness_workout, fitness_session, fitness_run, fitness_recording], to: fitness_today, count: once, do: [{tap: {id: fitness_back}}], pending: "not yet verified on a device"}
+  - {id: fitness.page_back_arrow, from: [fitness_runs, fitness_run, fitness_recording], to: fitness_today, count: once, do: [{tap: {id: fitness_back}}]}
   # In a wide window the tabs are listed in the shell's sidebar, and one of them closes any open page.
   - {id: fitness.sidebar_tab, from: [fitness_lift, fitness_edit, fitness_import, fitness_heart, fitness_runs, fitness_workout, fitness_session, fitness_run, fitness_recording], to: fitness_today, count: once, pending: "needs a wide window"}
   # Today.
   - {id: fitness_today.phase_pill, from: fitness_today, to: fitness_progress, do: [{tap: {id: fitness_phase_pill}}]}
-  - {id: fitness_today.add_exercise, from: fitness_today, to: fitness_lifts_empty, when: "not lift", pending: "not yet verified on a device"}
-  - {id: fitness_today.resume_workout, from: fitness_today, to: fitness_workout, when: "lift", do: [{tap: {id: fitness_today_resume}}], pending: "not yet verified on a device"}
+  - {id: fitness_today.add_exercise, from: fitness_today, to: fitness_lifts_empty, when: "not lift", do: [{tap: {text: "Add an exercise by hand"}}]}
+  - {id: fitness_today.resume_workout, from: fitness_today, to: fitness_workout, when: "lift and workout_open", do: [{swipe: up}, {wait_ms: 800}, {tap: {id: fitness_today_resume}}]}
   - {id: fitness_today.open_record_exercise, from: fitness_today, to: fitness_lift, pending: "needs fixture data"}
   - {id: fitness_today.open_recording, from: fitness_today, to: fitness_recording, do: [{swipe: up}, {wait_ms: 800}, {tap: {id: fitness_runs_door}}], pending: "needs a device capability"}
   - {id: fitness_today.workout_asked, from: fitness_today, to: fitness_workout, pending: "needs a notification or deep link"}
@@ -349,29 +365,30 @@ edges:
   - {id: fitness_today.health_connect_rationale, from: fitness_today, to: fitness_health_rationale, pending: "needs a notification or deep link"}
   - {id: fitness_health_rationale.done, from: fitness_health_rationale, to: fitness_today, do: [{tap: {id: fitness_health_rationale_done}}], pending: "needs a notification or deep link"}
   # Lifts.
-  - {id: fitness_lifts.open_import, from: [fitness_lifts_empty, fitness_lifts_list], to: fitness_import, do: [{tap: {id: fitness_lifts_import}}]}
-  - {id: fitness_lifts_adding.close_form, from: fitness_lifts_adding, to: fitness_lifts_empty, when: "not lift", pending: "not yet verified on a device"}
+  - {id: fitness_lifts.open_import, from: [fitness_lifts_empty, fitness_lifts_list], to: fitness_import, set: {import_from: lifts}, do: [{tap: {id: fitness_lifts_import}}]}
+  - {id: fitness_lifts_adding.close_form, from: fitness_lifts_adding, to: fitness_lifts_empty, when: "not lift", pending: "the app has no control that closes the Lifts add-exercise form without adding: it ends only by adding"}
   # An exercise.
-  - {id: fitness_edit.save, from: fitness_edit, to: fitness_lift, do: [{tap: {id: fitness_edit_save}}], pending: "not yet verified on a device"}
-  - {id: fitness_edit.delete, from: fitness_edit, to: fitness_lifts_empty, do: [{tap: {id: fitness_edit_delete}}, {tap: {id: fitness_edit_delete}}], pending: "not yet verified on a device"}
-  - {id: fitness_lift.log_record, from: fitness_lift, to: fitness_record_celebration, do: [{tap: {id: fitness_logger_log}}], pending: "not yet verified on a device"}
-  - {id: fitness_record_celebration.dismiss_lift, from: fitness_record_celebration, to: fitness_lift, do: [{tap: {id: fitness_record_banner}}], pending: "not yet verified on a device"}
-  - {id: fitness_record_celebration.dismiss_workout, from: fitness_record_celebration, to: fitness_workout, do: [{tap: {id: fitness_record_banner}}], pending: "not yet verified on a device"}
+  - {id: fitness_edit.save, from: fitness_edit, to: fitness_lift, when: "edit_from == 'lift'", do: [{scroll_to: {id: fitness_edit_save}}, {tap: {id: fitness_edit_save}}]}
+  - {id: fitness_edit.save_to_workout, from: fitness_edit, to: fitness_workout, when: "edit_from == 'workout'", do: [{scroll_to: {id: fitness_edit_save}}, {tap: {id: fitness_edit_save}}], pending: "not yet verified on a device"}
+  - {id: fitness_edit.delete, from: fitness_edit, to: fitness_lifts_empty, set: {lift: false, workout_open: false}, do: [{scroll_to: {id: fitness_edit_delete}}, {tap: {id: fitness_edit_delete}}, {tap: {id: fitness_edit_delete}}]}
+  - {id: fitness_lift.log_record, from: fitness_lift, to: fitness_record_celebration, do: [{tap: {desc: "More weight"}}, {tap: {id: fitness_logger_log}}], pending: "needs a second, heavier set to be a record, and the record banner clears itself 3.6 s later, before the walk can read it"}
+  - {id: fitness_record_celebration.dismiss_lift, from: fitness_record_celebration, to: fitness_lift, do: [{tap: {id: fitness_record_banner}}], pending: "needs a second, heavier set to be a record, and the record banner clears itself 3.6 s later, before the walk can read it"}
+  - {id: fitness_record_celebration.dismiss_workout, from: fitness_record_celebration, to: fitness_workout, do: [{tap: {id: fitness_record_banner}}], pending: "needs a second, heavier set to be a record, and the record banner clears itself 3.6 s later, before the walk can read it"}
   # The workout.
-  - {id: fitness_workout.finish, from: fitness_workout, to: fitness_today, do: [{tap: {id: fitness_workout_finish}}]}
-  - {id: fitness_workout.cancel, from: fitness_workout, to: fitness_today, do: [{tap: {id: fitness_workout_cancel}}, {tap: {id: fitness_workout_cancel}}], pending: "not yet verified on a device"}
-  - {id: fitness_workout.open_exercise, from: fitness_workout, to: fitness_lift, pending: "not yet verified on a device"}
-  - {id: fitness_workout.edit_exercise, from: fitness_workout, to: fitness_edit, pending: "not yet verified on a device"}
-  - {id: fitness_workout.open_heart, from: fitness_workout, to: fitness_heart, do: [{tap: {id: fitness_heart_open}}]}
-  - {id: fitness_workout.log_record, from: fitness_workout, to: fitness_record_celebration, pending: "not yet verified on a device"}
+  - {id: fitness_workout.finish, from: fitness_workout, to: fitness_today, set: {workout_open: false}, do: [{tap: {id: fitness_workout_finish}}]}
+  - {id: fitness_workout.cancel, from: fitness_workout, to: fitness_today, do: [{tap: {id: fitness_workout_cancel}}, {tap: {id: fitness_workout_cancel}}], pending: "needs a logged set first: Cancel workout shows only once the workout has one, and the walk does not log sets yet"}
+  - {id: fitness_workout.open_exercise, from: fitness_workout, to: fitness_lift, set: {lift_from: workout}, do: [{tap: {id: "fitness_exercise_row_chest/bench-press"}}, {tap: {text: "Ladder and history"}}]}
+  - {id: fitness_workout.edit_exercise, from: fitness_workout, to: fitness_edit, set: {edit_from: workout}, do: [{tap: {id: "fitness_exercise_row_chest/bench-press"}}, {tap: {id: "fitness_exercise_edit_chest/bench-press"}}]}
+  - {id: fitness_workout.open_heart, from: fitness_workout, to: fitness_heart, set: {heart_from: workout}, do: [{tap: {id: fitness_heart_open}}]}
+  - {id: fitness_workout.log_record, from: fitness_workout, to: fitness_record_celebration, pending: "needs a second, heavier set to be a record, and the record banner clears itself 3.6 s later, before the walk can read it"}
   # History.
-  - {id: fitness_history.open_session, from: fitness_history, to: fitness_session, pending: "not yet verified on a device"}
-  - {id: fitness_history.open_workout, from: fitness_history, to: fitness_workout, when: "lift", pending: "not yet verified on a device"}
-  - {id: fitness_session.open_exercise, from: fitness_session, to: fitness_lift, pending: "not yet verified on a device"}
-  - {id: fitness_session.delete, from: fitness_session, to: fitness_history, do: [{tap: {id: fitness_session_delete}}, {tap: {id: fitness_session_delete}}], pending: "not yet verified on a device"}
+  - {id: fitness_history.open_session, from: fitness_history, to: fitness_session, pending: "needs fixture data: History lists a workout only once one is finished with a logged set"}
+  - {id: fitness_history.open_workout, from: fitness_history, to: fitness_workout, when: "lift", pending: "needs fixture data: History lists a workout only once one is finished with a logged set"}
+  - {id: fitness_session.open_exercise, from: fitness_session, to: fitness_lift, pending: "needs fixture data: History lists a workout only once one is finished with a logged set"}
+  - {id: fitness_session.delete, from: fitness_session, to: fitness_history, do: [{tap: {id: fitness_session_delete}}, {tap: {id: fitness_session_delete}}], pending: "needs fixture data: History lists a workout only once one is finished with a logged set"}
   # Progress.
-  - {id: fitness_progress.open_heart, from: fitness_progress, to: fitness_heart, do: [{tap: {id: fitness_progress_heart}}], pending: "not yet verified on a device"}
-  - {id: fitness_progress.open_exercise, from: fitness_progress, to: fitness_lift, pending: "not yet verified on a device"}
+  - {id: fitness_progress.open_heart, from: fitness_progress, to: fitness_heart, set: {heart_from: progress}, do: [{scroll_to: {id: fitness_progress_heart}}, {tap: {id: fitness_progress_heart}}]}
+  - {id: fitness_progress.open_exercise, from: fitness_progress, to: fitness_lift, pending: "needs fixture data: History lists a workout only once one is finished with a logged set"}
   # Runs.
   - {id: fitness_runs.open_run, from: fitness_runs, to: fitness_run, pending: "needs fixture data"}
   - {id: fitness_runs.start_run, from: fitness_runs, to: fitness_recording, do: [{tap: {id: fitness_run_start}}], pending: "needs a device capability"}
@@ -381,5 +398,5 @@ edges:
   - {id: fitness_recording.finish, from: fitness_recording, to: fitness_runs, do: [{tap: {id: fitness_recording_finish}}], pending: "needs a device capability"}
   - {id: fitness_recording.discard, from: fitness_recording, to: fitness_runs, do: [{tap: {id: fitness_recording_pause}}, {tap: {id: fitness_recording_discard}}, {tap: {id: fitness_recording_discard}}], pending: "needs a device capability"}
   # Import.
-  - {id: fitness_import.done, from: fitness_import, to: fitness_today, do: [{tap: {id: fitness_import_done_button}}], pending: "not yet verified on a device"}
+  - {id: fitness_import.done, from: fitness_import, to: fitness_today, when: "import_from == 'today'", do: [{tap: {id: fitness_import_done_button}}], pending: "needs a state the model does not track: importing notes adds exercises and logged sets, which turns every empty-state screen after it into another"}
   - {id: fitness_import.cancel_copy, from: fitness_import, to: fitness_today, do: [{tap: {id: fitness_import_copy_cancel}}], pending: "needs a notification or deep link"}
