@@ -73,7 +73,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -108,6 +107,7 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.LocalPlatformContext
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import com.meticulouscreations.homesafe.navigation.WeatherDeepLink
+import com.meticulouscreations.homesafe.navigation.rememberSavedPages
 import com.meticulouscreations.homesafe.text.resolve
 import com.meticulouscreations.homesafe.ui.AppSection
 import com.meticulouscreations.homesafe.ui.WithTooltip
@@ -311,7 +311,7 @@ fun WeatherAppContent(
     skiPictures: ImageLoader? = null,
 ) {
     var tab by rememberSaveable { mutableStateOf(initialTab) }
-    val pages = remember { mutableStateListOf<WeatherPage>().apply { initialPage?.let(::add) } }
+    val pages = rememberSavedPages(listOfNotNull(initialPage), WeatherPageCodec::encode, WeatherPageCodec::decode)
     // Here rather than in the bars, which go while a page is open.
     AssistantScreenContext { "Weather app, ${tab.name.lowercase()} tab" + (pages.lastOrNull()?.let { ", $it page open" } ?: "") }
 

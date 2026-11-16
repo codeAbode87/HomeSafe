@@ -32,7 +32,12 @@ The integration journeys, the end-to-end tests and the Android CLI journeys all 
   and as a downloadable MP4 (`…/clip.mp4`), of the length asked for, wherever the state holds recordings. It is one
   two-second H.264 test card repeated, so a player decodes it and a saved clip is as long as the one cut.
 
-It deliberately has no live video (go2rtc) and no push relay, so the app runs its "unavailable" paths for those.
+It deliberately has no live video (go2rtc), so the app runs its "unavailable" path for that. The push relay is absent too
+unless asked for: `--relay` (with `--relay-port`, default 8787, on the same host) or `FakeFrigateServer.start(relayPort = …)`
+starts a `FakeRelayServer` beside it, answering the Frigate session cookie, with `FakeRelayState.household()`'s invented
+data: `/packages`, `/charging` (summary, pages, a charge's detail) and `/timeline` (an admin or a named account; 403 otherwise),
+read and a few writes echoed. Other relay routes answer 404 and land in `relay.unhandled`; the sheet, budget, bank, fitness and
+doors routes aren't modelled, so Finance says the relay is outdated.
 Every snapshot and thumbnail it serves is the same 1×1 image.
 
 Each test sets up its scene through `FakeFrigateState`:

@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.util.Log
-import androidx.fragment.app.FragmentActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.PermissionController
@@ -30,6 +29,7 @@ import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import com.meticulouscreations.homesafe.ActivityAccess
 import com.meticulouscreations.homesafe.PlatformContext
 import com.meticulouscreations.homesafe.fitness.domain.DistanceSpan
 import com.meticulouscreations.homesafe.fitness.domain.HealthAvailability
@@ -88,7 +88,7 @@ private val PERMISSIONS: Map<HealthKind, String> = mapOf(
  *
  * What it does is logged under `HomeSafeHealth`, without any of the readings.
  */
-private class HealthConnectSource(private val context: Context, activity: FragmentActivity?) : HealthSource {
+private class HealthConnectSource(private val context: Context, activities: ActivityAccess?) : HealthSource {
     private var client: HealthConnectClient? = null
     private var pendingRequest: CompletableDeferred<Unit>? = null
     private var pendingRoute: CompletableDeferred<ExerciseRoute?>? = null
@@ -96,9 +96,8 @@ private class HealthConnectSource(private val context: Context, activity: Fragme
     /** A run's totals as last added up, by its id and when it was last changed: adding one up is a call to Health Connect each. */
     private val totals = HashMap<String, RunRecord>()
 
-    // Registered on the registry directly, as HeartRateLink.android.kt does: the graph is built
-    // too late in onCreate for the lifecycle-bound register().
-    private val permissionLauncher = activity?.activityResultRegistry?.register(
+    // Registered with each Activity that is up (see ActivityAccess.launcher).
+    private val permissionLauncher = activities?.launcher(
         "homesafe.health",
         PermissionController.createRequestPermissionResultContract(),
     ) {
@@ -106,7 +105,7 @@ private class HealthConnectSource(private val context: Context, activity: Fragme
         pendingRequest = null
     }
 
-    private val routeLauncher = activity?.activityResultRegistry?.register("homesafe.health.route", ExerciseRouteRequestContract()) { route ->
+    private val routeLauncher = activities?.launcher("homesafe.health.route", ExerciseRouteRequestContract()) { route ->
         pendingRoute?.complete(route)
         pendingRoute = null
     }
@@ -342,4 +341,4 @@ private class HealthConnectSource(private val context: Context, activity: Fragme
 }
 
 actual fun createHealthSource(platformContext: PlatformContext): HealthSource =
-    HealthConnectSource(platformContext.context.applicationContext, platformContext.context as? FragmentActivity)
+    HealthConnectSource(platformContext.context.applicationContext, platformContext.activities)

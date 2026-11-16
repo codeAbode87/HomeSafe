@@ -19,12 +19,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.meticulouscreations.homesafe.ActivityAccess
 import com.meticulouscreations.homesafe.PlatformContext
 import com.meticulouscreations.homesafe.appicon.appLaunchIntent
 import com.meticulouscreations.homesafe.data.createSilentChannel
@@ -73,12 +73,11 @@ private const val UNKNOWN_ACCURACY_METERS = 50.0
  *
  * What it does is logged under `HomeSafeRun`, without positions.
  */
-private class AndroidRunLocation(private val context: Context, activity: FragmentActivity?) : RunLocation {
+private class AndroidRunLocation(private val context: Context, activities: ActivityAccess?) : RunLocation {
     private var pendingRequest: CompletableDeferred<Boolean>? = null
 
-    // Registered on the registry directly, as HeartRateLink.android.kt does: the graph is built
-    // too late in onCreate for the lifecycle-bound register().
-    private val permissionLauncher = activity?.activityResultRegistry?.register(
+    // Registered with each Activity that is up (see ActivityAccess.launcher).
+    private val permissionLauncher = activities?.launcher(
         "homesafe.run_location",
         ActivityResultContracts.RequestMultiplePermissions(),
     ) {
@@ -271,4 +270,4 @@ class RunRecordingService : Service() {
 }
 
 actual fun createRunLocation(platformContext: PlatformContext): RunLocation =
-    AndroidRunLocation(platformContext.context.applicationContext, platformContext.context as? FragmentActivity)
+    AndroidRunLocation(platformContext.context.applicationContext, platformContext.activities)

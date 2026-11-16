@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
+import com.meticulouscreations.homesafe.ActivityAccess
 import com.meticulouscreations.homesafe.PlatformContext
 import kotlinx.coroutines.CompletableDeferred
 
@@ -25,12 +25,11 @@ private const val ANDROID_17 = 37
  * straight away, so asking again on a later sign-in costs nothing. From then on only system
  * settings can grant it, which is why [isGranted] reads the system's answer afresh every time.
  */
-private class AndroidLocalNetworkAccess(private val context: Context, activity: FragmentActivity?) : LocalNetworkAccess {
+private class AndroidLocalNetworkAccess(private val context: Context, activities: ActivityAccess?) : LocalNetworkAccess {
     private var pendingRequest: CompletableDeferred<Boolean>? = null
 
-    // Registered on the registry directly, as AlertNotifier.android.kt does: the graph is built
-    // too late in onCreate for the lifecycle-bound register().
-    private val permissionLauncher = activity?.activityResultRegistry?.register(
+    // Registered with each Activity that is up (see ActivityAccess.launcher).
+    private val permissionLauncher = activities?.launcher(
         "homesafe.local_network",
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
@@ -55,4 +54,4 @@ private class AndroidLocalNetworkAccess(private val context: Context, activity: 
 }
 
 actual fun createLocalNetworkAccess(context: PlatformContext): LocalNetworkAccess =
-    AndroidLocalNetworkAccess(context.context.applicationContext, context.context as? FragmentActivity)
+    AndroidLocalNetworkAccess(context.context.applicationContext, context.activities)

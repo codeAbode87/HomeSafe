@@ -9,7 +9,7 @@ import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
+import com.meticulouscreations.homesafe.ActivityAccess
 import com.meticulouscreations.homesafe.PlatformContext
 import com.meticulouscreations.homesafe.domain.platform.AlertNotification
 import com.meticulouscreations.homesafe.domain.platform.AlertNotifier
@@ -25,17 +25,14 @@ private const val PREF_ASKED = "asked_for_permission"
  * runtime `POST_NOTIFICATIONS` permission always applies: nothing shows until it's granted.
  * The drawing itself — stages, clip, tap target — is [AlertNotificationPoster]'s, shared with pushes.
  */
-private class AndroidAlertNotifier(private val activity: FragmentActivity) : AlertNotifier {
-    private val context: Context = activity.applicationContext
+private class AndroidAlertNotifier(private val context: Context, private val activities: ActivityAccess) : AlertNotifier {
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     private var pendingRequest: CompletableDeferred<Boolean>? = null
 
-    // Registered on the registry directly (not through the LifecycleOwner overload), which is
-    // allowed after the activity is started — the graph is built in onCreate, but late enough
-    // that the lifecycle-bound register() would refuse.
-    private val permissionLauncher = activity.activityResultRegistry.register(
+    // Registered with each Activity that is up (see ActivityAccess.launcher).
+    private val permissionLauncher = activities.launcher(
         "homesafe.post_notifications",
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
@@ -55,7 +52,7 @@ private class AndroidAlertNotifier(private val activity: FragmentActivity) : Ale
         // After one refusal Android still shows the prompt (with a rationale hint); after the
         // second it auto-denies silently, which is the state only the settings screen can fix.
         prefs.getBoolean(PREF_ASKED, false) &&
-            !ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.POST_NOTIFICATIONS) ->
+            activities.current?.let { ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.POST_NOTIFICATIONS) } == false ->
             NotificationPermission.DENIED
 
         else -> NotificationPermission.NOT_DETERMINED
@@ -102,4 +99,4 @@ private class HeadlessAlertNotifier : AlertNotifier {
 }
 
 actual fun createAlertNotifier(platformContext: PlatformContext): AlertNotifier =
-    (platformContext.context as? FragmentActivity)?.let(::AndroidAlertNotifier) ?: HeadlessAlertNotifier()
+    platformContext.activities?.let { AndroidAlertNotifier(platformContext.context.applicationContext, it) } ?: HeadlessAlertNotifier()

@@ -6,6 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.navigation3.runtime.entryProvider
@@ -15,6 +18,8 @@ import coil3.SingletonImageLoader
 import coil3.annotation.ExperimentalCoilApi
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import com.meticulouscreations.homesafe.di.AppGraph
+import com.meticulouscreations.homesafe.navigation.LocalNavigationEpoch
+import com.meticulouscreations.homesafe.navigation.SavedNavigation
 import com.meticulouscreations.homesafe.navigation.TopLevelRoute
 import com.meticulouscreations.homesafe.tracing.traceSection
 import com.meticulouscreations.homesafe.ui.assistant.AssistantHost
@@ -49,7 +54,7 @@ private data object AppShellRoute
  * [startAppServices] called once and the app's visibility read from UIKit instead of a lifecycle.
  */
 @Composable
-fun App(appGraph: AppGraph, debugAutofillCredentials: DebugAutofillCredentials? = null) {
+fun App(appGraph: AppGraph, debugAutofillCredentials: DebugAutofillCredentials? = null, navigationEpoch: String = "") {
     remember(appGraph) { startAppServices(appGraph) }
 
     // The root lifecycle is the app's: started while it is on screen, stopped when it goes to
@@ -65,33 +70,70 @@ fun App(appGraph: AppGraph, debugAutofillCredentials: DebugAutofillCredentials? 
         }
     }
 
-    AppChrome(appGraph) {
-        val backStack = remember { mutableStateListOf<Any>(SecureConnectionRoute) }
-        NavDisplay(
-            backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
-            // The sign-in screen already shows the shell's chrome while it authenticates
-            // (see ShellSkeleton), so this dissolve only ever changes the content inside it.
-            transitionSpec = { RootCrossfade },
-            popTransitionSpec = { RootCrossfade },
-            predictivePopTransitionSpec = { RootCrossfade },
-            entryProvider = entryProvider {
-                entry<SecureConnectionRoute> {
-                    SecureConnectionScreen(
-                        debugAutofillCredentials = debugAutofillCredentials,
-                        onConnected = {
-                            // Connecting replaces the back stack: the system back button
-                            // should exit the app from the shell, not return to this screen.
-                            backStack.clear()
-                            backStack.add(AppShellRoute)
-                        },
-                    )
-                }
-                entry<AppShellRoute> { FrigateAppShell() }
-            },
-        )
+    // Where the user is, kept across the Activity's recreation (a font size or language change)
+    // while this session is: see SavedNavigation. A new process has a new epoch, so it begins at
+    // the sign-in screen, as it must: its session is gone.
+    CompositionLocalProvider(LocalNavigationEpoch provides navigationEpoch) {
+        AppChrome(appGraph) { AppNavigation(debugAutofillCredentials) }
     }
 }
+
+@Composable
+private fun AppNavigation(debugAutofillCredentials: DebugAutofillCredentials?) {
+    val epoch = LocalNavigationEpoch.current
+    val backStack = rememberSaveable(epoch, saver = remember(epoch) { rootBackStackSaver(epoch) }) { mutableStateListOf<Any>(SecureConnectionRoute) }
+    NavDisplay(
+        backStack = backStack,
+        onBack = { backStack.removeLastOrNull() },
+        // The sign-in screen already shows the shell's chrome while it authenticates
+        // (see ShellSkeleton), so this dissolve only ever changes the content inside it.
+        transitionSpec = { RootCrossfade },
+        popTransitionSpec = { RootCrossfade },
+        predictivePopTransitionSpec = { RootCrossfade },
+        entryProvider = entryProvider {
+            entry<SecureConnectionRoute> {
+                SecureConnectionScreen(
+                    debugAutofillCredentials = debugAutofillCredentials,
+                    onConnected = {
+                        // Connecting replaces the back stack: the system back button
+                        // should exit the app from the shell, not return to this screen.
+                        backStack.clear()
+                        backStack.add(AppShellRoute)
+                    },
+                )
+            }
+            entry<AppShellRoute> { FrigateAppShell() }
+        },
+    )
+}
+
+/** The root stack as it is saved: "signin" and "shell" (the only two routes), under [epoch] (see [SavedNavigation]). */
+internal fun rootBackStackSaver(epoch: String): Saver<SnapshotStateList<Any>, Any> = Saver(
+    save = { stack ->
+        SavedNavigation.pack(
+            epoch,
+            stack.mapNotNull {
+                when (it) {
+                    SecureConnectionRoute -> "signin"
+                    AppShellRoute -> "shell"
+                    else -> null
+                }
+            },
+        )
+    },
+    restore = restore@{ saved ->
+        val keys = SavedNavigation.unpack(saved, epoch) ?: return@restore null
+        val routes = keys.mapNotNull {
+            when (it) {
+                "signin" -> SecureConnectionRoute
+                "shell" -> AppShellRoute
+                else -> null
+            }
+        }
+        // Anything not understood, or nothing left, is no save: the stack then starts at the sign-in screen.
+        routes.takeIf { it.isNotEmpty() && it.size == keys.size }?.let { mutableStateListOf<Any>().apply { addAll(it) } }
+    },
+)
 
 /**
  * What runs for as long as the app does, started once by whichever root hosts the UI. Every

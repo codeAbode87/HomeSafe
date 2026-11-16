@@ -1,0 +1,83 @@
+# HomeSafe's journey model, for nines (model-based journey testing; see journeys/README.md).
+# The app signs in to the fake Frigate only, with the network closed to everything but localhost.
+app:
+  name: homesafe
+  package: com.meticulouscreations.homesafe.debug
+  apk: ../androidApp/build/outputs/apk/debug/androidApp-debug.apk
+
+include:
+  - {file: shell.yaml, group: shell}
+  - {file: fitness.yaml, group: fitness}
+  - {file: weather.yaml, group: weather}
+  - {file: finance.yaml, group: finance}
+  - {file: atlas.yaml, group: atlas}
+  - {file: packages.yaml, group: packages}
+  - {file: charging.yaml, group: charging}
+
+# What is fixed for a whole walk: who signs in, and what the server holds.
+contexts:
+  role:
+    admin: {username: admin, password: correct-horse}
+    viewer: {username: viewer, password: just-looking}
+  data:
+    household: {flag: ""}          # three cameras and a few hours of activity
+    quiet: {flag: "--quiet"}       # cameras, no history
+  relay:
+    "off": {flag: ""}              # nothing on :8787: Packages, Charging, Atlas and the sheet can't be reached
+    "on": {flag: "--relay"}        # the fake relay on :8787 with a household's parcels, charges and location history
+
+  # The window the app lays itself out in. Only the phone has been run: the others stay in the denominator as
+  # pending until a scene sets the size and their screens are verified.
+  window:
+    phone: {}
+    landscape: {pending: "needs a wide window"}      # the nav down the side, a camera full screen
+    wide: {pending: "needs a wide window"}           # from 840dp: the sidebar, two panes, the finance desk
+
+scene:
+  services:
+    # Built by `./gradlew :fake-frigate:installDist`. 127.0.0.1, not ::1: the video player connects there.
+    - cmd: "../fake-frigate/build/install/fake-frigate/bin/fake-frigate --port 8971 --host 127.0.0.1 --advertise localhost {data.flag} {relay.flag}"
+      ready: {tcp: 8971}
+      timeout_s: 60
+  launch:
+    fresh: true
+    options: ["--no-network"]      # the debug build has the household's LAN address compiled in
+  start:
+    - type: {into: {id: sign_in_server_url}, text: "http://localhost:8971", clear: true}
+    - type: {into: {id: sign_in_username}, text: "{role.username}", clear: true}
+    - type: {into: {id: sign_in_password}, text: "{role.password}", clear: true}
+    - tap: {id: sign_in_connect}
+    - wait: {present: {id: bottom_nav_home}, timeout_ms: 30000}
+
+oracles:
+  log_fail: ["FATAL EXCEPTION"]
+  unknown_screen: warn
+  settle_ms: 2000
+  step_timeout_ms: 15000
+
+# Every screen should survive each of these: the same screen in the same state afterwards.
+resilience:
+  perturbations: [rotate, recreate, process-death, background, dark, fontscale, rtl, offline]
+  # The session lives in memory: a killed process comes back to the sign-in form with the last server filled in
+  # (AppE2eTest.aRelaunchOffersTheLastServerSignedInTo), wherever the user was.
+  expect: {process-death: sign_in}
+  # On its side a phone lays a screen out differently (the nav rail, a camera full screen): the screen must survive
+  # the turn and be itself again upright, and what landscape should look like belongs to the `window` context.
+  lenient: [rotate]
+
+# A changed file under these that no screen's `sources` names fails the pull-request gate: new UI belongs to a screen.
+gate:
+  ui_globs:
+    - "shared/src/commonMain/kotlin/**/ui/screens/*.kt"
+    - "app/src/commonMain/kotlin/**/ui/screens/*.kt"
+    - "features/*/src/commonMain/kotlin/**/ui/*.kt"
+  # App code whose reach no screen can name (view models, data, network, the fake server): a change there walks
+  # every screen and transition once.
+  code_globs:
+    - "shared/src/*Main/**"
+    - "app/src/*Main/**"
+    - "features/*/src/*Main/**"
+    - "androidApp/src/main/**"
+    - "fake-frigate/src/main/**"
+
+start: home

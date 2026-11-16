@@ -51,7 +51,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -78,6 +77,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meticulouscreations.homesafe.charging.ChargingUiState
 import com.meticulouscreations.homesafe.charging.ChargingViewModel
+import com.meticulouscreations.homesafe.navigation.rememberSavedPages
 import com.meticulouscreations.homesafe.text.resolve
 import com.meticulouscreations.homesafe.ui.AppSection
 import com.meticulouscreations.homesafe.ui.LocalAppSections
@@ -174,7 +174,7 @@ fun ChargingAppContent(
 ) {
     var tab by rememberSaveable { mutableStateOf(initialTab) }
     var chargesCar by rememberSaveable { mutableStateOf<String?>(null) }
-    val pages = remember { mutableStateListOf<ChargingPage>().apply { initialPage?.let(::add) } }
+    val pages = rememberSavedPages(listOfNotNull(initialPage), ChargingPageCodec::encode, ChargingPageCodec::decode)
     val showAskedCar by rememberUpdatedState(onShowAskedCar)
     LaunchedEffect(askedCar) {
         if (askedCar != null) {

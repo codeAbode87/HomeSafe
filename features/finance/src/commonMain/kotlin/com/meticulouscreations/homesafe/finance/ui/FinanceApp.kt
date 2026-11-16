@@ -64,7 +64,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -97,6 +96,7 @@ import com.meticulouscreations.homesafe.finance.FinanceViewModel
 import com.meticulouscreations.homesafe.finance.domain.IndicatorCatalog
 import com.meticulouscreations.homesafe.finance.domain.MarketCatalog
 import com.meticulouscreations.homesafe.finance.domain.SymbolMatch
+import com.meticulouscreations.homesafe.navigation.rememberSavedPages
 import com.meticulouscreations.homesafe.text.resolve
 import com.meticulouscreations.homesafe.ui.APP_PAGE_MAX_WIDTH
 import com.meticulouscreations.homesafe.ui.AppSection
@@ -244,7 +244,7 @@ private fun FinanceAppContent(
     // way, so an opening from the drawer later starts afresh.
     val parked = remember { FinanceParkedPage.take().takeIf { resume } }
     var tab by rememberSaveable { mutableStateOf(parked?.tab ?: FinanceTab.WALLET) }
-    val details = remember { mutableStateListOf<FinanceDetail>().apply { parked?.let { addAll(it.details) } } }
+    val details = rememberSavedPages(parked?.details.orEmpty(), FinancePageCodec::encode, FinancePageCodec::decode)
     // Here rather than in the bars, which go while a page is open.
     AssistantScreenContext { "Finance app, ${tab.name.lowercase()} tab" + (details.lastOrNull()?.let { ", $it page open" } ?: "") }
     val listStates = FinanceTab.entries.associateWith { rememberLazyListState() }

@@ -56,7 +56,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -80,6 +79,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.meticulouscreations.homesafe.navigation.rememberSavedPages
 import com.meticulouscreations.homesafe.packages.PackagesUiState
 import com.meticulouscreations.homesafe.packages.PackagesViewModel
 import com.meticulouscreations.homesafe.packages.domain.PackagesProblem
@@ -195,7 +195,7 @@ fun PackagesAppContent(
     onShowLink: () -> Unit = {},
 ) {
     var tab by rememberSaveable { mutableStateOf(initialTab) }
-    val pages = remember { mutableStateListOf<PackagesPage>().apply { initialPage?.let(::add) } }
+    val pages = rememberSavedPages(listOfNotNull(initialPage), PackagesPageCodec::encode, PackagesPageCodec::decode)
     AssistantScreenContext { "Packages app, ${tab.name.lowercase()} tab" + (pages.lastOrNull()?.let { ", $it page open" } ?: "") }
     val haptics = LocalHapticFeedback.current
 

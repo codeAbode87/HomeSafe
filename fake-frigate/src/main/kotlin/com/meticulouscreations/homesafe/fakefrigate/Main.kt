@@ -7,7 +7,8 @@ package com.meticulouscreations.homesafe.fakefrigate
  *     ./gradlew :fake-frigate:run --args="--port 8971 --host 0.0.0.0 --advertise 10.0.2.2"
  *
  * Sign in with `admin` / `correct-horse` (or the read-only `viewer` / `just-looking`). Add
- * `--quiet` for a server with cameras but no history.
+ * `--quiet` for a server with cameras but no history, and `--relay` (with `--relay-port`, default 8787,
+ * on the same host) for the fake relay behind Packages, Charging and Atlas.
  */
 fun main(args: Array<String>) {
     fun option(name: String): String? = args.indexOf("--$name").takeIf { it >= 0 }?.let { args.getOrNull(it + 1) }
@@ -15,8 +16,14 @@ fun main(args: Array<String>) {
     val host = option("host") ?: "0.0.0.0"
     val advertise = option("advertise") ?: "127.0.0.1"
     val state = if ("--quiet" in args) FakeFrigateState.quiet() else FakeFrigateState.household()
-    val server = FakeFrigateServer(state).start(port = port, host = host, advertiseHost = advertise)
+    val server = FakeFrigateServer(state).start(
+        port = port,
+        host = host,
+        advertiseHost = advertise,
+        relayPort = if ("--relay" in args) option("relay-port")?.toInt() ?: FakeRelayServer.RELAY_PORT else null,
+    )
     Runtime.getRuntime().addShutdownHook(Thread { server.close() })
     println("Fake Frigate listening on $host:${server.port} — sign in at ${server.baseUrl} as ${FakeFrigateState.ADMIN.username} / ${FakeFrigateState.ADMIN.password}")
+    server.relay?.let { println("Fake relay listening on $host:${it.port}") }
     Thread.currentThread().join()
 }

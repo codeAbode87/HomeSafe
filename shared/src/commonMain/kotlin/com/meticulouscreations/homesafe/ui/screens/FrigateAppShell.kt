@@ -411,6 +411,36 @@ class ShellNavigation(
 
     fun isOpen(which: InnerApp): Boolean = appOpen && app == which
 
+    /**
+     * Where the shell is, for saving across the Activity's recreation ([shellNavigationSaver]).
+     * The app that is up is whichever shows: over the shell, or beside the sidebar.
+     */
+    internal fun snapshot() = ShellNavigationSnapshot(
+        tab = selectedTab,
+        homePages = homeBackStack.toList(),
+        settingsPages = settingsBackStack.toList(),
+        drawerOpen = drawerOpen,
+        app = sidebarApp ?: app.takeIf { appOpen },
+        sidebarHidden = sidebarHidden,
+    )
+
+    /**
+     * Back to where [snapshot] was, on a shell just made. The app comes up as it does from the
+     * drawer (growing from the corner, which is all that is left of where it was tapped), over
+     * the tab that was up; if the window is wide enough for the sidebar, [useSidebar] moves it there.
+     */
+    internal fun restore(snapshot: ShellNavigationSnapshot) {
+        showTab(snapshot.tab)
+        homeBackStack.clear()
+        homeBackStack.addAll(snapshot.homePages)
+        settingsBackStack.clear()
+        settingsBackStack.addAll(snapshot.settingsPages)
+        sidebarHidden = snapshot.sidebarHidden
+        snapshot.app?.let { openApp(it, Offset.Zero, snapshot.tab) }
+        // After the app: opening one puts the drawer away.
+        drawerOpen = snapshot.drawerOpen
+    }
+
     /** The tab that is up, as far as Compose knows; under a native tab bar the bar itself is the truth. */
     val selectedTab: TopLevelRoute get() = topLevel.topLevelKey
 
@@ -683,7 +713,8 @@ class ShellNavigation(
 @Composable
 fun FrigateAppShell() {
     val viewModel: AppShellViewModel = metroViewModel()
-    val nav = remember { ShellNavigation() }
+    // Kept across the Activity's recreation (a font size or language change): see rememberShellNavigation.
+    val nav = rememberShellNavigation()
     val stores = rememberShellViewModelStores(nav)
     // The Home list's quick look at one camera. Its layer is drawn by the shell, over the bars,
     // so the zoomed picture gets the whole screen.
@@ -1284,7 +1315,7 @@ private fun TopBarMenu(expanded: Boolean, onDismiss: () -> Unit, appVersion: Str
     }
 }
 
-private data object CameraListRoute
+internal data object CameraListRoute
 
 /**
  * [warmStreamUrl] / [warmPosterUrl] are what the tapped card was already playing: the detail
@@ -1299,7 +1330,7 @@ private data object CameraListRoute
  * [openedEventId] is that detection, so the screen can offer to tag its car when the classifier
  * didn't name it, and [tagCarOnOpen] opens the picker at once (a notification's "Tag car" button).
  */
-private data class CameraDetailRoute(
+internal data class CameraDetailRoute(
     val cameraName: String,
     val warmStreamUrl: String?,
     val warmPosterUrl: String?,
@@ -1313,7 +1344,7 @@ private data class CameraDetailRoute(
  * are what its card was playing, as for [CameraDetailRoute], and the still its card shows
  * before the video has a frame (see `LastSeenStill`).
  */
-private data class NestCameraRoute(
+internal data class NestCameraRoute(
     val streamName: String,
     val warmStreamUrl: String?,
     val warmWebRtcSignalingUrl: String?,
@@ -1330,7 +1361,7 @@ private fun cameraRoute(tile: CameraTile): Any = when (tile.camera.source) {
  * The framing editor for [cameraName], from its card in Arrange mode. The rest is what the card
  * was playing and how it fits its picture, so the editor carries on with the same video.
  */
-private data class CameraFramingRoute(
+internal data class CameraFramingRoute(
     val cameraName: String,
     val streamUrl: String?,
     val webRtcSignalingUrl: String?,
@@ -1341,14 +1372,14 @@ private data class CameraFramingRoute(
     constructor(tile: CameraTile) : this(tile.camera.name, tile.streamUrl, tile.webRtcSignalingUrl, tile.posterUrl, tile.posterIsLastSeen, tile.videoFit)
 }
 
-private data class DetectionZonesRoute(val cameraName: String)
-private data class CarTaggingRoute(val cameraName: String)
+internal data class DetectionZonesRoute(val cameraName: String)
+internal data class CarTaggingRoute(val cameraName: String)
 
 /** The Doors page on the Home tab, from Home's doors card or a door notification's tap ([ShellNavigation.openDoors]). */
 internal data object DoorsHomeRoute
 
 /** The cars' map: the household's Teslas where they are, from a Tesla's pill on Home ([LocalCarsPage]). */
-private data object CarsHomeRoute
+internal data object CarsHomeRoute
 
 /**
  * The full-screen clip editor for [cameraName], around [anchorEpochSeconds] (what the camera
@@ -1356,7 +1387,7 @@ private data object CarsHomeRoute
  * were, as fractions of the window: where the splash that opens it lands, and where it drains
  * back to. Floats rather than an Offset so the route stays a plain, saveable value.
  */
-private data class ClipEditorRoute(
+internal data class ClipEditorRoute(
     val cameraName: String,
     val anchorEpochSeconds: Double,
     val originX: Float,

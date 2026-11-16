@@ -1,0 +1,270 @@
+# Weather, from the drawer. Without places it opens on the welcome screen.
+nodes:
+  weather_welcome:
+    title: Weather welcome
+    group: weather
+    covers: ["overlay:WeatherApp.WeatherAppContent"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherApp.kt"]
+    params:
+      location:
+        supported: {observe: {id: weather_welcome_locate}}   # a "Use my location" button beside Add a city
+        unsupported: {}                                      # a device that cannot locate offers only Add a city
+    match:
+      all: [{id: weather_welcome}]
+    checks:
+      - present: {id: weather_back}
+      - present: {id: weather_welcome_add}
+  weather_places:
+    title: Weather, Places
+    group: weather
+    covers: ["page:WeatherPage.Places", "screen:PlacesScreen#2"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/PlacesScreen.kt"]
+    params:
+      location:
+        prompt: {observe: {text_contains: "With your location"}}       # location not yet allowed: explanation and the button
+        denied: {observe: {text_contains: "Location is switched off"}}  # the user refused it at the system prompt
+        here: {}                                                       # the phone's own place has a card (or the device cannot locate)
+      saved:
+        none: {}
+        some: {observe: {id: weather_places_edit}}                     # saved cities bring Edit
+    match:
+      all: [{id: weather_places}]
+    checks:
+      - present: {id: weather_places_search}
+      - present: {id: weather_use_location}
+  weather_settings:
+    title: Weather, Settings
+    group: weather
+    covers: ["page:WeatherPage.Settings", "screen:WeatherSettingsScreen"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherSettingsScreen.kt"]
+    params:
+      notifications:
+        unsupported: {observe: {text_contains: "no notifications for the app to send"}}
+        granted: {observe: {id: weather_notices_sample}}      # the OS lets them through: a sample can be sent
+        blocked: {observe: {id: weather_notices_allow}}       # switched on in the app but off in the system
+        off: {}                                               # notices switched off in the app
+      ski_notices:
+        shown: {observe: {id: ski_notices_snow}}
+        hidden: {}                                            # a computer cannot receive the relay's push
+    match:
+      all: [{id: weather_settings}]
+    checks:
+      - present: {id: weather_units_temperature_0}
+      - present: {id: weather_back}
+
+  # The Today and Forecast tabs: one pager of places, each place's forecast.
+  weather_today:
+    title: Weather, Today
+    group: weather
+    kind: screen
+    pending: "not yet verified on a device"
+    covers: ["tab:WeatherTab.TODAY", "screen:TodayScreen#3"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/TodayScreen.kt"]
+    match:
+      all: [{id: weather_today}]
+    params:
+      forecast:
+        loading: {observe: {text: "Fetching the forecast…"}}
+        error: {}                                             # the fetch failed with no old forecast: message and Retry
+        content: {observe: {id: weather_hero}}
+        stale: {observe: {text_contains: "Couldn't refresh"}} # an old forecast with a notice beside it
+      alert:
+        none: {}
+        in_force: {observe: {id: weather_alert}}
+  weather_forecast:
+    title: Weather, Forecast
+    group: weather
+    kind: screen
+    pending: "not yet verified on a device"
+    covers: ["tab:WeatherTab.FORECAST", "screen:ForecastScreen"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/ForecastScreen.kt"]
+    match:
+      all: [{id: weather_forecast}]
+    params:
+      forecast:
+        loading: {observe: {text: "Fetching the forecast…"}}
+        error: {}
+        content: {observe: {id: weather_day_0}}
+  weather_alert:
+    title: Weather warning
+    group: weather
+    kind: screen
+    pending: "needs recorded internet"
+    covers: ["page:WeatherPage.Alert", "screen:AlertScreen"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/WeatherSettingsScreen.kt"]
+    match:
+      all: [{id: weather_alert_detail}]
+    params:
+      warning:
+        in_force: {observe: {id: weather_alert_detail}}
+        lapsed: {}                                            # it ended while the page was open: a blank surface
+  weather_radar:
+    title: Weather, Radar
+    group: weather
+    kind: screen
+    pending: "needs recorded internet"
+    covers: ["tab:WeatherTab.RADAR", "screen:RadarScreen"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/radar/RadarScreen.kt"]
+    match:
+      all: [{id: weather_radar}]
+    params:
+      loop:
+        loading: {observe: {desc_contains: "Fetching the radar"}}
+        error: {}
+        content: {}
+  weather_location_permission:
+    title: Location permission prompt
+    group: weather
+    kind: modal
+    pending: "needs a device capability"
+    covers: []
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/WeatherViewModel.kt"]
+  weather_notification_permission:
+    title: Notification permission prompt
+    group: weather
+    kind: modal
+    pending: "needs a device capability"
+    covers: []
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/WeatherViewModel.kt"]
+
+  # The Ski tab and the pages pushed from it.
+  weather_ski:
+    title: Weather, Ski
+    group: weather
+    kind: screen
+    pending: "not yet verified on a device"
+    covers: ["tab:WeatherTab.SKI", "screen:SkiScreen"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiScreen.kt"]
+    match:
+      all: [{id: ski_screen}]
+    params:
+      resorts:
+        empty: {observe: {id: ski_empty}}                     # nothing followed yet
+        waiting: {observe: {id: ski_waiting}}                 # followed, no report in yet (or its error)
+        best_bet: {observe: {id: ski_best_bet}}
+        none_open: {observe: {id: ski_none_open}}
+      start:
+        known: {}
+        unknown: {observe: {text_contains: "Set your home in the app"}}   # no home or position: no drive times
+      sites:
+        fine: {}
+        trouble: {observe: {id: ski_site_trouble}}
+  weather_ski_resort:
+    title: Ski resort
+    group: weather
+    kind: screen
+    pending: "needs recorded internet"
+    covers: ["page:WeatherPage.SkiResort", "screen:SkiResortScreen"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiResortScreen.kt"]
+    match:
+      all: [{id: ski_resort_page}]
+    params:
+      report:
+        loading: {observe: {text: "Asking the mountain…"}}
+        error: {}
+        content: {observe: {id: ski_report}}
+      cameras:
+        none: {}
+        some: {observe: {id: ski_cams}}
+  weather_ski_find:
+    title: Ski, Find resorts
+    group: weather
+    kind: screen
+    pending: "not yet verified on a device"
+    covers: ["page:WeatherPage.SkiFind", "screen:SkiFindScreen"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiFindScreen.kt"]
+    match:
+      all: [{id: ski_find_page}]
+  weather_ski_region:
+    title: Ski region
+    group: weather
+    kind: screen
+    pending: "needs recorded internet"
+    covers: ["page:WeatherPage.SkiRegion", "screen:SkiRegionScreen"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiFindScreen.kt"]
+    match:
+      all: [{id: ski_region_page}]
+    params:
+      reports:
+        loading: {observe: {text: "Asking the mountain…"}}
+        error: {}
+        content: {}
+  weather_ski_setup:
+    title: Ski, Trip setup
+    group: weather
+    kind: screen
+    pending: "not yet verified on a device"
+    covers: ["page:WeatherPage.SkiSetup", "screen:SkiSetupScreen"]
+    sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiFindScreen.kt"]
+    match:
+      all: [{id: ski_setup_page}]
+    params:
+      origin:
+        can_locate: {observe: {id: ski_from_here}}            # From home or From here
+        home_only: {}                                         # a device that cannot tell where it is
+      sites:
+        fine: {}
+        trouble: {observe: {id: ski_site_trouble_card}}
+
+edges:
+  - {id: weather_welcome.back, from: weather_welcome, to: home, do: [back]}
+  - {id: weather_welcome.open_places, from: weather_welcome, to: weather_places, do: [{tap: {id: weather_places_button}}]}
+  - {id: weather_welcome.add_city, from: weather_welcome, to: weather_places, do: [{tap: {id: weather_welcome_add}}]}
+  - {id: weather_welcome.open_settings, from: weather_welcome, to: weather_settings, do: [{tap: {id: weather_settings_button}}]}
+  - {id: weather_places.back, from: weather_places, to: weather_welcome, do: [back]}
+  - {id: weather_settings.back, from: weather_settings, to: weather_welcome, do: [back]}
+  # "Use my location" raises the system location permission dialog.
+  - {id: weather_welcome.use_location, from: weather_welcome, to: weather_location_permission, pending: "needs a device capability", do: [{tap: {id: weather_welcome_locate}}]}
+  - {id: weather_places.use_location, from: weather_places, to: weather_location_permission, pending: "needs a device capability", do: [{tap: {id: weather_use_location}}]}
+  - {id: weather_location_permission.allow_from_welcome, from: weather_location_permission, to: weather_today, pending: "needs a device capability"}
+  - {id: weather_location_permission.deny_to_welcome, from: weather_location_permission, to: weather_welcome, pending: "needs a device capability"}
+  - {id: weather_location_permission.deny_to_places, from: weather_location_permission, to: weather_places, pending: "needs a device capability"}
+  - {id: weather_settings.allow_notifications, from: weather_settings, to: weather_notification_permission, pending: "needs a device capability", do: [{tap: {id: weather_notices_allow}}]}
+  - {id: weather_notification_permission.close, from: weather_notification_permission, to: weather_settings, pending: "needs a device capability"}
+
+  # Leaving a place the app has no forecast for: a popular city, a search result or a saved place turns to its Today.
+  - {id: weather_places.pick_place, from: weather_places, to: weather_today, pending: "not yet verified on a device", do: [{tap: {id: weather_place_result}}]}
+  - {id: weather_places.back_to_today, from: weather_places, to: weather_today, pending: "not yet verified on a device", do: [back]}
+  - {id: weather_settings.back_to_today, from: weather_settings, to: weather_today, pending: "not yet verified on a device", do: [back]}
+
+  # The tabs: the pill along the foot, the side rail, or the shell's sidebar.
+  - {id: weather_tab.today, from: [weather_forecast, weather_radar, weather_ski], to: weather_today, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_tab_today}}]}
+  - {id: weather_tab.forecast, from: [weather_today, weather_radar, weather_ski], to: weather_forecast, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_tab_forecast}}]}
+  - {id: weather_tab.radar, from: [weather_today, weather_forecast, weather_ski], to: weather_radar, count: once, pending: "needs recorded internet", do: [{tap: {id: weather_tab_radar}}]}
+  - {id: weather_tab.ski, from: [weather_today, weather_forecast, weather_radar], to: weather_ski, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_tab_ski}}]}
+  - {id: weather_today.open_radar_card, from: weather_today, to: weather_radar, pending: "needs recorded internet", do: [{tap: {id: weather_radar_card}}]}
+  - {id: weather_today.open_forecast_row, from: weather_today, to: weather_forecast, pending: "needs recorded internet", do: [{tap: {id: weather_next_wet_day}}]}
+  - {id: weather_tabs.close, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: home, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_back}}]}
+
+  # Places and Settings from the tabs' top bar (the Ski tab's bar has its own buttons).
+  - {id: weather_tabs.open_places, from: [weather_today, weather_forecast, weather_radar], to: weather_places, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_places_button}}]}
+  - {id: weather_tabs.open_places_title, from: [weather_today, weather_forecast, weather_radar], to: weather_places, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_place_title}}]}
+  - {id: weather_tabs.open_settings, from: [weather_today, weather_forecast, weather_radar], to: weather_settings, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_settings_button}}]}
+
+  # A government warning.
+  - {id: weather_today.open_alert, from: weather_today, to: weather_alert, pending: "needs recorded internet", do: [{tap: {id: weather_alert}}]}
+  - {id: weather_alert.back, from: weather_alert, to: weather_today, pending: "needs recorded internet", do: [{tap: {id: weather_back}}]}
+
+  # Ski.
+  - {id: weather_ski.open_find, from: weather_ski, to: weather_ski_find, pending: "not yet verified on a device", do: [{tap: {id: ski_find_button}}]}
+  - {id: weather_ski.open_find_button, from: weather_ski, to: weather_ski_find, pending: "not yet verified on a device", do: [{tap: {id: ski_find}}]}
+  - {id: weather_ski.open_setup, from: weather_ski, to: weather_ski_setup, pending: "not yet verified on a device", do: [{tap: {id: ski_setup_button}}]}
+  - {id: weather_ski.open_best_bet, from: weather_ski, to: weather_ski_resort, pending: "needs recorded internet", do: [{tap: {id: ski_best_bet}}]}
+  - {id: weather_ski.open_resort_card, from: weather_ski, to: weather_ski_resort, pending: "needs recorded internet"}
+  - {id: weather_ski.open_region, from: weather_ski, to: weather_ski_region, pending: "needs recorded internet"}
+  - {id: weather_ski_find.open_region, from: weather_ski_find, to: weather_ski_region, pending: "needs recorded internet"}
+  - {id: weather_ski_region.open_resort, from: weather_ski_region, to: weather_ski_resort, pending: "needs recorded internet"}
+  - {id: weather_ski_find.back, from: weather_ski_find, to: weather_ski, pending: "not yet verified on a device", do: [{tap: {id: weather_back}}]}
+  - {id: weather_ski_setup.back, from: weather_ski_setup, to: weather_ski, pending: "not yet verified on a device", do: [{tap: {id: weather_back}}]}
+  - {id: weather_ski_region.back_to_find, from: weather_ski_region, to: weather_ski_find, pending: "needs recorded internet", do: [{tap: {id: weather_back}}]}
+  - {id: weather_ski_region.back_to_ski, from: weather_ski_region, to: weather_ski, pending: "needs recorded internet", do: [{tap: {id: weather_back}}]}
+  - {id: weather_ski_resort.back_to_ski, from: weather_ski_resort, to: weather_ski, pending: "needs recorded internet", do: [{tap: {id: weather_back}}]}
+  - {id: weather_ski_resort.back_to_region, from: weather_ski_resort, to: weather_ski_region, pending: "needs recorded internet", do: [{tap: {id: weather_back}}]}
+
+  # Entered from a notification (WeatherDeepLink): a tab, a warning, or a resort.
+  - {id: weather_link.today, from: home, to: weather_today, pending: "needs a notification or deep link"}
+  - {id: weather_link.forecast, from: home, to: weather_forecast, pending: "needs a notification or deep link"}
+  - {id: weather_link.radar, from: home, to: weather_radar, pending: "needs a notification or deep link"}
+  - {id: weather_link.ski, from: home, to: weather_ski, pending: "needs a notification or deep link"}
+  - {id: weather_link.alert, from: home, to: weather_alert, pending: "needs a notification or deep link"}
+  - {id: weather_link.ski_resort, from: home, to: weather_ski_resort, pending: "needs a notification or deep link"}

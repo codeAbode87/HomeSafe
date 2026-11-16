@@ -1,0 +1,177 @@
+# Packages, from the drawer. Without the relay it can't reach the server and offers Retry; with the fake relay
+# (--relay) it lists three invented parcels, in four tabs, with the parcel, the add form and the settings pushed on top.
+nodes:
+  packages_unreachable:
+    title: Packages, unreachable
+    group: packages
+    covers: ["state:PackagesProblem.UNREACHABLE"]
+    sources: ["features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt"]
+    params:
+      state:
+        unreachable: {observe: {text_contains: "Can't reach the server"}}
+    requires: "relay == 'off'"
+    match:
+      all: [{id: packages_app}, {text_contains: "Can't reach the server"}]
+    checks:
+      - present: {id: packages_back}
+      - present: {text: Retry}
+  packages_today:
+    title: Packages, Today
+    group: packages
+    covers: ["tab:PackagesTab.TODAY", "screen:TodayScreen#2", "overlay:PackagesApp.PackagesAppContent"]
+    sources: ["features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/TodayScreen.kt"]
+    params:
+      list:
+        parcels: {observe: {id: parcel_p1}}
+        nothing_on_the_way: {observe: {text: "Nothing on its way"}}
+      notices:
+        none: {}
+        server_trouble: {observe: {id: packages_trouble}}
+        no_mailbox: {observe: {text: "No mailbox linked"}}
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_today}]
+    checks:
+      - present: {id: parcel_p1}
+      - present: {id: packages_tab_all}
+  packages_all:
+    title: Packages, All
+    group: packages
+    covers: ["tab:PackagesTab.ALL", "screen:AllScreen"]
+    sources: ["features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/AllScreen.kt"]
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_all}]
+    checks:
+      - present: {id: packages_search}
+      - present: {text: "Search names, shops, numbers"}
+  packages_returns:
+    title: Packages, Returns
+    group: packages
+    covers: ["tab:PackagesTab.RETURNS", "screen:ReturnsScreen"]
+    sources: ["features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/ReturnsScreen.kt"]
+    params:
+      list:
+        nothing_to_send_back: {observe: {text: "Nothing to send back"}}
+        returns: {}
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_returns}]
+    checks:
+      - present: {text: "Nothing to send back"}
+      - present: {id: packages_tab_returns}
+  packages_insights:
+    title: Packages, Insights
+    group: packages
+    covers: ["tab:PackagesTab.INSIGHTS", "screen:InsightsScreen"]
+    sources: ["features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/InsightsScreen.kt"]
+    params:
+      state:
+        patterns: {observe: {text: "THE LAST TWELVE MONTHS"}}
+        too_few_parcels: {observe: {text: "Patterns show up here once a few parcels have come."}}
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_insights}]
+    checks:
+      - present: {text: "THE LAST TWELVE MONTHS"}
+      - present: {text: "CARRIERS"}
+  packages_parcel:
+    title: Packages, one parcel
+    group: packages
+    covers: ["page:PackagesPage.Detail", "screen:ParcelScreen", "state:ParcelProblem.ATTEMPTED", "state:ParcelProblem.EXCEPTION"]
+    sources: ["features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/ParcelScreen.kt"]
+    params:
+      problem:
+        none: {}
+        attempted: {observe: {text: "They tried, and couldn't deliver it"}}
+        exception: {observe: {text: "Something's held it up"}}
+      visibility:
+        open: {observe: {id: parcel_name}}
+        masked_surprise: {observe: {text: "Someone's keeping a secret"}}
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_parcel}]
+    checks:
+      - present: {id: parcel_name}
+      - present: {id: parcel_surprise}
+  packages_add:
+    title: Packages, add a package
+    group: packages
+    covers: ["page:PackagesPage.Add", "screen:AddScreen"]
+    sources: ["features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/AddScreen.kt"]
+    requires: "relay == 'on'"
+    match:
+      all: [{id: add_tracking}]
+    checks:
+      - present: {id: add_nickname}
+      - present: {id: add_save}
+  packages_setup:
+    title: Packages, settings
+    group: packages
+    covers: ["page:PackagesPage.Setup", "screen:SetupScreen"]
+    sources: ["features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/SetupScreen.kt"]
+    requires: "relay == 'on'"
+    match:
+      all: [{id: packages_setup_page}]
+    checks:
+      - present: {id: notify_shipped}
+      - present: {text: "GIFT SEASON"}
+  # Not yet tried on a device.
+  packages_claim:
+    title: Packages, report a problem
+    group: packages
+    kind: screen
+    pending: "not yet verified on a device"
+    requires: "relay == 'on'"
+    match:
+      all: [{id: claim_text}]
+    covers: ["page:PackagesPage.Claim", "screen:ClaimScreen"]
+    sources: ["features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/ParcelScreen.kt"]
+    params:
+      state:
+        with_evidence: {observe: {id: claim_text}}
+  # Why the list cannot be read, other than the server being out of reach (packages_unreachable).
+  packages_blocked:
+    title: Packages, cannot load
+    group: packages
+    kind: screen
+    pending: "needs fixture data"
+    match:
+      all: [{id: packages_app}]
+      any:
+        - {text: "Sign in to your server to see your packages."}
+        - {text_contains: "The relay"}
+        - {text: "Looking for your packages…"}
+    covers: ["state:PackagesProblem.SIGNED_OUT", "state:PackagesProblem.RELAY_OUTDATED", "state:PackagesProblem.OTHER"]
+    sources: ["features/packages/src/commonMain/kotlin/com/meticulouscreations/homesafe/packages/ui/PackagesApp.kt"]
+    params:
+      problem:
+        loading: {observe: {text: "Looking for your packages…"}}
+        signed_out: {observe: {text: "Sign in to your server to see your packages."}}
+        relay_problem: {observe: {text_contains: "The relay"}}
+edges:
+  - {id: packages_unreachable.back, from: packages_unreachable, to: home, do: [back]}
+  - {id: packages_unreachable.retry, from: packages_unreachable, to: "=", do: [{tap: {text: Retry}}]}
+  - {id: packages.close, from: packages_today, to: home, do: [back]}
+  # The tab bar shows on the four tabs, not on the pages pushed over them.
+  - {id: packages.tab_today, from: [packages_all, packages_returns, packages_insights], to: packages_today, count: once, do: [{tap: {id: packages_tab_today}}]}
+  - {id: packages.tab_all, from: [packages_today, packages_returns, packages_insights], to: packages_all, count: once, do: [{tap: {id: packages_tab_all}}]}
+  - {id: packages.tab_returns, from: [packages_today, packages_all, packages_insights], to: packages_returns, count: once, do: [{tap: {id: packages_tab_returns}}]}
+  - {id: packages.tab_insights, from: [packages_today, packages_all, packages_returns], to: packages_insights, count: once, do: [{tap: {id: packages_tab_insights}}]}
+  - {id: packages_today.open_parcel, from: packages_today, to: packages_parcel, do: [{tap: {id: parcel_p1}}]}
+  - {id: packages_today.add, from: packages_today, to: packages_add, do: [{tap: {id: packages_add}}]}
+  - {id: packages_today.setup, from: packages_today, to: packages_setup, do: [{tap: {id: packages_setup}}]}
+  - {id: packages_parcel.back, from: packages_parcel, to: packages_today, do: [back]}
+  - {id: packages_add.back, from: packages_add, to: packages_today, do: [back]}
+  - {id: packages_setup.back, from: packages_setup, to: packages_today, do: [back]}
+  # Not yet tried on a device.
+  - {id: packages_other_tabs.close, from: [packages_all, packages_returns, packages_insights], to: home, count: once, do: [back], pending: "not yet verified on a device"}
+  - {id: packages_tabs.add, from: [packages_all, packages_returns, packages_insights], to: packages_add, count: once, do: [{tap: {id: packages_add}}], pending: "not yet verified on a device"}
+  - {id: packages_tabs.setup, from: [packages_all, packages_returns, packages_insights], to: packages_setup, count: once, do: [{tap: {id: packages_setup}}], pending: "not yet verified on a device"}
+  - {id: packages_all.open_parcel, from: packages_all, to: packages_parcel, do: [{tap: {id: parcel_p1}}], pending: "not yet verified on a device"}
+  - {id: packages_returns.open_parcel, from: packages_returns, to: packages_parcel, pending: "needs fixture data"}
+  - {id: packages_parcel.open_claim, from: packages_parcel, to: packages_claim, do: [{tap: {id: parcel_claim}}], pending: "not yet verified on a device"}
+  - {id: packages_claim.back, from: packages_claim, to: packages_parcel, do: [back], pending: "not yet verified on a device"}
+  - {id: packages_blocked.back, from: packages_blocked, to: home, do: [back], pending: "needs fixture data"}
+  - {id: packages_today.empty_add, from: packages_today, to: packages_add, pending: "needs fixture data"}
+  - {id: home.open_parcel_from_notification, from: home, to: packages_parcel, pending: "needs a notification or deep link"}

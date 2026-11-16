@@ -1,0 +1,232 @@
+nodes:
+  atlas_offline:
+    title: Atlas, offline
+    group: atlas
+    covers: ["state:AtlasProblem.UNREACHABLE"]
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/SyncScreen.kt"]
+    params:
+      state:
+        unreachable: {observe: {text_contains: "Couldn't reach the server"}}
+    requires: "relay == 'off'"
+    match:
+      all: [{id: atlas_app}, {text_contains: "Couldn't reach the server"}]
+    checks:
+      - present: {id: atlas_back}
+      - present: {text: Atlas}
+  atlas_map:
+    title: Atlas, Map
+    group: atlas
+    covers: ["tab:AtlasTab.MAP", "screen:MapScreen", "overlay:AtlasApp.AtlasAppContent"]
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/MapScreen.kt"]
+    params:
+      state:
+        ready: {observe: {id: atlas_map_zoom_in}}
+        reading_paths: {observe: {id: atlas_map_reading_paths}}
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_map}]
+    checks:
+      - present: {id: atlas_map_zoom_in}
+      - present: {id: atlas_tab_days}
+  atlas_days:
+    title: Atlas, Days
+    group: atlas
+    covers: ["tab:AtlasTab.DAYS", "screen:DaysScreen"]
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/DaysScreen.kt"]
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_days}]
+    checks:
+      - present: {id: atlas_year_2026}
+      - present: {text: Distance}
+  atlas_places:
+    title: Atlas, Places
+    group: atlas
+    covers: ["tab:AtlasTab.PLACES", "screen:PlacesScreen"]
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/PlacesScreen.kt"]
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_places}]
+    checks:
+      - present: {id: atlas_places_search}
+      - present: {id: atlas_place_row_demo_home}
+  atlas_trips:
+    title: Atlas, Trips
+    group: atlas
+    covers: ["tab:AtlasTab.TRIPS", "screen:TripsScreen"]
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/TripsScreen.kt"]
+    params:
+      state:
+        with_trips: {observe: {id: atlas_trip_0}}
+        no_trips: {observe: {text: "No trips away from home on record yet"}}
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_trips}]
+    checks:
+      - present: {text: "HOW FAR IT REACHES"}
+      - present: {text: "Where you've lived"}
+  atlas_patterns:
+    title: Atlas, Patterns
+    group: atlas
+    covers: ["tab:AtlasTab.PATTERNS", "screen:PatternsScreen"]
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/PatternsScreen.kt"]
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_patterns}]
+    checks:
+      - present: {text: "YOUR USUAL WEEK"}
+      - present: {text: "YEAR BY YEAR"}
+  atlas_sync:
+    title: Atlas, your history
+    group: atlas
+    covers:
+      - "page:AtlasPage.Sync"
+      - "screen:SyncScreen"
+      - "state:AtlasSetupProblem.API_DISABLED"
+      - "state:AtlasSetupProblem.EMPTY"
+      - "state:AtlasSetupProblem.FAILED"
+      - "state:AtlasSetupProblem.NOT_SHARED"
+      - "state:AtlasSetupProblem.NO_KEY"
+      - "state:AtlasSetupProblem.OTHER"
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/SyncScreen.kt"]
+    params:
+      problem:
+        none: {observe: {text_contains: "Server last asked"}}
+        unreachable: {observe: {text_contains: "Couldn't reach the server"}}
+        signed_out: {observe: {text: "Sign in to the camera server to fetch your history"}}
+        not_allowed: {observe: {text: "This account can't see the location history"}}
+        relay_problem: {observe: {text_contains: "The relay"}}
+      drive:
+        ok: {observe: {text_contains: "looks in your Drive folder every hour"}}
+        not_configured: {observe: {text_contains: "hasn't been told which Drive folder"}}
+        not_shared: {observe: {text_contains: "can't see the Drive folder"}}
+        api_disabled: {observe: {text_contains: "Drive API is switched off"}}
+        other_setup_problem: {}
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_sync}]
+    checks:
+      - present: {id: atlas_sync_now}
+      - present: {text: "ON THIS DEVICE"}
+  atlas_place:
+    title: Atlas, one place
+    group: atlas
+    covers: ["page:AtlasPage.PlaceDetail", "screen:PlaceScreen"]
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/PlacesScreen.kt"]
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_place}]
+    checks:
+      - present: {id: atlas_place_open_in_maps}
+      - present: {id: atlas_back}
+  # Pages pushed over the tabs (not yet tried on a device).
+  atlas_day:
+    title: Atlas, one day
+    group: atlas
+    kind: screen
+    pending: "not yet verified on a device"
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_day}]
+    covers: ["page:AtlasPage.Day", "screen:DayScreen"]
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/DayScreen.kt"]
+    params:
+      state:
+        with_events: {observe: {id: atlas_day_play}}
+        nothing_on_record: {observe: {text: "Nothing on record for this day"}}
+  atlas_trip:
+    title: Atlas, one trip
+    group: atlas
+    kind: screen
+    pending: "not yet verified on a device"
+    requires: "relay == 'on'"
+    match:
+      all: [{id: atlas_trip}]
+    covers: ["page:AtlasPage.TripDetail", "screen:TripScreen"]
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/TripsScreen.kt"]
+  # Gates and empty states before the tabs. With the relay off the first install shows the empty page with the
+  # unreachable message, which atlas_offline already recognises.
+  atlas_empty:
+    title: Atlas, no history yet
+    group: atlas
+    kind: screen
+    pending: "needs fixture data"
+    match:
+      all: [{id: atlas_empty}]
+      none: [{text_contains: "Couldn't reach the server"}]
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/SyncScreen.kt"]
+    params:
+      state:
+        nothing_kept: {observe: {text: "No history here yet"}}
+  atlas_blocked:
+    title: Atlas, history refused
+    group: atlas
+    kind: screen
+    pending: "needs fixture data"
+    match:
+      all: [{id: atlas_app}]
+      any:
+        - {text: "Sign in to the camera server to fetch your history"}
+        - {text: "This account can't see the location history"}
+        - {text_contains: "The relay"}
+        - {text: "Reading your history…"}
+    covers:
+      - "state:AtlasProblem.SIGNED_OUT"
+      - "state:AtlasProblem.NOT_ALLOWED"
+      - "state:AtlasProblem.RELAY_OUTDATED"
+      - "state:AtlasProblem.OTHER"
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/AtlasApp.kt"]
+    params:
+      problem:
+        reading: {observe: {text: "Reading your history…"}}
+        signed_out: {observe: {text: "Sign in to the camera server to fetch your history"}}
+        not_allowed: {observe: {text: "This account can't see the location history"}}
+        relay_problem: {observe: {text_contains: "The relay"}}
+  atlas_lock:
+    title: Atlas, locked
+    group: atlas
+    kind: screen
+    pending: "needs a device capability"
+    match:
+      all: [{id: atlas_lock}]
+    covers: ["screen:AtlasLockScreen"]
+    sources: ["features/atlas/src/commonMain/kotlin/com/meticulouscreations/homesafe/atlas/ui/SyncScreen.kt"]
+    params:
+      gate:
+        can_unlock: {observe: {id: atlas_unlock}}
+        no_check_available: {observe: {text_contains: "no fingerprint or face to check"}}
+edges:
+  - {id: atlas_offline.back, from: atlas_offline, to: home, do: [back]}
+  - {id: atlas.close, from: atlas_map, to: home, do: [back]}
+  # The tab bar shows on the five tabs, not on the pages pushed over them.
+  - {id: atlas.tab_map, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: atlas_map, count: once, do: [{tap: {id: atlas_tab_map}}]}
+  - {id: atlas.tab_days, from: [atlas_map, atlas_places, atlas_trips, atlas_patterns], to: atlas_days, count: once, do: [{tap: {id: atlas_tab_days}}]}
+  - {id: atlas.tab_places, from: [atlas_map, atlas_days, atlas_trips, atlas_patterns], to: atlas_places, count: once, do: [{tap: {id: atlas_tab_places}}]}
+  - {id: atlas.tab_trips, from: [atlas_map, atlas_days, atlas_places, atlas_patterns], to: atlas_trips, count: once, do: [{tap: {id: atlas_tab_trips}}]}
+  - {id: atlas.tab_patterns, from: [atlas_map, atlas_days, atlas_places, atlas_trips], to: atlas_patterns, count: once, do: [{tap: {id: atlas_tab_patterns}}]}
+  - {id: atlas_map.open_sync, from: atlas_map, to: atlas_sync, do: [{tap: {id: atlas_sync_open}}]}
+  - {id: atlas_places.open_place, from: atlas_places, to: atlas_place, do: [{tap: {id: atlas_place_row_demo_home}}]}
+  - {id: atlas_sync.back, from: atlas_sync, to: atlas_map, do: [back]}
+  - {id: atlas_place.back, from: atlas_place, to: atlas_places, do: [back]}
+  # Not yet tried on a device.
+  - {id: atlas_other_tabs.close, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: home, count: once, do: [back], pending: "not yet verified on a device"}
+  - {id: atlas_tabs.open_sync, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: atlas_sync, count: once, do: [{tap: {id: atlas_sync_open}}], pending: "not yet verified on a device"}
+  - {id: atlas_map.open_place, from: atlas_map, to: atlas_place, pending: "not yet verified on a device"}
+  - {id: atlas_days.open_day, from: atlas_days, to: atlas_day, pending: "not yet verified on a device"}
+  - {id: atlas_patterns.open_day, from: atlas_patterns, to: atlas_day, pending: "not yet verified on a device"}
+  - {id: atlas_patterns.open_place, from: atlas_patterns, to: atlas_place, pending: "not yet verified on a device"}
+  - {id: atlas_trips.open_trip, from: atlas_trips, to: atlas_trip, do: [{tap: {id: atlas_trip_0}}], pending: "not yet verified on a device"}
+  - {id: atlas_trips.open_place, from: atlas_trips, to: atlas_place, pending: "not yet verified on a device"}
+  - {id: atlas_place.open_day, from: atlas_place, to: atlas_day, pending: "not yet verified on a device"}
+  - {id: atlas_trip.open_day, from: atlas_trip, to: atlas_day, pending: "not yet verified on a device"}
+  - {id: atlas_trip.open_place, from: atlas_trip, to: atlas_place, pending: "not yet verified on a device"}
+  - {id: atlas_day.open_place, from: atlas_day, to: atlas_place, pending: "not yet verified on a device"}
+  - {id: atlas_trip.step, from: atlas_trip, to: "=", do: [{tap: {id: atlas_trip_earlier}}], pending: "not yet verified on a device"}
+  - {id: atlas_day.step, from: atlas_day, to: "=", do: [{tap: {id: atlas_day_previous}}], pending: "not yet verified on a device"}
+  - {id: atlas_day.back, from: atlas_day, to: atlas_days, do: [back], pending: "not yet verified on a device"}
+  - {id: atlas_trip.back, from: atlas_trip, to: atlas_trips, do: [back], pending: "not yet verified on a device"}
+  - {id: atlas_empty.open_sync, from: atlas_empty, to: atlas_sync, do: [{tap: {id: atlas_empty_action}}], pending: "needs fixture data"}
+  - {id: atlas_empty.back, from: atlas_empty, to: home, do: [back], pending: "needs fixture data"}
+  - {id: atlas_blocked.back, from: atlas_blocked, to: home, do: [back], pending: "needs fixture data"}
+  - {id: atlas_lock.unlock, from: atlas_lock, to: atlas_map, do: [{tap: {id: atlas_unlock}}], pending: "needs a device capability"}
+  - {id: atlas_lock.back, from: atlas_lock, to: home, do: [{tap: {id: atlas_back}}], pending: "needs a device capability"}

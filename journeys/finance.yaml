@@ -1,0 +1,579 @@
+# Finance, from the drawer. The fake server has no relay (nothing listens on :8787), so every tab says it could not
+# read its data; the screens are the app's real error states.
+nodes:
+  # With the fake relay on, its routes for the sheet and the budget aren't modelled (yet): the app says the relay is outdated.
+  finance_outdated:
+    title: Finance, Wallet (relay outdated)
+    group: finance
+    covers: ["state:SheetProblem.RELAY_OUTDATED", "tab:FinanceTab.WALLET", "screen:WalletScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/FinanceApp.kt", "features/finance/src/commonMain/**/ui/WalletScreen.kt", "features/finance/src/commonMain/**/ui/SheetSetupCard.kt"]
+    params:
+      layout:
+        phone: {}
+        desk: {}
+    requires: "relay == 'on'"
+    match:
+      all: [{id: finance_app}, {text: "Update the server's relay"}]
+    checks:
+      - present: {id: finance_back}
+      - present: {id: finance_tab_wallet}
+  finance_unavailable:
+    requires: "relay == 'off'"
+    title: Finance, Wallet (sheet unreadable)
+    group: finance
+    covers: ["state:SheetProblem.OTHER", "tab:FinanceTab.WALLET", "screen:WalletScreen", "overlay:FinanceApp.FinanceAppContent"]
+    sources: ["features/finance/src/commonMain/**/ui/FinanceApp.kt", "features/finance/src/commonMain/**/ui/WalletScreen.kt", "features/finance/src/commonMain/**/ui/SheetSetupCard.kt"]
+    params:
+      layout:
+        phone: {}
+        desk: {}
+      offline:
+        online: {}
+        saved_on_device: {observe: {id: finance_offline}}
+    match:
+      all: [{id: finance_app}, {text: "Couldn't read your sheet"}]
+    checks:
+      - present: {id: finance_back}
+      - present: {id: finance_tab_wallet}
+    weight: 2
+  finance_budget:
+    title: Finance, Budget (unreadable)
+    group: finance
+    covers: ["tab:FinanceTab.BUDGET", "screen:BudgetScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/BudgetScreen.kt"]
+    params:
+      state:
+        loading: {}
+        problem: {observe: {text: "Couldn't read the budget"}}
+        not_configured: {observe: {text: "Plaid isn't set up yet"}}
+        no_cards: {observe: {id: finance_budget_link}}
+        content: {observe: {id: finance_budget_headline}}
+      layout:
+        phone: {}
+        desk: {}
+    match:
+      all: [{id: finance_budget}]
+    checks:
+      - present: {id: finance_back}
+      - present: {id: finance_tab_wallet}
+  finance_markets:
+    title: Finance, Markets
+    group: finance
+    covers: ["tab:FinanceTab.MARKETS", "screen:MarketsScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/MarketsScreen.kt", "features/finance/src/commonMain/**/ui/WatchlistUi.kt"]
+    params:
+      quotes:
+        live: {}
+        refresh_failed: {observe: {text_contains: "Couldn't refresh"}}
+      layout:
+        phone: {}
+        desk: {}
+    match:
+      all: [{id: "finance_index_^GSPC"}]
+    checks:
+      - present: {id: finance_index_^DJI}
+      - present: {id: finance_back}
+  finance_economy:
+    title: Finance, Economy
+    group: finance
+    covers: ["tab:FinanceTab.ECONOMY", "screen:EconomyScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/EconomyScreens.kt"]
+    params:
+      layout:
+        phone: {}
+        desk: {}
+    match:
+      all: [{id: finance_app}, {text: "HOW IT ALL CONNECTS"}]
+    checks:
+      - present: {text: "WHERE THE ECONOMY STANDS"}
+      - present: {id: finance_back}
+  finance_risk:
+    title: Finance, Risk
+    group: finance
+    covers: ["tab:FinanceTab.RISK", "screen:RiskScreen", "state:Signal.CALM", "state:Signal.WATCH", "state:Signal.DANGER"]
+    sources: ["features/finance/src/commonMain/**/ui/EconomyScreens.kt", "features/finance/src/commonMain/**/domain/Indicators.kt"]
+    params:
+      lights:
+        none_flashing: {}
+        flashing: {observe: {text: "Flashing now"}}
+      layout:
+        phone: {}
+        desk: {}
+    match:
+      all: [{id: finance_app}, {text: "Recession signals"}]
+    checks:
+      - present: {text: STRESS}
+      - present: {id: finance_back}
+  finance_glossary:
+    title: Finance, Jargon buster
+    group: finance
+    covers: ["page:FinanceDetail.Glossary", "screen:GlossaryScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/GlossaryScreen.kt"]
+    match:
+      all: [{id: finance_app}, {text: "Jargon buster"}, {text_contains: "Every term in this app"}]
+    checks:
+      - present: {desc: "Search terms"}
+  finance_chart_settings:
+    title: Finance, Chart settings
+    group: finance
+    covers: ["page:FinanceDetail.ChartSettings", "screen:ChartSettingsScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/ChartSettingsScreen.kt"]
+    match:
+      all: [{id: chart_settings}]
+    checks:
+      - present: {id: chart_shader_glow}
+      - present: {id: chart_settings_preview}
+
+  # --- Wallet, loaded (needs the sheet through the relay) ---
+  finance_wallet:
+    title: Finance, Wallet
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers: ["tab:FinanceTab.WALLET", "screen:WalletScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/WalletScreen.kt", "features/finance/src/commonMain/**/ui/WalletHub.kt"]
+    params:
+      state:
+        loading: {}
+        content: {observe: {id: wallet_topic_accounts}}
+      layout:
+        phone: {}
+        desk: {}
+  finance_wallet_setup:
+    title: Finance, Wallet (sheet needs setting up)
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers: ["state:SheetProblem.NOT_SHARED", "state:SheetProblem.API_DISABLED", "state:SheetProblem.NOT_CONFIGURED", "state:SheetProblem.NO_KEY", "state:SheetProblem.NOT_ALLOWED", "state:SheetProblem.NOT_FOUND", "state:SheetProblem.SIGNED_OUT"]
+    sources: ["features/finance/src/commonMain/**/ui/SheetSetupCard.kt"]
+    params:
+      problem:
+        not_shared: {observe: {text: "Share your budget sheet"}}
+        api_disabled: {observe: {text: "Turn on the Google Sheets API"}}
+        not_configured: {observe: {text: "Point the server at your sheet"}}
+        no_key: {observe: {text: "The server has no Google key"}}
+        not_found: {observe: {text: "Sheet not found"}}
+  finance_lock:
+    title: Finance, locked
+    group: finance
+    kind: screen
+    pending: "needs a device capability"
+    covers: ["screen:FinanceLockScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/FinanceLockScreen.kt"]
+    match:
+      all: [{id: finance_lock}]
+    params:
+      check:
+        can_unlock: {observe: {id: finance_unlock}}
+        no_biometrics: {observe: {text_contains: "has no fingerprint or face unlock"}}
+        failed: {observe: {text: "Couldn't confirm it's you"}}
+
+  # --- Wallet pages: a part of the sheet on a page of its own ---
+  finance_wallet_accounts:
+    title: Finance, Wallet topic Accounts
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers: ["page:WalletTopic.ACCOUNTS", "page:FinanceDetail.WalletPage", "screen:WalletTopicScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/WalletHub.kt", "features/finance/src/commonMain/**/ui/WalletScreen.kt"]
+    match:
+      all: [{id: wallet_topic_page}, {text: Accounts}]
+    params:
+      layout:
+        phone: {}
+        desk: {}
+  finance_wallet_cash_flow:
+    title: Finance, Wallet topic Cash flow
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers: ["page:WalletTopic.CASH_FLOW"]
+    sources: ["features/finance/src/commonMain/**/ui/WalletHub.kt"]
+    match:
+      all: [{id: wallet_topic_page}, {text: Cash flow}]
+  finance_wallet_debt:
+    title: Finance, Wallet topic Debt
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers: ["page:WalletTopic.DEBT"]
+    sources: ["features/finance/src/commonMain/**/ui/WalletHub.kt"]
+    match:
+      all: [{id: wallet_topic_page}, {text: Debt}]
+  finance_wallet_home:
+    title: Finance, Wallet topic Home
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers: ["page:WalletTopic.HOME"]
+    sources: ["features/finance/src/commonMain/**/ui/WalletHub.kt"]
+    match:
+      all: [{id: wallet_topic_page}, {text: Home}]
+  finance_wallet_vesting_taxes:
+    title: Finance, Wallet topic Vesting and taxes
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers: ["page:WalletTopic.VESTING_TAXES"]
+    sources: ["features/finance/src/commonMain/**/ui/WalletHub.kt"]
+    match:
+      all: [{id: wallet_topic_page}, {text: "Vesting & taxes"}]
+  finance_wallet_sheet_charts:
+    title: Finance, Wallet topic Sheet charts
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers: ["page:WalletTopic.SHEET_CHARTS"]
+    sources: ["features/finance/src/commonMain/**/ui/WalletHub.kt", "features/finance/src/commonMain/**/ui/SheetChartCard.kt"]
+    match:
+      all: [{id: wallet_topic_page}, {text: "Sheet charts"}]
+  finance_sheet_sync:
+    title: Finance, Sheet sync
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers: ["page:FinanceDetail.SheetSync", "screen:SheetSyncScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/SheetSyncScreen.kt"]
+    params:
+      status:
+        ok: {observe: {text: "Everything in the sheet was read"}}
+        partly_read: {observe: {text: "Synced, but not everything was read"}}
+        failed: {observe: {text: "The last sync didn't work"}}
+  finance_typed_balances:
+    title: Finance, Update balances
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers: ["page:FinanceDetail.TypedBalances", "screen:TypedBalancesScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/TypedBalancesScreen.kt"]
+    match:
+      all: [{id: finance_typed_balances}]
+    params:
+      state:
+        loading: {}
+        all_fresh: {observe: {text: "Every typed balance is up to date"}}
+        some_due: {observe: {text: "Needs updating"}}
+
+  # --- Budget pages ---
+  finance_budget_settings:
+    title: Finance, Budget settings
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers: ["page:FinanceDetail.BudgetSettings", "screen:BudgetSettingsScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/BudgetSettingsScreen.kt"]
+    match:
+      all: [{id: finance_budget_settings_page}]
+    params:
+      state:
+        loading: {}
+        content: {observe: {id: finance_budget_limits_save}}
+  finance_bank_sync:
+    title: Finance, Bank sync
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    covers:
+      - "page:FinanceDetail.BankSync"
+      - "screen:BankSyncScreen"
+      - "state:BankProblem.NOT_ALLOWED"
+      - "state:BankProblem.NOT_CONFIGURED"
+      - "state:BankProblem.OTHER"
+      - "state:BankProblem.PLAID"
+      - "state:BankProblem.RELAY_OUTDATED"
+      - "state:BankProblem.SIGNED_OUT"
+      - "state:BankProblem.TAILSCALE_OFF"
+      - "state:BankProblem.UNREACHABLE"
+    sources: ["features/finance/src/commonMain/**/ui/BankSyncScreen.kt", "features/finance/src/commonMain/**/domain/BankSync.kt"]
+    match:
+      all: [{id: finance_bank_sync}]
+    params:
+      state:
+        loading: {}
+        problem: {}
+        not_set_up: {observe: {text: "Bank sync isn't set up yet"}}
+        linked: {observe: {id: finance_bank_link}}
+      problem:
+        relay_outdated: {observe: {text: "Update the server's relay"}}
+        signed_out: {observe: {text: "Sign in to link accounts"}}
+        tailscale_off: {observe: {text: "Tailscale isn't connected"}}
+        not_allowed: {observe: {text: "Not for this account"}}
+        unreachable_or_other: {observe: {text: "Couldn't load bank sync"}}
+  finance_bank_kind_chooser:
+    title: Finance, Bank sync, what to link
+    group: finance
+    kind: screen
+    pending: "needs a relay route"
+    sources: ["features/finance/src/commonMain/**/ui/BankSyncScreen.kt"]
+    match:
+      all: [{id: finance_bank_sync}, {text: "What are you linking?"}]
+
+  # --- Markets and Economy pages ---
+  finance_quote:
+    title: Finance, Quote
+    group: finance
+    kind: screen
+    pending: "needs recorded internet"
+    covers: ["page:FinanceDetail.QuotePage", "screen:QuoteDetailScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/MarketsScreen.kt", "features/finance/src/commonMain/**/ui/WatchlistUi.kt"]
+    params:
+      watching:
+        not_followed: {}
+        followed: {}
+      layout:
+        phone: {}
+        desk: {}
+  finance_indicator:
+    title: Finance, Indicator
+    group: finance
+    kind: screen
+    pending: "needs recorded internet"
+    covers: ["page:FinanceDetail.IndicatorPage", "screen:IndicatorDetailScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/EconomyScreens.kt"]
+    params:
+      reading:
+        loading: {}
+        loaded: {observe: {text: "Right now"}}
+      layout:
+        phone: {}
+        desk: {}
+  finance_connections:
+    title: Finance, How it all connects
+    group: finance
+    kind: screen
+    pending: "needs recorded internet"
+    covers: ["page:FinanceDetail.Connections", "screen:ConnectionsScreen"]
+    sources: ["features/finance/src/commonMain/**/ui/ConnectionsScreen.kt"]
+    params:
+      tour:
+        idle: {}
+        touring: {}
+
+  # --- Sheets and dialogs ---
+  finance_explain_sheet:
+    title: Finance, Explainer sheet
+    group: finance
+    kind: modal
+    pending: "not yet verified on a device"
+    covers: ["modal:ExplainSheet.ExplainSheet"]
+    sources: ["features/finance/src/commonMain/**/ui/ExplainSheet.kt"]
+  finance_add_symbol_sheet:
+    title: Finance, Add to watchlist
+    group: finance
+    kind: modal
+    pending: "needs recorded internet"
+    covers: ["modal:WatchlistUi.AddSymbolSheet"]
+    sources: ["features/finance/src/commonMain/**/ui/WatchlistUi.kt"]
+    match:
+      all: [{id: finance_symbol_search}]
+    params:
+      search:
+        empty_query: {observe: {text: "e.g. VTI, Apple, Vanguard, ETH"}}
+        results: {}
+        no_results: {}
+  finance_position_editor:
+    title: Finance, Position editor
+    group: finance
+    kind: modal
+    pending: "needs recorded internet"
+    covers: ["modal:WatchlistUi.PositionEditor"]
+    sources: ["features/finance/src/commonMain/**/ui/WatchlistUi.kt"]
+    match:
+      all: [{id: finance_position_shares}]
+  finance_balance_editor:
+    title: Finance, Balance editor
+    group: finance
+    kind: modal
+    pending: "needs a relay route"
+    covers:
+      - "modal:TypedBalancesScreen.BalanceEditor"
+      - "state:BalanceProblem.BANK_FILLED"
+      - "state:BalanceProblem.BUSY"
+      - "state:BalanceProblem.CALCULATED"
+      - "state:BalanceProblem.CHANGED"
+      - "state:BalanceProblem.NOT_CONNECTED"
+      - "state:BalanceProblem.NOT_FOUND"
+      - "state:BalanceProblem.NOT_SHARED"
+      - "state:BalanceProblem.OTHER"
+      - "state:BalanceProblem.RELAY_OUTDATED"
+    sources: ["features/finance/src/commonMain/**/ui/TypedBalancesScreen.kt", "features/finance/src/commonMain/**/domain/TypedBalances.kt"]
+    match:
+      all: [{id: finance_balance_editor}]
+    params:
+      save:
+        editing: {observe: {id: finance_balance_save}}
+        refused: {observe: {id: finance_balance_error}}
+  finance_budget_tag_sheet:
+    title: Finance, Tag a purchase
+    group: finance
+    kind: modal
+    pending: "needs a relay route"
+    covers: ["modal:BudgetScreen.TagSheet"]
+    sources: ["features/finance/src/commonMain/**/ui/BudgetScreen.kt"]
+    match:
+      all: [{id: finance_budget_tag_sheet}]
+  finance_bank_unlink_dialog:
+    title: Finance, Unlink an institution
+    group: finance
+    kind: modal
+    pending: "needs a relay route"
+    covers: ["modal:BankSyncScreen.UnlinkDialog"]
+    sources: ["features/finance/src/commonMain/**/ui/BankSyncScreen.kt"]
+  finance_bank_undo_dialog:
+    title: Finance, Undo a sheet write
+    group: finance
+    kind: modal
+    pending: "needs a relay route"
+    covers: ["modal:BankSyncScreen.UndoDialog"]
+    sources: ["features/finance/src/commonMain/**/ui/BankSyncScreen.kt"]
+    match:
+      all: [{text: "Undo this write?"}]
+  finance_checkup_overview:
+    title: Finance, Money checkup sheet
+    group: finance
+    kind: modal
+    pending: "needs a relay route"
+    covers: ["modal:CheckupUi.CheckupSheet"]
+    sources: ["features/finance/src/commonMain/**/ui/CheckupUi.kt", "features/finance/src/commonMain/**/ui/MoneyCheckup.kt"]
+    match:
+      all: [{text: "Money checkup"}, {text_contains: "rule of thumb"}]
+  finance_checkup_emergency_fund:
+    title: Finance, Money checkup, emergency fund
+    group: finance
+    kind: modal
+    pending: "needs a relay route"
+    covers: ["page:CheckKind.EMERGENCY_FUND"]
+    sources: ["features/finance/src/commonMain/**/ui/CheckupUi.kt", "features/finance/src/commonMain/**/ui/MoneyCheckup.kt"]
+  finance_checkup_savings_rate:
+    title: Finance, Money checkup, savings rate
+    group: finance
+    kind: modal
+    pending: "needs a relay route"
+    covers: ["page:CheckKind.SAVINGS_RATE"]
+    sources: ["features/finance/src/commonMain/**/ui/CheckupUi.kt", "features/finance/src/commonMain/**/ui/MoneyCheckup.kt"]
+  finance_checkup_costly_debt:
+    title: Finance, Money checkup, costly debt
+    group: finance
+    kind: modal
+    pending: "needs a relay route"
+    covers: ["page:CheckKind.COSTLY_DEBT"]
+    sources: ["features/finance/src/commonMain/**/ui/CheckupUi.kt", "features/finance/src/commonMain/**/ui/MoneyCheckup.kt"]
+  finance_checkup_debt_ratio:
+    title: Finance, Money checkup, debt ratio
+    group: finance
+    kind: modal
+    pending: "needs a relay route"
+    covers: ["page:CheckKind.DEBT_RATIO"]
+    sources: ["features/finance/src/commonMain/**/ui/CheckupUi.kt", "features/finance/src/commonMain/**/ui/MoneyCheckup.kt"]
+  finance_checkup_retirement:
+    title: Finance, Money checkup, retirement
+    group: finance
+    kind: modal
+    pending: "needs a relay route"
+    covers: ["page:CheckKind.RETIREMENT"]
+    sources: ["features/finance/src/commonMain/**/ui/CheckupUi.kt", "features/finance/src/commonMain/**/ui/MoneyCheckup.kt"]
+
+
+edges:
+  - {id: finance.close, from: [finance_unavailable, finance_outdated], to: home, do: [back]}
+  # The tab bar shows on the five tabs, not on the pushed pages.
+  - {id: finance.tab_wallet, from: [finance_budget, finance_markets, finance_economy, finance_risk], to: finance_unavailable, when: "relay == 'off'", count: once, do: [{tap: {id: finance_tab_wallet}}]}
+  - {id: finance.tab_wallet_on, from: [finance_budget, finance_markets, finance_economy, finance_risk], to: finance_outdated, when: "relay == 'on'", count: once, do: [{tap: {id: finance_tab_wallet}}]}
+  - {id: finance.tab_budget, from: [finance_unavailable, finance_outdated, finance_markets, finance_economy, finance_risk], to: finance_budget, count: once, do: [{tap: {id: finance_tab_budget}}]}
+  - {id: finance.tab_markets, from: [finance_unavailable, finance_outdated, finance_budget, finance_economy, finance_risk], to: finance_markets, count: once, do: [{tap: {id: finance_tab_markets}}]}
+  - {id: finance.tab_economy, from: [finance_unavailable, finance_outdated, finance_budget, finance_markets, finance_risk], to: finance_economy, count: once, do: [{tap: {id: finance_tab_economy}}]}
+  - {id: finance.tab_risk, from: [finance_unavailable, finance_outdated, finance_budget, finance_markets, finance_economy], to: finance_risk, count: once, do: [{tap: {id: finance_tab_risk}}]}
+  - {id: finance_unavailable.retry, from: finance_unavailable, to: "=", do: [{tap: {text: Try again}}]}
+  - {id: finance_outdated.retry, from: finance_outdated, to: "=", do: [{tap: {text: Try again}}]}
+  - {id: finance_unavailable.open_glossary, from: finance_unavailable, to: finance_glossary, do: [{tap: {id: finance_glossary}}]}
+  - {id: finance_unavailable.open_chart_settings, from: finance_unavailable, to: finance_chart_settings, do: [{tap: {id: finance_chart_settings}}]}
+  - {id: finance_outdated.open_glossary, from: finance_outdated, to: finance_glossary, do: [{tap: {id: finance_glossary}}]}
+  - {id: finance_outdated.open_chart_settings, from: finance_outdated, to: finance_chart_settings, do: [{tap: {id: finance_chart_settings}}]}
+  - {id: finance_glossary.back, from: finance_glossary, to: finance_unavailable, when: "relay == 'off'", do: [back]}
+  - {id: finance_glossary.back_on, from: finance_glossary, to: finance_outdated, when: "relay == 'on'", do: [back]}
+  - {id: finance_chart_settings.back, from: finance_chart_settings, to: finance_unavailable, when: "relay == 'off'", do: [back]}
+  - {id: finance_chart_settings.back_on, from: finance_chart_settings, to: finance_outdated, when: "relay == 'on'", do: [back]}
+
+  # --- Added for the denominator: none of these has been tried on a device ---
+  # The app opens, closes and locks.
+  - {id: drawer.open_finance_locked, from: drawer, to: finance_lock, do: [{tap: {id: drawer_finance}}], pending: "needs a device capability"}
+  - {id: finance_lock.unlock, from: finance_lock, to: finance_wallet, do: [{tap: {id: finance_unlock}}], pending: "needs a device capability"}
+  - {id: finance_lock.close, from: finance_lock, to: home, do: [{tap: {id: finance_back}}], pending: "needs a device capability"}
+  - {id: drawer.open_finance_wallet, from: drawer, to: finance_wallet, do: [{tap: {id: drawer_finance}}], pending: "needs a relay route"}
+  - {id: drawer.open_finance_setup, from: drawer, to: finance_wallet_setup, do: [{tap: {id: drawer_finance}}], pending: "needs a relay route"}
+  - {id: finance.close_tabs, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], to: home, do: [back], pending: "not yet verified on a device"}
+  # The tab bar, from the tabs the existing edges do not start from.
+  - {id: finance.tab_wallet_loaded, from: [finance_budget, finance_markets, finance_economy, finance_risk], to: finance_wallet, count: once, do: [{tap: {id: finance_tab_wallet}}], pending: "needs a relay route"}
+  - {id: finance.tab_budget_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_budget, count: once, do: [{tap: {id: finance_tab_budget}}], pending: "not yet verified on a device"}
+  - {id: finance.tab_markets_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_markets, count: once, do: [{tap: {id: finance_tab_markets}}], pending: "not yet verified on a device"}
+  - {id: finance.tab_economy_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_economy, count: once, do: [{tap: {id: finance_tab_economy}}], pending: "not yet verified on a device"}
+  - {id: finance.tab_risk_from_wallet, from: [finance_wallet, finance_wallet_setup], to: finance_risk, count: once, do: [{tap: {id: finance_tab_risk}}], pending: "not yet verified on a device"}
+  - {id: finance.tab_wallet_setup, from: [finance_budget, finance_markets, finance_economy, finance_risk], to: finance_wallet_setup, count: once, do: [{tap: {id: finance_tab_wallet}}], pending: "needs a relay route"}
+  # The top bar's two icons, on the tabs.
+  - {id: finance.tabs_open_glossary, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], except: [finance_unavailable, finance_outdated], to: finance_glossary, count: once, do: [{tap: {id: finance_glossary}}], pending: "not yet verified on a device"}
+  - {id: finance.tabs_open_chart_settings, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], except: [finance_unavailable, finance_outdated], to: finance_chart_settings, count: once, do: [{tap: {id: finance_chart_settings}}], pending: "not yet verified on a device"}
+  - {id: finance.glossary_back_to_tab, from: finance_glossary, to: finance_wallet, do: [back], pending: "needs a relay route"}
+  - {id: finance.chart_settings_back_to_tab, from: finance_chart_settings, to: finance_wallet, do: [back], pending: "needs a relay route"}
+  # Pushed pages: Back (the top bar's arrow or the detail pill) pops one page; the pill's other half hops to the cameras.
+  - {id: finance.page_back_wallet, from: [finance_wallet_accounts, finance_wallet_cash_flow, finance_wallet_debt, finance_wallet_home, finance_wallet_vesting_taxes, finance_wallet_sheet_charts, finance_sheet_sync, finance_typed_balances], to: finance_wallet, do: [back], pending: "needs a relay route"}
+  - {id: finance.page_back_budget, from: finance_budget_settings, to: finance_budget, do: [back], pending: "needs a relay route"}
+  - {id: finance.page_back_sheet_sync, from: finance_bank_sync, to: finance_sheet_sync, do: [back], pending: "needs a relay route"}
+  - {id: finance.page_back_markets, from: finance_quote, to: finance_markets, do: [back], pending: "needs recorded internet"}
+  - {id: finance.page_back_risk, from: finance_indicator, to: finance_risk, do: [back], pending: "needs recorded internet"}
+  - {id: finance.page_back_economy, from: finance_connections, to: finance_economy, do: [back], pending: "needs recorded internet"}
+  - {id: finance.pill_cameras, from: [finance_wallet_accounts, finance_wallet_cash_flow, finance_wallet_debt, finance_wallet_home, finance_wallet_vesting_taxes, finance_wallet_sheet_charts, finance_sheet_sync, finance_typed_balances, finance_budget_settings, finance_bank_sync, finance_quote, finance_indicator, finance_connections, finance_glossary, finance_chart_settings], to: home, count: once, do: [{tap: {id: finance_pill_cameras}}], pending: "not yet verified on a device"}
+  # Wallet
+  - {id: finance_wallet.open_accounts, from: finance_wallet, to: finance_wallet_accounts, do: [{tap: {id: wallet_topic_accounts}}], pending: "needs a relay route"}
+  - {id: finance_wallet.open_cash_flow, from: finance_wallet, to: finance_wallet_cash_flow, do: [{tap: {id: wallet_topic_cash_flow}}], pending: "needs a relay route"}
+  - {id: finance_wallet.open_debt, from: finance_wallet, to: finance_wallet_debt, do: [{tap: {id: wallet_topic_debt}}], pending: "needs a relay route"}
+  - {id: finance_wallet.open_home, from: finance_wallet, to: finance_wallet_home, do: [{tap: {id: wallet_topic_home}}], pending: "needs a relay route"}
+  - {id: finance_wallet.open_vesting_taxes, from: finance_wallet, to: finance_wallet_vesting_taxes, do: [{tap: {id: wallet_topic_vesting_taxes}}], pending: "needs a relay route"}
+  - {id: finance_wallet.open_sheet_charts, from: finance_wallet, to: finance_wallet_sheet_charts, do: [{tap: {id: wallet_topic_sheet_charts}}], pending: "needs a relay route"}
+  - {id: finance_wallet.open_sheet_sync, from: finance_wallet, to: finance_sheet_sync, pending: "needs a relay route"}
+  - {id: finance_wallet.open_typed_balances, from: finance_wallet, to: finance_typed_balances, do: [{tap: {id: finance_typed_balances_teaser}}], pending: "needs a relay route"}
+  - {id: finance_wallet.open_budget, from: finance_wallet, to: finance_budget, do: [{tap: {id: finance_budget_teaser}}], pending: "needs a relay route"}
+  - {id: finance_wallet.open_checkup, from: finance_wallet, to: finance_checkup_overview, pending: "needs a relay route"}
+  - {id: finance_wallet.edit_balance, from: [finance_wallet_accounts, finance_wallet_debt, finance_wallet_home], to: finance_balance_editor, pending: "needs a relay route"}
+  - {id: finance_wallet_setup.retry, from: finance_wallet_setup, to: "=", do: [{tap: {text: Try again}}], pending: "needs a relay route"}
+  - {id: finance_wallet_setup.open_sheet_sync, from: finance_wallet_setup, to: finance_sheet_sync, pending: "needs a relay route"}
+  # Sheet sync, typed balances, bank sync
+  - {id: finance_sheet_sync.open_bank_sync, from: finance_sheet_sync, to: finance_bank_sync, do: [{tap: {id: finance_bank_sync_entry}}], pending: "needs a relay route"}
+  - {id: finance_typed_balances.edit, from: finance_typed_balances, to: finance_balance_editor, pending: "needs a relay route"}
+  - {id: finance_balance_editor.save, from: finance_balance_editor, to: finance_typed_balances, do: [{tap: {id: finance_balance_save}}], pending: "needs a relay route"}
+  - {id: finance_balance_editor.cancel, from: finance_balance_editor, to: finance_typed_balances, do: [back], pending: "needs a relay route"}
+  - {id: finance_bank_sync.choose_kind, from: finance_bank_sync, to: finance_bank_kind_chooser, do: [{tap: {id: finance_bank_link}}], pending: "needs a relay route"}
+  - {id: finance_bank_kind_chooser.pick, from: finance_bank_kind_chooser, to: finance_bank_sync, pending: "needs a relay route"}
+  - {id: finance_bank_sync.unlink, from: finance_bank_sync, to: finance_bank_unlink_dialog, pending: "needs a relay route"}
+  - {id: finance_bank_unlink_dialog.close, from: finance_bank_unlink_dialog, to: finance_bank_sync, do: [back], pending: "needs a relay route"}
+  - {id: finance_bank_sync.undo_write, from: finance_bank_sync, to: finance_bank_undo_dialog, pending: "needs a relay route"}
+  - {id: finance_bank_undo_dialog.close, from: finance_bank_undo_dialog, to: finance_bank_sync, do: [back], pending: "needs a relay route"}
+  - {id: finance_bank_sync.retry, from: finance_bank_sync, to: "=", do: [{tap: {text: Try again}}], pending: "needs a relay route"}
+  # The checkup sheet
+  - {id: finance_checkup.open_line, from: finance_checkup_overview, to: finance_checkup_emergency_fund, pending: "needs a relay route"}
+  - {id: finance_checkup.open_savings_rate, from: finance_checkup_overview, to: finance_checkup_savings_rate, pending: "needs a relay route"}
+  - {id: finance_checkup.open_costly_debt, from: finance_checkup_overview, to: finance_checkup_costly_debt, pending: "needs a relay route"}
+  - {id: finance_checkup.open_debt_ratio, from: finance_checkup_overview, to: finance_checkup_debt_ratio, pending: "needs a relay route"}
+  - {id: finance_checkup.open_retirement, from: finance_checkup_overview, to: finance_checkup_retirement, pending: "needs a relay route"}
+  - {id: finance_checkup.line_back, from: [finance_checkup_emergency_fund, finance_checkup_savings_rate, finance_checkup_costly_debt, finance_checkup_debt_ratio, finance_checkup_retirement], to: finance_checkup_overview, pending: "needs a relay route"}
+  - {id: finance_checkup.dismiss, from: finance_checkup_overview, to: finance_wallet, do: [back], pending: "needs a relay route"}
+  - {id: finance_checkup.jump_to_section, from: [finance_checkup_emergency_fund, finance_checkup_savings_rate, finance_checkup_costly_debt, finance_checkup_debt_ratio, finance_checkup_retirement], to: finance_wallet_accounts, pending: "needs a relay route"}
+  # Budget
+  - {id: finance_budget.open_settings, from: finance_budget, to: finance_budget_settings, do: [{tap: {id: finance_budget_settings}}], pending: "needs a relay route"}
+  - {id: finance_budget.open_bank_sync, from: finance_budget, to: finance_bank_sync, do: [{tap: {id: finance_budget_link}}], pending: "needs a relay route"}
+  - {id: finance_budget.tag_purchase, from: finance_budget, to: finance_budget_tag_sheet, pending: "needs a relay route"}
+  - {id: finance_budget_tag_sheet.close, from: finance_budget_tag_sheet, to: finance_budget, do: [back], pending: "needs a relay route"}
+  # Markets and Economy
+  - {id: finance_markets.add_symbol, from: finance_markets, to: finance_add_symbol_sheet, do: [{tap: {id: finance_add_symbol}}], pending: "needs recorded internet"}
+  - {id: finance_add_symbol_sheet.close, from: finance_add_symbol_sheet, to: finance_markets, do: [back], pending: "needs recorded internet"}
+  - {id: finance_markets.open_quote, from: finance_markets, to: finance_quote, pending: "needs recorded internet"}
+  - {id: finance_quote.edit_position, from: finance_quote, to: finance_position_editor, pending: "needs recorded internet"}
+  - {id: finance_position_editor.close, from: finance_position_editor, to: finance_quote, do: [back], pending: "needs recorded internet"}
+  - {id: finance_economy.open_connections, from: finance_economy, to: finance_connections, do: [{tap: {text: "HOW IT ALL CONNECTS"}}], pending: "needs recorded internet"}
+  - {id: finance_economy.open_indicator, from: [finance_economy, finance_risk], to: finance_indicator, pending: "needs recorded internet"}
+  # The explainer sheet: any ⓘ opens it; its link to a chart opens the indicator page.
+  - {id: finance.open_explainer, from: [finance_wallet, finance_wallet_setup, finance_budget, finance_markets, finance_economy, finance_risk], except: [finance_unavailable, finance_outdated], to: finance_explain_sheet, count: once, pending: "not yet verified on a device"}
+  - {id: finance_glossary.open_term, from: finance_glossary, to: finance_explain_sheet, pending: "not yet verified on a device"}
+  - {id: finance_explain_sheet.close, from: finance_explain_sheet, to: finance_economy, do: [back], pending: "not yet verified on a device"}
+  - {id: finance_explain_sheet.open_chart, from: finance_explain_sheet, to: finance_indicator, pending: "needs recorded internet"}
+  # A budget alert's notification opens Budget (homesafe://finance?tab=budget)
+  - {id: finance.notification_budget, from: home, to: finance_budget, do: [{open: "homesafe://finance?tab=budget"}], pending: "needs a notification or deep link"}
