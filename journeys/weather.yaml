@@ -1,3 +1,9 @@
+vars:
+  # Whether a place has been picked: Weather then opens on its Today, and Places and Settings go back to it.
+  weather_place: false
+  # The tab Places and Settings were opened from, which they go back to.
+  weather_tab: {initial: today, values: [today, forecast, radar]}
+
 # Weather, from the drawer. Without places it opens on the welcome screen.
 nodes:
   weather_welcome:
@@ -57,11 +63,11 @@ nodes:
     title: Weather, Today
     group: weather
     kind: screen
-    pending: "not yet verified on a device"
     covers: ["tab:WeatherTab.TODAY", "screen:TodayScreen#3"]
     sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/TodayScreen.kt"]
+    # Loaded or not: the Today tab is the one that is selected, so it is the one that is not clickable.
     match:
-      all: [{id: weather_today}]
+      any: [{id: weather_today}, {id: weather_tab_today, clickable: false}]
     params:
       forecast:
         loading: {observe: {text: "Fetching the forecast…"}}
@@ -75,11 +81,10 @@ nodes:
     title: Weather, Forecast
     group: weather
     kind: screen
-    pending: "not yet verified on a device"
     covers: ["tab:WeatherTab.FORECAST", "screen:ForecastScreen"]
     sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ui/ForecastScreen.kt"]
     match:
-      all: [{id: weather_forecast}]
+      any: [{id: weather_forecast}, {id: weather_tab_forecast, clickable: false}]
     params:
       forecast:
         loading: {observe: {text: "Fetching the forecast…"}}
@@ -132,7 +137,6 @@ nodes:
     title: Weather, Ski
     group: weather
     kind: screen
-    pending: "not yet verified on a device"
     covers: ["tab:WeatherTab.SKI", "screen:SkiScreen"]
     sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiScreen.kt"]
     match:
@@ -170,7 +174,6 @@ nodes:
     title: Ski, Find resorts
     group: weather
     kind: screen
-    pending: "not yet verified on a device"
     covers: ["page:WeatherPage.SkiFind", "screen:SkiFindScreen"]
     sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiFindScreen.kt"]
     match:
@@ -193,7 +196,6 @@ nodes:
     title: Ski, Trip setup
     group: weather
     kind: screen
-    pending: "not yet verified on a device"
     covers: ["page:WeatherPage.SkiSetup", "screen:SkiSetupScreen"]
     sources: ["features/weather/src/commonMain/kotlin/com/meticulouscreations/homesafe/weather/ski/ui/SkiFindScreen.kt"]
     match:
@@ -207,12 +209,15 @@ nodes:
         trouble: {observe: {id: ski_site_trouble_card}}
 
 edges:
-  - {id: weather_welcome.back, from: weather_welcome, to: home, do: [back]}
+  - {id: weather_welcome.back, from: weather_welcome, to: home, when: "tab == 'home'", do: [back]}
+  - {id: weather_welcome.back_to_moments, from: weather_welcome, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: weather_welcome.back_to_settings, from: weather_welcome, to: settings, when: "tab == 'settings'", do: [back]}
+  - {id: weather_welcome.back_to_sign_in, from: weather_welcome, to: sign_in, when: "tab == 'sign_in'", do: [back]}
   - {id: weather_welcome.open_places, from: weather_welcome, to: weather_places, do: [{tap: {id: weather_places_button}}]}
   - {id: weather_welcome.add_city, from: weather_welcome, to: weather_places, do: [{tap: {id: weather_welcome_add}}]}
   - {id: weather_welcome.open_settings, from: weather_welcome, to: weather_settings, do: [{tap: {id: weather_settings_button}}]}
-  - {id: weather_places.back, from: weather_places, to: weather_welcome, do: [back]}
-  - {id: weather_settings.back, from: weather_settings, to: weather_welcome, do: [back]}
+  - {id: weather_places.back, from: weather_places, to: weather_welcome, when: "not weather_place", do: [back]}
+  - {id: weather_settings.back, from: weather_settings, to: weather_welcome, when: "not weather_place", do: [back]}
   # "Use my location" raises the system location permission dialog.
   - {id: weather_welcome.use_location, from: weather_welcome, to: weather_location_permission, pending: "needs a device capability", do: [{tap: {id: weather_welcome_locate}}]}
   - {id: weather_places.use_location, from: weather_places, to: weather_location_permission, pending: "needs a device capability", do: [{tap: {id: weather_use_location}}]}
@@ -223,39 +228,47 @@ edges:
   - {id: weather_notification_permission.close, from: weather_notification_permission, to: weather_settings, pending: "needs a device capability"}
 
   # Leaving a place the app has no forecast for: a popular city, a search result or a saved place turns to its Today.
-  - {id: weather_places.pick_place, from: weather_places, to: weather_today, pending: "not yet verified on a device", do: [{tap: {id: weather_place_result}}]}
-  - {id: weather_places.back_to_today, from: weather_places, to: weather_today, pending: "not yet verified on a device", do: [back]}
-  - {id: weather_settings.back_to_today, from: weather_settings, to: weather_today, pending: "not yet verified on a device", do: [back]}
+  - {id: weather_places.pick_place, from: weather_places, to: weather_today, when: "weather_tab == 'today'", set: {weather_place: true}, do: [{tap: {cls: View, clickable: true, index: 1}}]}
+  - {id: weather_places.pick_place_forecast, from: weather_places, to: weather_forecast, when: "weather_tab == 'forecast'", do: [{tap: {cls: View, clickable: true, index: 1}}]}
+  - {id: weather_places.back_to_today, from: weather_places, to: weather_today, when: "weather_place and weather_tab == 'today'", do: [back]}
+  - {id: weather_places.back_to_forecast, from: weather_places, to: weather_forecast, when: "weather_place and weather_tab == 'forecast'", do: [back]}
+  - {id: weather_places.back_to_radar, from: weather_places, to: weather_radar, when: "weather_place and weather_tab == 'radar'", pending: "needs recorded internet", do: [back]}
+  - {id: weather_settings.back_to_today, from: weather_settings, to: weather_today, when: "weather_place and weather_tab == 'today'", do: [back]}
+  - {id: weather_settings.back_to_forecast, from: weather_settings, to: weather_forecast, when: "weather_place and weather_tab == 'forecast'", do: [back]}
+  - {id: weather_settings.back_to_radar, from: weather_settings, to: weather_radar, when: "weather_place and weather_tab == 'radar'", pending: "needs recorded internet", do: [back]}
 
   # The tabs: the pill along the foot, the side rail, or the shell's sidebar.
-  - {id: weather_tab.today, from: [weather_forecast, weather_radar, weather_ski], to: weather_today, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_tab_today}}]}
-  - {id: weather_tab.forecast, from: [weather_today, weather_radar, weather_ski], to: weather_forecast, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_tab_forecast}}]}
-  - {id: weather_tab.radar, from: [weather_today, weather_forecast, weather_ski], to: weather_radar, count: once, pending: "needs recorded internet", do: [{tap: {id: weather_tab_radar}}]}
-  - {id: weather_tab.ski, from: [weather_today, weather_forecast, weather_radar], to: weather_ski, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_tab_ski}}]}
+  - {id: weather_tab.today, from: [weather_forecast, weather_radar, weather_ski], to: weather_today, set: {weather_tab: today}, count: once, do: [{tap: {id: weather_tab_today}}]}
+  - {id: weather_tab.forecast, from: [weather_today, weather_radar, weather_ski], to: weather_forecast, set: {weather_tab: forecast}, count: once, do: [{tap: {id: weather_tab_forecast}}]}
+  - {id: weather_tab.radar, from: [weather_today, weather_forecast, weather_ski], to: weather_radar, set: {weather_tab: radar}, count: once, pending: "needs recorded internet", do: [{tap: {id: weather_tab_radar}}]}
+  - {id: weather_tab.ski, from: [weather_today, weather_forecast, weather_radar], to: weather_ski, count: once, do: [{tap: {id: weather_tab_ski}}]}
   - {id: weather_today.open_radar_card, from: weather_today, to: weather_radar, pending: "needs recorded internet", do: [{tap: {id: weather_radar_card}}]}
   - {id: weather_today.open_forecast_row, from: weather_today, to: weather_forecast, pending: "needs recorded internet", do: [{tap: {id: weather_next_wet_day}}]}
-  - {id: weather_tabs.close, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: home, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_back}}]}
+  - {id: weather_tabs.close, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: home, when: "tab == 'home'", count: once, do: [{tap: {id: weather_back}}]}
+  - {id: weather_tabs.close_to_moments, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: moments, when: "tab == 'moments'", count: once, do: [{tap: {id: weather_back}}]}
+  - {id: weather_tabs.close_to_settings, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: settings, when: "tab == 'settings'", count: once, do: [{tap: {id: weather_back}}]}
+  - {id: weather_tabs.close_to_sign_in, from: [weather_today, weather_forecast, weather_radar, weather_ski], to: sign_in, when: "tab == 'sign_in'", count: once, do: [{tap: {id: weather_back}}]}
 
   # Places and Settings from the tabs' top bar (the Ski tab's bar has its own buttons).
-  - {id: weather_tabs.open_places, from: [weather_today, weather_forecast, weather_radar], to: weather_places, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_places_button}}]}
-  - {id: weather_tabs.open_places_title, from: [weather_today, weather_forecast, weather_radar], to: weather_places, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_place_title}}]}
-  - {id: weather_tabs.open_settings, from: [weather_today, weather_forecast, weather_radar], to: weather_settings, count: once, pending: "not yet verified on a device", do: [{tap: {id: weather_settings_button}}]}
+  - {id: weather_tabs.open_places, from: [weather_today, weather_forecast, weather_radar], to: weather_places, count: once, do: [{tap: {id: weather_places_button}}]}
+  - {id: weather_tabs.open_places_title, from: [weather_today, weather_forecast, weather_radar], to: weather_places, count: once, do: [{tap: {id: weather_place_title}}]}
+  - {id: weather_tabs.open_settings, from: [weather_today, weather_forecast, weather_radar], to: weather_settings, count: once, do: [{tap: {id: weather_settings_button}}]}
 
   # A government warning.
   - {id: weather_today.open_alert, from: weather_today, to: weather_alert, pending: "needs recorded internet", do: [{tap: {id: weather_alert}}]}
   - {id: weather_alert.back, from: weather_alert, to: weather_today, pending: "needs recorded internet", do: [{tap: {id: weather_back}}]}
 
   # Ski.
-  - {id: weather_ski.open_find, from: weather_ski, to: weather_ski_find, pending: "not yet verified on a device", do: [{tap: {id: ski_find_button}}]}
-  - {id: weather_ski.open_find_button, from: weather_ski, to: weather_ski_find, pending: "not yet verified on a device", do: [{tap: {id: ski_find}}]}
-  - {id: weather_ski.open_setup, from: weather_ski, to: weather_ski_setup, pending: "not yet verified on a device", do: [{tap: {id: ski_setup_button}}]}
+  - {id: weather_ski.open_find, from: weather_ski, to: weather_ski_find, do: [{tap: {id: ski_find_button}}]}
+  - {id: weather_ski.open_find_button, from: weather_ski, to: weather_ski_find, do: [{scroll_to: {id: ski_find}}, {tap: {id: ski_find}}]}
+  - {id: weather_ski.open_setup, from: weather_ski, to: weather_ski_setup, do: [{tap: {id: ski_setup_button}}]}
   - {id: weather_ski.open_best_bet, from: weather_ski, to: weather_ski_resort, pending: "needs recorded internet", do: [{tap: {id: ski_best_bet}}]}
   - {id: weather_ski.open_resort_card, from: weather_ski, to: weather_ski_resort, pending: "needs recorded internet"}
   - {id: weather_ski.open_region, from: weather_ski, to: weather_ski_region, pending: "needs recorded internet"}
   - {id: weather_ski_find.open_region, from: weather_ski_find, to: weather_ski_region, pending: "needs recorded internet"}
   - {id: weather_ski_region.open_resort, from: weather_ski_region, to: weather_ski_resort, pending: "needs recorded internet"}
-  - {id: weather_ski_find.back, from: weather_ski_find, to: weather_ski, pending: "not yet verified on a device", do: [{tap: {id: weather_back}}]}
-  - {id: weather_ski_setup.back, from: weather_ski_setup, to: weather_ski, pending: "not yet verified on a device", do: [{tap: {id: weather_back}}]}
+  - {id: weather_ski_find.back, from: weather_ski_find, to: weather_ski, do: [{tap: {id: weather_back}}]}
+  - {id: weather_ski_setup.back, from: weather_ski_setup, to: weather_ski, do: [{tap: {id: weather_back}}]}
   - {id: weather_ski_region.back_to_find, from: weather_ski_region, to: weather_ski_find, pending: "needs recorded internet", do: [{tap: {id: weather_back}}]}
   - {id: weather_ski_region.back_to_ski, from: weather_ski_region, to: weather_ski, pending: "needs recorded internet", do: [{tap: {id: weather_back}}]}
   - {id: weather_ski_resort.back_to_ski, from: weather_ski_resort, to: weather_ski, pending: "needs recorded internet", do: [{tap: {id: weather_back}}]}

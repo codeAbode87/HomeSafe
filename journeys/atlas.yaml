@@ -1,3 +1,9 @@
+vars:
+  # Where the place and day pages were opened from, which Back returns to.
+  atlas_place_from: {initial: places, values: [places, trips, day, trip]}
+  atlas_tab: {initial: map, values: [map, days, places, trips, patterns]}
+  atlas_day_from: {initial: days, values: [days, patterns, place, trip]}
+
 nodes:
   atlas_offline:
     title: Atlas, offline
@@ -124,7 +130,6 @@ nodes:
     title: Atlas, one day
     group: atlas
     kind: screen
-    pending: "not yet verified on a device"
     requires: "relay == 'on'"
     match:
       all: [{id: atlas_day}]
@@ -138,7 +143,7 @@ nodes:
     title: Atlas, one trip
     group: atlas
     kind: screen
-    pending: "not yet verified on a device"
+    pending: "needs fixture data: the fake relay's history has no trip away from home"
     requires: "relay == 'on'"
     match:
       all: [{id: atlas_trip}]
@@ -196,37 +201,61 @@ nodes:
         can_unlock: {observe: {id: atlas_unlock}}
         no_check_available: {observe: {text_contains: "no fingerprint or face to check"}}
 edges:
-  - {id: atlas_offline.back, from: atlas_offline, to: home, do: [back]}
-  - {id: atlas.close, from: atlas_map, to: home, do: [back]}
+  - {id: atlas_offline.back, from: atlas_offline, to: home, when: "tab == 'home'", do: [back]}
+  - {id: atlas_offline.back_to_moments, from: atlas_offline, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: atlas_offline.back_to_settings, from: atlas_offline, to: settings, when: "tab == 'settings'", do: [back]}
+  - {id: atlas.close, from: atlas_map, to: home, when: "tab == 'home'", do: [back]}
+  - {id: atlas.close_to_moments, from: atlas_map, to: moments, when: "tab == 'moments'", do: [back]}
+  - {id: atlas.close_to_settings, from: atlas_map, to: settings, when: "tab == 'settings'", do: [back]}
   # The tab bar shows on the five tabs, not on the pages pushed over them.
-  - {id: atlas.tab_map, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: atlas_map, count: once, do: [{tap: {id: atlas_tab_map}}]}
-  - {id: atlas.tab_days, from: [atlas_map, atlas_places, atlas_trips, atlas_patterns], to: atlas_days, count: once, do: [{tap: {id: atlas_tab_days}}]}
-  - {id: atlas.tab_places, from: [atlas_map, atlas_days, atlas_trips, atlas_patterns], to: atlas_places, count: once, do: [{tap: {id: atlas_tab_places}}]}
-  - {id: atlas.tab_trips, from: [atlas_map, atlas_days, atlas_places, atlas_patterns], to: atlas_trips, count: once, do: [{tap: {id: atlas_tab_trips}}]}
-  - {id: atlas.tab_patterns, from: [atlas_map, atlas_days, atlas_places, atlas_trips], to: atlas_patterns, count: once, do: [{tap: {id: atlas_tab_patterns}}]}
+  - {id: atlas.tab_map, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: atlas_map, set: {atlas_tab: map}, count: once, do: [{tap: {id: atlas_tab_map}}]}
+  - {id: atlas.tab_days, from: [atlas_map, atlas_places, atlas_trips, atlas_patterns], to: atlas_days, set: {atlas_tab: days}, count: once, do: [{tap: {id: atlas_tab_days}}]}
+  - {id: atlas.tab_places, from: [atlas_map, atlas_days, atlas_trips, atlas_patterns], to: atlas_places, set: {atlas_tab: places}, count: once, do: [{tap: {id: atlas_tab_places}}]}
+  - {id: atlas.tab_trips, from: [atlas_map, atlas_days, atlas_places, atlas_patterns], to: atlas_trips, set: {atlas_tab: trips}, count: once, do: [{tap: {id: atlas_tab_trips}}]}
+  - {id: atlas.tab_patterns, from: [atlas_map, atlas_days, atlas_places, atlas_trips], to: atlas_patterns, set: {atlas_tab: patterns}, count: once, do: [{tap: {id: atlas_tab_patterns}}]}
   - {id: atlas_map.open_sync, from: atlas_map, to: atlas_sync, do: [{tap: {id: atlas_sync_open}}]}
-  - {id: atlas_places.open_place, from: atlas_places, to: atlas_place, do: [{tap: {id: atlas_place_row_demo_home}}]}
-  - {id: atlas_sync.back, from: atlas_sync, to: atlas_map, do: [back]}
-  - {id: atlas_place.back, from: atlas_place, to: atlas_places, do: [back]}
+  - {id: atlas_places.open_place, from: atlas_places, to: atlas_place, set: {atlas_place_from: places}, do: [{tap: {id: atlas_place_row_demo_home}}]}
+  - {id: atlas_sync.back, from: atlas_sync, to: atlas_map, when: "atlas_tab == 'map'", do: [back]}
+  - {id: atlas_sync.back_to_days, from: atlas_sync, to: atlas_days, when: "atlas_tab == 'days'", do: [back]}
+  - {id: atlas_sync.back_to_places, from: atlas_sync, to: atlas_places, when: "atlas_tab == 'places'", do: [back]}
+  - {id: atlas_sync.back_to_trips, from: atlas_sync, to: atlas_trips, when: "atlas_tab == 'trips'", do: [back]}
+  - {id: atlas_sync.back_to_patterns, from: atlas_sync, to: atlas_patterns, when: "atlas_tab == 'patterns'", do: [back]}
+  - {id: atlas_place.back, from: atlas_place, to: atlas_places, when: "atlas_place_from == 'places'", do: [back]}
+  - {id: atlas_place.back_to_trips, from: atlas_place, to: atlas_trips, when: "atlas_place_from == 'trips'", do: [back]}
+  - {id: atlas_place.back_to_day, from: atlas_place, to: atlas_day, when: "atlas_place_from == 'day'", do: [back]}
+  - {id: atlas_place.back_to_trip, from: atlas_place, to: atlas_trip, when: "atlas_place_from == 'trip'", do: [back], pending: "needs fixture data: the fake relay's history has no trip away from home"}
   # Not yet tried on a device.
-  - {id: atlas_other_tabs.close, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: home, count: once, do: [back], pending: "not yet verified on a device"}
-  - {id: atlas_tabs.open_sync, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: atlas_sync, count: once, do: [{tap: {id: atlas_sync_open}}], pending: "not yet verified on a device"}
-  - {id: atlas_map.open_place, from: atlas_map, to: atlas_place, pending: "not yet verified on a device"}
-  - {id: atlas_days.open_day, from: atlas_days, to: atlas_day, pending: "not yet verified on a device"}
-  - {id: atlas_patterns.open_day, from: atlas_patterns, to: atlas_day, pending: "not yet verified on a device"}
-  - {id: atlas_patterns.open_place, from: atlas_patterns, to: atlas_place, pending: "not yet verified on a device"}
-  - {id: atlas_trips.open_trip, from: atlas_trips, to: atlas_trip, do: [{tap: {id: atlas_trip_0}}], pending: "not yet verified on a device"}
-  - {id: atlas_trips.open_place, from: atlas_trips, to: atlas_place, pending: "not yet verified on a device"}
-  - {id: atlas_place.open_day, from: atlas_place, to: atlas_day, pending: "not yet verified on a device"}
-  - {id: atlas_trip.open_day, from: atlas_trip, to: atlas_day, pending: "not yet verified on a device"}
-  - {id: atlas_trip.open_place, from: atlas_trip, to: atlas_place, pending: "not yet verified on a device"}
-  - {id: atlas_day.open_place, from: atlas_day, to: atlas_place, pending: "not yet verified on a device"}
-  - {id: atlas_trip.step, from: atlas_trip, to: "=", do: [{tap: {id: atlas_trip_earlier}}], pending: "not yet verified on a device"}
-  - {id: atlas_day.step, from: atlas_day, to: "=", do: [{tap: {id: atlas_day_previous}}], pending: "not yet verified on a device"}
-  - {id: atlas_day.back, from: atlas_day, to: atlas_days, do: [back], pending: "not yet verified on a device"}
-  - {id: atlas_trip.back, from: atlas_trip, to: atlas_trips, do: [back], pending: "not yet verified on a device"}
+  - {id: atlas_other_tabs.close, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: home, when: "tab == 'home'", count: once, do: [back]}
+  - {id: atlas_other_tabs.close_to_moments, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: moments, when: "tab == 'moments'", count: once, do: [back]}
+  - {id: atlas_other_tabs.close_to_settings, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: settings, when: "tab == 'settings'", count: once, do: [back]}
+  - {id: atlas_tabs.open_sync, from: [atlas_days, atlas_places, atlas_trips, atlas_patterns], to: atlas_sync, count: once, do: [{tap: {id: atlas_sync_open}}]}
+  - {id: atlas_map.open_place, from: atlas_map, to: atlas_place, pending: "needs a gesture selectors can't make: a day is one square of the year grid and a place one dot on the map, each tapped at a chosen point"}
+  - {id: atlas_days.open_day, from: atlas_days, to: atlas_day, set: {atlas_day_from: days}, pending: "needs a gesture selectors can't make: a day is one square of the year grid and a place one dot on the map, each tapped at a chosen point"}
+  - {id: atlas_patterns.open_day, from: atlas_patterns, to: atlas_day, set: {atlas_day_from: patterns}, do: [{scroll_to: {text: "Longest day on the road"}}, {tap: {text: "Longest day on the road"}}]}
+  - {id: atlas_patterns.open_place, from: atlas_patterns, to: atlas_place, pending: "the app has no such route: the Patterns records open a day, not a place"}
+  - {id: atlas_trips.open_trip, from: atlas_trips, to: atlas_trip, do: [{tap: {id: atlas_trip_0}}], pending: "needs fixture data: the fake relay's history has no trip away from home"}
+  - {id: atlas_trips.open_place, from: atlas_trips, to: atlas_place, set: {atlas_place_from: trips}, do: [{tap: {cls: View, clickable: true, enabled: true, index: 0}}]}
+  - {id: atlas_place.open_day, from: atlas_place, to: atlas_day, when: "atlas_place_from != 'day'", set: {atlas_day_from: place}, do: [{scroll_to: {text: "LATEST VISITS"}}, {tap: {cls: View, clickable: true, enabled: true, index: 1}}]}
+  - {id: atlas_trip.open_day, from: atlas_trip, to: atlas_day, set: {atlas_day_from: trip}, pending: "needs fixture data: the fake relay's history has no trip away from home"}
+  - {id: atlas_trip.open_place, from: atlas_trip, to: atlas_place, set: {atlas_place_from: trip}, pending: "needs fixture data: the fake relay's history has no trip away from home"}
+  - {id: atlas_day.open_place, from: atlas_day, to: atlas_place, when: "atlas_day_from == 'days' or atlas_day_from == 'patterns'", set: {atlas_place_from: day}, do: [{tap: {cls: View, clickable: true, enabled: true, index: 2}}]}
+  - {id: atlas_trip.step, from: atlas_trip, to: "=", do: [{tap: {id: atlas_trip_earlier}}], pending: "needs fixture data: the fake relay's history has no trip away from home"}
+  - {id: atlas_day.step, from: atlas_day, to: "=", do: [{tap: {id: atlas_day_next}}]}
+  - {id: atlas_day.back, from: atlas_day, to: atlas_days, when: "atlas_day_from == 'days'", do: [back], pending: "reached only through the Days grid, which takes a tap at a chosen square"}
+  - {id: atlas_day.back_to_patterns, from: atlas_day, to: atlas_patterns, when: "atlas_day_from == 'patterns'", do: [back]}
+  - {id: atlas_day.back_to_place, from: atlas_day, to: atlas_place, when: "atlas_day_from == 'place'", do: [back]}
+  - {id: atlas_day.back_to_trip, from: atlas_day, to: atlas_trip, when: "atlas_day_from == 'trip'", do: [back], pending: "needs fixture data: the fake relay's history has no trip away from home"}
+  - {id: atlas_trip.back, from: atlas_trip, to: atlas_trips, do: [back], pending: "needs fixture data: the fake relay's history has no trip away from home"}
   - {id: atlas_empty.open_sync, from: atlas_empty, to: atlas_sync, do: [{tap: {id: atlas_empty_action}}], pending: "needs fixture data"}
-  - {id: atlas_empty.back, from: atlas_empty, to: home, do: [back], pending: "needs fixture data"}
-  - {id: atlas_blocked.back, from: atlas_blocked, to: home, do: [back], pending: "needs fixture data"}
+  - {id: atlas_empty.back, from: atlas_empty, to: home, when: "tab == 'home'", do: [back], pending: "needs fixture data"}
+  - {id: atlas_empty.back_to_moments, from: atlas_empty, to: moments, when: "tab == 'moments'", do: [back], pending: "needs fixture data"}
+  - {id: atlas_empty.back_to_settings, from: atlas_empty, to: settings, when: "tab == 'settings'", do: [back], pending: "needs fixture data"}
+  - {id: atlas_blocked.back, from: atlas_blocked, to: home, when: "tab == 'home'", do: [back], pending: "needs fixture data"}
+  - {id: atlas_blocked.back_to_moments, from: atlas_blocked, to: moments, when: "tab == 'moments'", do: [back], pending: "needs fixture data"}
+  - {id: atlas_blocked.back_to_settings, from: atlas_blocked, to: settings, when: "tab == 'settings'", do: [back], pending: "needs fixture data"}
+  - {id: atlas_blocked.back_to_sign_in, from: atlas_blocked, to: sign_in, when: "tab == 'sign_in'", do: [back], pending: "needs fixture data"}
   - {id: atlas_lock.unlock, from: atlas_lock, to: atlas_map, do: [{tap: {id: atlas_unlock}}], pending: "needs a device capability"}
-  - {id: atlas_lock.back, from: atlas_lock, to: home, do: [{tap: {id: atlas_back}}], pending: "needs a device capability"}
+  - {id: atlas_lock.back, from: atlas_lock, to: home, when: "tab == 'home'", do: [{tap: {id: atlas_back}}], pending: "needs a device capability"}
+  - {id: atlas_lock.back_to_moments, from: atlas_lock, to: moments, when: "tab == 'moments'", do: [{tap: {id: atlas_back}}], pending: "needs a device capability"}
+  - {id: atlas_lock.back_to_settings, from: atlas_lock, to: settings, when: "tab == 'settings'", do: [{tap: {id: atlas_back}}], pending: "needs a device capability"}
+  - {id: atlas_lock.back_to_sign_in, from: atlas_lock, to: sign_in, when: "tab == 'sign_in'", do: [{tap: {id: atlas_back}}], pending: "needs a device capability"}
