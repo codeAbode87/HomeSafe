@@ -60,7 +60,27 @@ data class SkiEntry(
         if ((latest?.takeIf { it.isCurrent(nowEpochSeconds) }?.deepestCm ?: 0.0) > 0.0) return null
         return measuredSnow?.takeIf { it.isCurrent(nowEpochSeconds) && it.depthCm >= SkiMeasuredSnow.LEAST_DEPTH_CM }
     }
+
+    /** How much snow is on the mountain now: the resort's own depths where it gives them, else a station's nearby, else null. */
+    fun snowOnGround(nowEpochSeconds: Long): SkiSnowOnGround? {
+        val report = latest?.takeIf { it.isCurrent(nowEpochSeconds) }
+        val deepest = report?.deepestCm
+        if (report != null && deepest != null && deepest > 0.0) {
+            val base = report.baseDepthCm?.takeIf { it > 0.0 }
+            val top = (report.summitDepthCm ?: report.middleDepthCm)?.takeIf { it > 0.0 && it != base }
+            return SkiSnowOnGround(baseCm = base ?: top ?: deepest, topCm = top.takeIf { base != null })
+        }
+        return measuredDepth(nowEpochSeconds)?.let { SkiSnowOnGround(baseCm = it.depthCm, station = it) }
+    }
 }
+
+/**
+ * The snow on a mountain now. [baseCm] is the one depth there is (the base, or the summit where
+ * that's all the resort gives); [topCm] is higher up, where it gives both. [station] says it's a
+ * weather station's reading nearby rather than the resort's.
+ */
+@Immutable
+data class SkiSnowOnGround(val baseCm: Double, val topCm: Double? = null, val station: SkiMeasuredSnow? = null)
 
 /** What a ticket comes to for the household. */
 @Immutable

@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Map
@@ -77,6 +78,9 @@ import homesafe.shared.generated.resources.ski_find_button
 import homesafe.shared.generated.resources.ski_fresh_label
 import homesafe.shared.generated.resources.ski_loading
 import homesafe.shared.generated.resources.ski_new_label
+import homesafe.shared.generated.resources.ski_on_ground_one
+import homesafe.shared.generated.resources.ski_on_ground_range
+import homesafe.shared.generated.resources.ski_on_ground_station
 import homesafe.shared.generated.resources.ski_no_price
 import homesafe.shared.generated.resources.ski_no_start
 import homesafe.shared.generated.resources.ski_none_open_body
@@ -224,6 +228,7 @@ private fun BestBet(view: SkiDayView, strip: List<SkiStripDay>, selected: Int, n
         Notes(view)
         Spacer(Modifier.height(10.dp))
         Stats(view, now)
+        SnowOnGroundLine(view, now)
         Spacer(Modifier.height(12.dp))
         SkiSnowBars(view.entry, strip, selected, tripDays = view.trip.days)
         ChainsLine(view)
@@ -268,6 +273,7 @@ private fun ResortCard(view: SkiDayView, strip: List<SkiStripDay>, selected: Int
         }
         Spacer(Modifier.height(10.dp))
         Stats(view, now)
+        SnowOnGroundLine(view, now)
         Spacer(Modifier.height(10.dp))
         SkiSnowBars(view.entry, strip, selected, tripDays = view.trip.days)
         ChainsLine(view)
@@ -310,6 +316,24 @@ private fun Stats(view: SkiDayView, now: Long) {
         if (cost.childrenLeftOut && cost.coveredBy == null && cost.total != null) {
             Text(stringResource(Res.string.ski_ticket_kids_left_out), style = WeatherTheme.type.label, color = WeatherTheme.colors.watch, modifier = Modifier.padding(top = 6.dp))
         }
+    }
+}
+
+/** How much snow is on the mountain now: the resort's own depths, or a station's nearby where it gives none. */
+@Composable
+private fun SnowOnGroundLine(view: SkiDayView, now: Long) {
+    val ground = view.entry.snowOnGround(now) ?: return
+    val units = WeatherTheme.units
+    val base = WeatherFormat.snow(ground.baseCm, units).resolve()
+    val text = when {
+        ground.station != null -> stringResource(Res.string.ski_on_ground_station, base, ground.station.stationName)
+        ground.topCm != null -> stringResource(Res.string.ski_on_ground_range, base, WeatherFormat.snow(ground.topCm, units).resolve())
+        else -> stringResource(Res.string.ski_on_ground_one, base)
+    }
+    Row(Modifier.padding(top = 10.dp).testTag("ski_on_ground_${view.entry.ref.slug}"), verticalAlignment = Alignment.CenterVertically) {
+        Icon(Icons.Filled.AcUnit, contentDescription = null, tint = WeatherTheme.colors.onSkyMuted, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.width(6.dp))
+        Text(text, style = WeatherTheme.type.label, color = WeatherTheme.colors.onSkyMuted)
     }
 }
 
