@@ -9,3 +9,4 @@ paho-mqtt==2.2.0
 httpx[http2]==0.28.1
 h2==4.4.1
 cryptography==50.0.2
+pychromecast==14.1.1

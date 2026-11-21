@@ -8370,7 +8370,11 @@ def google_cameras() -> dict[str, str]:
     return google_offered(GOOGLE_STREAMS, live_streams())
 
 
-def google_sync(request_id: str, cameras: dict[str, str]) -> dict[str, Any]:
+GOOGLE_ACTIVATE_SCENE = "action.devices.commands.ActivateScene"
+
+
+def google_sync(request_id: str, cameras: dict[str, str], scenes: dict[str, str] | None = None) -> dict[str, Any]:
+    """The cameras, and the voice questions as scenes (see "voice questions"), id to name."""
     return {"requestId": request_id, "payload": {"agentUserId": GOOGLE_AGENT_USER, "devices": [
         {
             "id": camera,
@@ -8382,22 +8386,35 @@ def google_sync(request_id: str, cameras: dict[str, str]) -> dict[str, Any]:
             "deviceInfo": {"manufacturer": "HomeSafe", "model": "Frigate camera"},
         }
         for camera in cameras
+    ] + [
+        {
+            "id": scene,
+            "type": "action.devices.types.SCENE",
+            "traits": ["action.devices.traits.Scene"],
+            "name": {"name": name},
+            "willReportState": False,
+            "attributes": {"sceneReversible": False},
+            "deviceInfo": {"manufacturer": "HomeSafe", "model": "Voice question"},
+        }
+        for scene, name in (scenes or {}).items()
     ]}}
 
 
-def google_query(request_id: str, payload: dict[str, Any], cameras: dict[str, str]) -> dict[str, Any]:
+def google_query(request_id: str, payload: dict[str, Any], cameras: dict[str, str], scenes: dict[str, str] | None = None) -> dict[str, Any]:
     ids = [d.get("id") for d in payload.get("devices") or []]
     return {"requestId": request_id, "payload": {"devices": {
-        i: {"online": True, "status": "SUCCESS"} if i in cameras else {"online": False, "status": "ERROR", "errorCode": "deviceNotFound"}
+        i: {"online": True, "status": "SUCCESS"} if i in cameras or i in (scenes or {}) else {"online": False, "status": "ERROR", "errorCode": "deviceNotFound"}
         for i in ids
     }}}
 
 
-def google_execute(request_id: str, payload: dict[str, Any], cameras: dict[str, str], issue: Callable[[str], str]) -> dict[str, Any]:
+def google_execute(request_id: str, payload: dict[str, Any], cameras: dict[str, str], issue: Callable[[str], str],
+                   scenes: dict[str, str] | None = None, ask: Callable[[str], None] | None = None) -> dict[str, Any]:
     """
     Answers "show the Front Door": for each camera asked for, a signaling address and a short-lived
     token to post the offer with (`issue(camera)` makes it). The token rides in the address too,
-    as in Google's sample, in case a display leaves the header off.
+    as in Google's sample, in case a display leaves the header off. A voice question's scene
+    activated is handed to `ask`, which answers it out loud later: Google wants this answered now.
     """
     results = []
     for command in payload.get("commands") or []:
@@ -8405,7 +8422,14 @@ def google_execute(request_id: str, payload: dict[str, Any], cameras: dict[str, 
             camera = device.get("id")
             for execution in command.get("execution") or []:
                 protocols = (execution.get("params") or {}).get("SupportedStreamProtocols") or ["webrtc"]
-                if execution.get("command") != GET_CAMERA_STREAM:
+                if camera in (scenes or {}):
+                    if execution.get("command") != GOOGLE_ACTIVATE_SCENE or (execution.get("params") or {}).get("deactivate"):
+                        results.append({"ids": [camera], "status": "ERROR", "errorCode": "functionNotSupported"})
+                    else:
+                        if ask:
+                            ask(camera)
+                        results.append({"ids": [camera], "status": "SUCCESS", "states": {"online": True}})
+                elif execution.get("command") != GET_CAMERA_STREAM:
                     results.append({"ids": [camera], "status": "ERROR", "errorCode": "functionNotSupported"})
                 elif camera not in cameras:
                     results.append({"ids": [camera], "status": "ERROR", "errorCode": "deviceNotFound"})
@@ -8572,7 +8596,10 @@ async def google_token(request: Request) -> Response:
 
 @app.post("/google/fulfillment")
 async def google_fulfillment(request: Request) -> Response:
-    """Google's smart-home intents: SYNC lists the cameras, QUERY says they're up, EXECUTE starts a stream."""
+    """
+    Google's smart-home intents: SYNC lists the cameras and the voice questions, QUERY says they're
+    up, EXECUTE starts a stream or answers a question out loud.
+    """
     from fastapi.concurrency import run_in_threadpool
 
     require_google()
@@ -8585,15 +8612,19 @@ async def google_fulfillment(request: Request) -> Response:
         intent, payload = item.get("intent"), item.get("payload") or {}
         if intent == "action.devices.SYNC":
             cameras = await run_in_threadpool(google_cameras)
-            log.info("google sync by %s: %s", user, cameras)
-            return json_response(google_sync(request_id, cameras))
+            scenes = await run_in_threadpool(voice_scenes)
+            log.info("google sync by %s: %s, questions %s", user, cameras, list(scenes))
+            return json_response(google_sync(request_id, cameras, scenes))
         if intent == "action.devices.QUERY":
             cameras = await run_in_threadpool(google_cameras)
-            return json_response(google_query(request_id, payload, cameras))
+            scenes = await run_in_threadpool(voice_scenes)
+            return json_response(google_query(request_id, payload, cameras, scenes))
         if intent == "action.devices.EXECUTE":
             cameras = await run_in_threadpool(google_cameras)
+            scenes = await run_in_threadpool(voice_scenes)
             answer = await run_in_threadpool(
-                google_execute, request_id, payload, cameras, lambda camera: google_issue("stream", camera, GOOGLE_STREAM_SECONDS)
+                google_execute, request_id, payload, cameras, lambda camera: google_issue("stream", camera, GOOGLE_STREAM_SECONDS),
+                scenes, lambda question: voice_say_later(question, user),
             )
             log.info("google execute by %s: %s", user, [c.get("ids") for c in answer["payload"]["commands"]])
             return json_response(answer)
@@ -19294,6 +19325,443 @@ def post_timeline_sync(request: Request, response: Response) -> dict[str, Any]:
         conn.close()
 
 
+# ---------------------------------------------------------------- voice questions
+# Questions asked out loud to a Nest speaker, answered from the household's own data
+# (docs/voice.md). Google gives a speaker no way to hand a question to anyone else's server, so
+# each question is a scene the Google Home link above lists ("Sarah's distance"), a voice
+# automation in the Google Home app activates it ("Hey Google, how far away is Sarah?"), and the
+# relay works out the answer and says it on VOICE_SPEAKER over Cast, in Gemini's voice.
+#
+# Off unless VOICE_SPEAKER is set (voice.env on the box): the Cast name of the speaker, or speaker
+# group, the answers are said on.
+VOICE_SPEAKER = os.environ.get("VOICE_SPEAKER", "").strip()
+# Who "Sarah" is: a person's name to the Tesla (by its TESLA_CARS name) whose distance answers
+# "how far away is Sarah". Left out, each car of TESLA_CARS named for its owner gives one
+# ("sarahs_car" -> Sarah).
+VOICE_PEOPLE: dict[str, str] = json.loads(os.environ.get("VOICE_PEOPLE") or "{}")
+# Whose training log "today's workout" reads, by Frigate login. Left out, the login that linked Google Home.
+VOICE_FITNESS_OWNER = os.environ.get("VOICE_FITNESS_OWNER", "").strip()
+# Gemini speaks the answers. A key of its own, made for this and restricted to the Generative
+# Language API: the household's keys in the vault are sealed against the relay. Without one, the
+# answers are spoken by Google Translate's voice.
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
+VOICE_TTS_MODEL = os.environ.get("VOICE_TTS_MODEL", "gemini-2.5-flash-preview-tts")
+VOICE_TTS_VOICE = os.environ.get("VOICE_TTS_VOICE", "Kore")
+VOICE_LANGUAGE = os.environ.get("VOICE_LANGUAGE", "en")
+# The port the relay listens on (the Dockerfile's), where the speaker fetches what it says.
+RELAY_PORT = int(os.environ.get("RELAY_PORT", "8787"))
+# How long a spoken answer can be fetched for: the speaker fetches it at once, perhaps twice.
+VOICE_AUDIO_SECONDS = 300
+# A car's whereabouts older than this are said with the time they're from.
+VOICE_FRESH_SECONDS = 900
+# The bank balances are said with how old they are once they're older than this.
+VOICE_BALANCE_STALE_SECONDS = 26 * 3600
+# A workout begun this long ago and never finished isn't "in progress" any more.
+VOICE_WORKOUT_OPEN_SECONDS = 4 * 3600
+VOICE_DEVICE_PREFIX = "voice."
+# The training log's workouts, as WorkoutFocus names them, and the three the week rotates through.
+VOICE_FOCUS_WORDS = {"CHEST": "chest", "BACK": "back", "LEGS": "legs", "SHOULDERS": "shoulders", "ARMS": "arms"}
+VOICE_MAIN_FOCUSES = ("CHEST", "BACK", "LEGS")
+_voice_audio: dict[str, tuple[float, bytes, str]] = {}
+_voice_lock = threading.Lock()
+
+
+class VoiceQuestion:
+    """
+    One question a speaker can be asked: the Google Home scene that asks it (`id`, `name`), and
+    `answer(user, now)`, the sentence to say, where `user` is the Frigate login that linked Google.
+    A new question is a function that answers it and a line in `voice_questions`.
+    """
+
+    def __init__(self, id: str, name: str, answer: Callable[[str, float], str]):
+        self.id, self.name, self.answer = id, name, answer
+
+
+def voice_on() -> bool:
+    return bool(VOICE_SPEAKER)
+
+
+def voice_people(people: dict[str, str], cars: dict[str, str]) -> dict[str, str]:
+    """
+    Each person to the car whose distance is theirs: `people` (VOICE_PEOPLE) where it names a car
+    Tesla knows, otherwise every car named for its owner ("Sarah's Car" -> "Sarah").
+    """
+    if people:
+        return {person: car for person, car in people.items() if car in cars}
+    found = {}
+    for car in cars:
+        name = display_name(car)
+        if "'s " in name:
+            found[name.split("'s ", 1)[0]] = car
+    return found
+
+
+def voice_questions() -> list[VoiceQuestion]:
+    """Every question there is data to answer, each a scene in Google Home."""
+    questions = [
+        VoiceQuestion(f"{VOICE_DEVICE_PREFIX}distance.{car}", f"{person}'s distance",
+                      lambda user, now, person=person, car=car: voice_distance(person, car, now))
+        for person, car in voice_people(VOICE_PEOPLE, TESLA_CARS).items()
+    ] if tesla_on() else []
+    if plaid_on():
+        questions.append(VoiceQuestion(f"{VOICE_DEVICE_PREFIX}savings", "Savings balance", lambda user, now: voice_savings(now)))
+    questions.append(VoiceQuestion(f"{VOICE_DEVICE_PREFIX}workout", "Today's workout", lambda user, now: voice_workout(VOICE_FITNESS_OWNER or user, now)))
+    return questions
+
+
+def voice_scenes() -> dict[str, str]:
+    """The questions as Google Home's scenes, id to name; none while voice is off."""
+    return {q.id: q.name for q in voice_questions()} if voice_on() else {}
+
+
+# -- the words
+
+def voice_miles(metres: float) -> str:
+    """A distance as it's said: "about half a mile", "about 12 miles"."""
+    miles = metres / 1609.344
+    if miles < 0.3:
+        return "less than a quarter of a mile"
+    if miles < 0.75:
+        return "about half a mile"
+    if miles < 1.5:
+        return "about a mile"
+    return f"about {round(miles):,} miles"
+
+
+def voice_minutes(minutes: float) -> str:
+    """ "a minute", "18 minutes", "an hour and 5 minutes", "2 hours"."""
+    total = max(1, round(minutes))
+    hours, rest = divmod(total, 60)
+    if not hours:
+        return "a minute" if rest == 1 else f"{rest} minutes"
+    said = "an hour" if hours == 1 else f"{hours} hours"
+    if rest:
+        said += " and a minute" if rest == 1 else f" and {rest} minutes"
+    return said
+
+
+def voice_days_ago(then: float, now: float, zone: ZoneInfo | None) -> str:
+    """ "earlier today", "yesterday", "5 days ago", by the household's calendar."""
+    tz = zone or timezone.utc
+    days = (datetime.fromtimestamp(now, tz).date() - datetime.fromtimestamp(then, tz).date()).days
+    return "earlier today" if days <= 0 else "yesterday" if days == 1 else f"{days} days ago"
+
+
+def voice_dollars(amount: float) -> str:
+    return f"{'-' if amount < 0 else ''}${abs(round(amount)):,}"
+
+
+def voice_distance_text(person: str, last: dict[str, Any] | None, live: dict[str, Any] | None,
+                        home: dict[str, Any] | None, now: float, zone: ZoneInfo | None) -> str:
+    """
+    How far `person` is, said from where their car last was (`last`: the fix, and whether it was
+    moving) and what its stream says (`live`, see `tesla_live_status`): at home, driving and how
+    far, or parked and how far, with the time when the fix is old. Distance is straight from home.
+    """
+    if not home:
+        return f"I can't say how far away {person} is: the home address isn't set in HomeSafe."
+    if not last:
+        return f"I don't know where {person}'s car is right now."
+    d = haversine_metres((float(last["lat"]), float(last["lng"])), (float(home["lat"]), float(home["lng"])))
+    age = now - float(last["at"])
+    when = "" if age <= VOICE_FRESH_SECONDS else f", as of {clock_text(float(last['at']), zone)}"
+    if d <= float(home.get("radius_m") or 150) + TESLA_HOME_MARGIN_METRES:
+        return f"{person}'s car is at home{when}."
+    far = voice_miles(d)
+    streaming = bool(live and live.get("connected"))
+    if last.get("moving") and (streaming or age <= VOICE_FRESH_SECONDS):
+        minutes, destination = (live or {}).get("minutes_to_arrival"), ((live or {}).get("destination") or "").strip()
+        if streaming and minutes is not None and destination:
+            if destination.lower() == "home":
+                return f"{person} is driving, {far} away, and will be home in {voice_minutes(minutes)}."
+            return f"{person} is driving, {far} from home, and will get to {destination} in {voice_minutes(minutes)}."
+        return f"{person} is driving, {far} from home."
+    return f"{person}'s car is parked {far} from home{when}."
+
+
+def voice_savings_text(accounts: list[dict[str, Any]], now: float) -> str:
+    """
+    What's in savings: the total, and each account when there's more than one. `accounts` are
+    {"name", "balance", "updated"}; balances older than a day are said as such.
+    """
+    held = [a for a in accounts if a.get("balance") is not None]
+    if not held:
+        return "I don't see a savings account among the linked banks."
+    total = sum(float(a["balance"]) for a in held)
+    if len(held) == 1:
+        text = f"There's {voice_dollars(total)} in {held[0]['name']}."
+    else:
+        parts = [f"{voice_dollars(float(a['balance']))} in {a['name']}" for a in held]
+        text = f"There's {voice_dollars(total)} in savings: {', '.join(parts[:-1])} and {parts[-1]}."
+    oldest = min(float(a.get("updated") or 0) for a in held)
+    if oldest and now - oldest > VOICE_BALANCE_STALE_SECONDS:
+        days = max(1, int((now - oldest) // 86400))
+        text += f" The bank last reported {'a day' if days == 1 else f'{days} days'} ago."
+    return text
+
+
+def voice_workout_text(workouts: list[dict[str, Any]], now: float, zone: ZoneInfo | None) -> str:
+    """
+    Today's workout by the log's rotation, as the Fitness app's Today tab has it: whichever of
+    chest, back and legs has waited longest (never done, longest of all). One under way, or one
+    already done today, is said first.
+    """
+    tz = zone or timezone.utc
+    today = datetime.fromtimestamp(now, tz).date()
+    focus = lambda w: VOICE_FOCUS_WORDS.get(str(w.get("focus")), str(w.get("focus") or "").lower())
+    known = [w for w in workouts if w.get("focus") and w.get("start")]
+    open_now = [w for w in known if w.get("end") is None and 0 <= now - float(w["start"]) <= VOICE_WORKOUT_OPEN_SECONDS]
+    if open_now:
+        return f"You're in the middle of a {focus(max(open_now, key=lambda w: w['start']))} workout."
+    last = {}
+    for w in known:
+        last[w["focus"]] = max(float(w["start"]), last.get(w["focus"], 0.0))
+    due = min(VOICE_MAIN_FOCUSES, key=lambda f: last.get(f, float("-inf")))
+    word = VOICE_FOCUS_WORDS[due]
+    done_today = [w for w in known if datetime.fromtimestamp(float(w["start"]), tz).date() == today]
+    if done_today:
+        latest = focus(max(done_today, key=lambda w: w["start"]))
+        return f"You've already trained {latest} today. Next up is {word}."
+    if not known:
+        return f"There's nothing in your training log yet, so start with {word}."
+    if due not in last:
+        return f"Today is {word} day. You haven't logged a {word} workout yet."
+    return f"Today is {word} day. You last trained {word} {voice_days_ago(last[due], now, zone)}."
+
+
+# -- the data
+
+def voice_distance(person: str, car: str, now: float) -> str:
+    """Asks Tesla where `car` is (at most once a minute, never waking it), then says how far away `person` is."""
+    if not tesla_on():
+        return f"I can't see {person}'s car: Tesla isn't linked."
+    asked, where = tesla_ask(car, now, "voice")
+    status = next((c for c in parking_status(now)["cars"] if c["car"] == car), {})
+    last = status.get("last")
+    fresh: dict[str, Any] = {}
+    parking_seen(fresh, (asked, where))
+    if fresh.get("last") and float(fresh["last"]["at"]) > float((last or {}).get("at") or 0):
+        last = fresh["last"]
+    return voice_distance_text(person, last, tesla_live_status(car, now), state_get(HOME_KEY), now, household_zone())
+
+
+def voice_savings_accounts() -> list[dict[str, Any]]:
+    rows = with_db(lambda c: c.execute(
+        "SELECT a.name, a.official_name, a.mask, a.current, a.available, a.updated, i.institution FROM plaid_accounts a"
+        " LEFT JOIN plaid_items i ON i.item_id = a.item_id WHERE a.type = 'depository' AND a.subtype IN ('savings', 'money market')"
+        " ORDER BY a.current DESC"
+    ).fetchall())
+    accounts = []
+    for name, official, mask, current, available, updated, institution in rows:
+        said = name or official or "savings"
+        if institution and institution.lower() not in said.lower():
+            said = f"{institution} {said}"
+        accounts.append({"name": said, "balance": current if current is not None else available, "updated": updated})
+    return accounts
+
+
+def voice_savings(now: float) -> str:
+    return voice_savings_text(voice_savings_accounts(), now)
+
+
+def voice_workouts(owner: str) -> list[dict[str, Any]]:
+    rows = with_db(lambda c: c.execute(
+        "SELECT data FROM fitness_rows WHERE owner = ? AND kind = 'workout' AND data IS NOT NULL", (owner,)
+    ).fetchall())
+    workouts = []
+    for (data,) in rows:
+        try:
+            workouts.append(json.loads(data))
+        except ValueError:
+            continue
+    return workouts
+
+
+def voice_workout(owner: str, now: float) -> str:
+    return voice_workout_text(voice_workouts(owner), now, household_zone())
+
+
+def voice_answer(question_id: str, user: str, now: float | None = None) -> str | None:
+    """The sentence answering `question_id`, None for a question there isn't."""
+    question = next((q for q in voice_questions() if q.id == question_id), None)
+    if question is None:
+        return None
+    try:
+        return question.answer(user, time.time() if now is None else now)
+    except Exception:
+        log.exception("voice: answering %s failed", question_id)
+        return f"Sorry, I couldn't work out {question.name.lower()} just now."
+
+
+# -- saying it
+
+def voice_wav(pcm: bytes, rate: int) -> bytes:
+    """16-bit mono PCM as a WAV file, which a Cast speaker plays."""
+    import wave
+
+    out = io.BytesIO()
+    with wave.open(out, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(pcm)
+    return out.getvalue()
+
+
+def voice_pcm_rate(mime: str) -> int:
+    """The sample rate in Gemini's "audio/L16;codec=pcm;rate=24000"; 24 kHz when it doesn't say."""
+    match = re.search(r"rate=(\d+)", mime or "")
+    return int(match.group(1)) if match else 24000
+
+
+def voice_gemini_speech(text: str) -> tuple[bytes, str]:
+    import base64
+
+    r = requests.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/{VOICE_TTS_MODEL}:generateContent",
+        headers={"x-goog-api-key": GEMINI_API_KEY},
+        json={"contents": [{"parts": [{"text": text}]}], "generationConfig": {
+            "responseModalities": ["AUDIO"],
+            "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": VOICE_TTS_VOICE}}},
+        }},
+        timeout=30,
+    )
+    r.raise_for_status()
+    inline = r.json()["candidates"][0]["content"]["parts"][0]["inlineData"]
+    return voice_wav(base64.b64decode(inline["data"]), voice_pcm_rate(inline.get("mimeType", ""))), "audio/wav"
+
+
+def voice_chunks(text: str, limit: int = 190) -> list[str]:
+    """`text` in pieces of at most `limit` characters, broken between sentences, then words."""
+    chunks, current = [], ""
+    for word in text.split():
+        if current and len(current) + 1 + len(word) > limit:
+            chunks.append(current)
+            current = word
+        else:
+            current = f"{current} {word}" if current else word
+    return chunks + ([current] if current else [])
+
+
+def voice_translate_speech(text: str) -> tuple[bytes, str]:
+    """Google Translate's voice, which needs no key; it takes 200 characters at a time, and MP3s join end to end."""
+    audio = b""
+    for chunk in voice_chunks(text):
+        r = requests.get("https://translate.google.com/translate_tts",
+                         params={"ie": "UTF-8", "q": chunk, "tl": VOICE_LANGUAGE, "client": "tw-ob"},
+                         headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
+        r.raise_for_status()
+        audio += r.content
+    return audio, "audio/mpeg"
+
+
+def voice_speech(text: str) -> tuple[bytes, str]:
+    if GEMINI_API_KEY:
+        try:
+            return voice_gemini_speech(text)
+        except Exception as e:
+            log.warning("voice: Gemini speech failed, using Translate's: %s", e)
+    return voice_translate_speech(text)
+
+
+def voice_hold(audio: bytes, mime: str, now: float | None = None) -> str:
+    """Keeps `audio` for the speaker to fetch at /voice/audio/<token> for VOICE_AUDIO_SECONDS."""
+    now = time.time() if now is None else now
+    token = secrets.token_urlsafe(24)
+    with _voice_lock:
+        for old in [t for t, (at, _, _) in _voice_audio.items() if now - at > VOICE_AUDIO_SECONDS]:
+            del _voice_audio[old]
+        _voice_audio[token] = (now, audio, mime)
+    return token
+
+
+def voice_held(token: str, now: float | None = None) -> tuple[bytes, str] | None:
+    now = time.time() if now is None else now
+    with _voice_lock:
+        held = _voice_audio.get(token)
+    if held is None or now - held[0] > VOICE_AUDIO_SECONDS:
+        return None
+    return held[1], held[2]
+
+
+def voice_local_address(towards: str) -> str:
+    """This box's address on the network `towards` is on (no packet is sent)."""
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        s.connect((towards, 8009))
+        return s.getsockname()[0]
+
+
+def voice_cast(audio: bytes, mime: str, title: str) -> None:
+    """Plays `audio` on VOICE_SPEAKER. What it was playing stops."""
+    import pychromecast  # only the box has it; the tests never cast
+
+    casts, browser = pychromecast.get_listed_chromecasts(friendly_names=[VOICE_SPEAKER], discovery_timeout=10)
+    try:
+        if not casts:
+            raise RuntimeError(f"no Cast speaker called {VOICE_SPEAKER!r} on the network")
+        cast = casts[0]
+        cast.wait(timeout=10)
+        url = f"http://{voice_local_address(cast.cast_info.host)}:{RELAY_PORT}/voice/audio/{voice_hold(audio, mime)}"
+        cast.media_controller.play_media(url, mime, title=title, stream_type="BUFFERED")
+        cast.media_controller.block_until_active(timeout=15)
+    finally:
+        browser.stop_discovery()
+
+
+def voice_say(question_id: str, user: str) -> None:
+    """Answers `question_id` out loud on VOICE_SPEAKER. Runs on its own thread: Google wants its EXECUTE answered at once."""
+    started = time.time()
+    text = voice_answer(question_id, user, started)
+    if text is None:
+        return
+    try:
+        audio, mime = voice_speech(text)
+        voice_cast(audio, mime, text)
+        # The answer itself isn't logged: some of them are bank balances.
+        log.info("voice: %s answered for %s on %r in %.1f s", question_id, user, VOICE_SPEAKER, time.time() - started)
+    except Exception:
+        log.exception("voice: saying %s on %r failed", question_id, VOICE_SPEAKER)
+
+
+def voice_say_later(question_id: str, user: str) -> None:
+    threading.Thread(target=voice_say, args=(question_id, user), name="voice", daemon=True).start()
+
+
+@app.get("/voice/audio/{token}")
+def voice_audio(token: str) -> Response:
+    """What a speaker was told to play: an answer, for a few minutes after it was asked."""
+    held = voice_held(token)
+    if held is None:
+        raise HTTPException(status_code=404, detail="No such answer")
+    return Response(content=held[0], media_type=held[1], headers={"Cache-Control": "no-store"})
+
+
+class VoiceAsk(BaseModel):
+    question: str
+    speak: bool = False
+
+
+@app.get("/voice/questions")
+def voice_question_list(request: Request) -> dict[str, Any]:
+    """The questions there are, for trying them from a signed-in phone or browser."""
+    require_frigate_session(request)
+    return {"speaker": VOICE_SPEAKER or None, "questions": [{"id": q.id, "name": q.name} for q in voice_questions()]}
+
+
+@app.post("/voice/ask")
+def voice_ask(body: VoiceAsk, request: Request) -> dict[str, Any]:
+    """Answers a question as the speaker would, as text, and says it on the speaker too with `speak`."""
+    user = require_frigate_session(request)
+    text = voice_answer(body.question, user)
+    if text is None:
+        raise HTTPException(status_code=404, detail="No such question")
+    if body.speak:
+        if not voice_on():
+            raise HTTPException(status_code=409, detail="VOICE_SPEAKER isn't set")
+        voice_say_later(body.question, user)
+    return {"question": body.question, "text": text}
+
+
 if __name__ == "__main__":
     # `python relay.py tesla-register` / `tesla-link` / `tesla-telemetry-config` / `tesla-telemetry-send` /
     # `tesla-telemetry-status` / `parking-check` / `timeline-import FILE` / `timeline-pull` / `timeline-refine` /
@@ -19350,6 +19818,17 @@ if __name__ == "__main__":
         print(json.dumps(charging_summary(time.time(), True), indent=2, default=str))
     elif command == "tesla-telemetry-status":
         print(json.dumps(tesla_telemetry_status(), indent=2, default=str))
+    elif command == "voice-ask":
+        # `python relay.py voice-ask` lists the questions; `voice-ask ID [USER] [--speak]` answers one,
+        # as text, and says it on VOICE_SPEAKER too with --speak.
+        args = [a for a in sys.argv[2:] if a != "--speak"]
+        if not args:
+            print(json.dumps({"speaker": VOICE_SPEAKER or None, "questions": {q.id: q.name for q in voice_questions()}}, indent=2))
+        else:
+            user = args[1] if len(args) > 1 else VOICE_FITNESS_OWNER
+            print(voice_answer(args[0], user) or f"No question {args[0]!r}.")
+            if "--speak" in sys.argv:
+                voice_say(args[0], user)
     elif command == "parking-check":
         # The streets PARKING_FILE names as the relay found them, and where each car is by them now
         # (asking Tesla, a call per car). Pushes nothing.
@@ -19365,4 +19844,4 @@ if __name__ == "__main__":
         print(json.dumps(report, indent=2, default=str))
     else:
         sys.exit("usage: python relay.py tesla-register | tesla-link | tesla-telemetry-config | tesla-telemetry-send | tesla-telemetry-status"
-                 " | parking-check | rain-soon-test | timeline-import FILE | timeline-pull | timeline-refine | timeline-reread")
+                 " | parking-check | voice-ask [ID [USER] [--speak]] | rain-soon-test | timeline-import FILE | timeline-pull | timeline-refine | timeline-reread")
