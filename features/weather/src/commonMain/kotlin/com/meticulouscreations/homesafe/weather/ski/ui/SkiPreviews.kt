@@ -276,6 +276,18 @@ private fun SkiResortMeasuredSnowPreview() {
     SkiResortScreen(kirkwood.ref, state.copy(entries = state.entries + ("kirkwood" to kirkwood)), SkiActions(), null, PagePadding)
 }
 
+// The board where one resort gives no depth yet: its card says what a station nearby has measured.
+@Preview(name = "Ski tab, snow measured nearby", heightDp = 1400)
+@Composable
+private fun SkiBoardMeasuredSnowPreview() {
+    val state = SkiFixtures.state()
+    val kirkwood = state.entries.getValue("kirkwood").copy(
+        news = SkiResortNews(pageUrl = "https://www.kirkwood.com/", last24Cm = 0.0, baseDepthCm = 0.0, updatedAtEpochSeconds = SkiFixtures.NOW - 5_400),
+        measuredSnow = SkiMeasuredSnow("Carson Pass", 2_548.0, 25.4, SkiFixtures.NOW - 1_800),
+    )
+    SkiBackdrop { SkiScreen(state.copy(entries = state.entries + ("kirkwood" to kirkwood)), SkiActions(), PagePadding, {}, {}, {}, {}) }
+}
+
 @Preview(heightDp = 1500)
 @Composable
 private fun SkiResortListingPreview() {

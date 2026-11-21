@@ -23,6 +23,7 @@ import com.meticulouscreations.homesafe.weather.ski.domain.SkiResortNews
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiResortPrices
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiResortRef
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiSnowDay
+import com.meticulouscreations.homesafe.weather.ski.domain.SkiSnowOnGround
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiTicketPrice
 import homesafe.shared.generated.resources.Res
 import homesafe.shared.generated.resources.ski_note_clear
@@ -567,5 +568,24 @@ class SkiPlannerTest {
         val trace = measured.copy(depthCm = 2.54)
         assertNull(SkiEntry(ref("kirkwood"), news = news, measuredSnow = stale).measuredDepth(now))
         assertNull(SkiEntry(ref("kirkwood"), news = news, measuredSnow = trace).measuredDepth(now))
+    }
+
+    @Test
+    fun snowOnGroundIsTheResortsBaseAndTop() {
+        val entry = SkiEntry(ref("kirkwood"), news = news.copy(baseDepthCm = 45.0, summitDepthCm = 90.0), measuredSnow = measured)
+        assertEquals(SkiSnowOnGround(baseCm = 45.0, topCm = 90.0), entry.snowOnGround(now))
+    }
+
+    @Test
+    fun snowOnGroundWithOnlyASummitDepthShowsThatOne() {
+        val entry = SkiEntry(ref("kirkwood"), news = news.copy(baseDepthCm = 0.0, summitDepthCm = 60.0))
+        assertEquals(SkiSnowOnGround(baseCm = 60.0), entry.snowOnGround(now))
+    }
+
+    @Test
+    fun snowOnGroundFallsBackToTheStation() {
+        val entry = SkiEntry(ref("kirkwood"), news = news.copy(baseDepthCm = 0.0), measuredSnow = measured)
+        assertEquals(SkiSnowOnGround(baseCm = 25.4, station = measured), entry.snowOnGround(now))
+        assertNull(SkiEntry(ref("kirkwood"), news = news).snowOnGround(now))
     }
 }
