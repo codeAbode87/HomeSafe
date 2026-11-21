@@ -312,6 +312,14 @@ internal fun com.meticulouscreations.homesafe.weather.ski.ui.SkiStat(label: kotl
     - color: STABLE (marked @Stable or @Immutable)
 
 @Composable
+private fun com.meticulouscreations.homesafe.weather.ski.ui.SnowOnGroundLine(view: com.meticulouscreations.homesafe.weather.ski.domain.SkiDayView, now: kotlin.Long): kotlin.Unit
+  skippable: true
+  restartable: true
+  params:
+    - view: STABLE (marked @Stable or @Immutable)
+    - now: STABLE (primitive type)
+
+@Composable
 private fun com.meticulouscreations.homesafe.weather.ski.ui.Stats(view: com.meticulouscreations.homesafe.weather.ski.domain.SkiDayView, now: kotlin.Long): kotlin.Unit
   skippable: true
   restartable: true
