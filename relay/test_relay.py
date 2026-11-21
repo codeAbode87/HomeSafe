@@ -12879,9 +12879,8 @@ class VoiceWordsTest(unittest.TestCase):
     def test_savings(self):
         ally = {"name": "Ally Savings", "balance": 12345.67, "updated": self.NOW - 3600}
         marcus = {"name": "Marcus Online Savings", "balance": 2654.4, "updated": self.NOW - 3600}
-        self.assertEqual("There's $12,346 in Ally Savings.", relay.voice_savings_text([ally], self.NOW))
-        self.assertEqual("There's $15,000 in savings: $12,346 in Ally Savings and $2,654 in Marcus Online Savings.",
-                         relay.voice_savings_text([ally, marcus], self.NOW))
+        self.assertEqual("There's $12,346 in savings.", relay.voice_savings_text([ally], self.NOW))
+        self.assertEqual("There's $15,000 in savings.", relay.voice_savings_text([ally, marcus], self.NOW), "the total, not each account")
         old = dict(marcus, updated=self.NOW - 3 * 86400)
         self.assertTrue(relay.voice_savings_text([ally, old], self.NOW).endswith(" The bank last reported 3 days ago."))
         self.assertEqual("I don't see a savings account among the linked banks.", relay.voice_savings_text([], self.NOW))

@@ -22,7 +22,7 @@ side; relay.py, "Google Home") can list devices, though, and a scene is a device
 | Question | Scene | What it reads |
 | --- | --- | --- |
 | How far away is Sarah? | *Sarah's distance* | Tesla: asks once (at most once a minute, never waking the car), else the last fix the Cars page has; distance straight from home, driving or parked, the time if the fix is over 15 minutes old, and the arrival time from the car's navigation while it streams |
-| How much is in savings? | *Savings balance* | Plaid's depository accounts of subtype savings or money market, from the last bank sync, with how old it is if over a day |
+| How much is in savings? | *Savings balance* | the total of Plaid's depository accounts of subtype savings or money market, from the last bank sync, with how old it is if over a day; the accounts aren't named one by one |
 | What's today's workout? | *Today's workout* | the training log on the relay of the login that linked Google Home (or `VOICE_FITNESS_OWNER`): whichever of chest, back and legs has waited longest, as the Fitness app's Today tab picks it; one under way or already done today comes first |
 
 A person gets a distance question for each Tesla in `TESLA_CARS` named for its owner
