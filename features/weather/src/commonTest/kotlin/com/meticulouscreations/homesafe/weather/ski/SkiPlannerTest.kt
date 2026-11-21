@@ -12,7 +12,6 @@ import com.meticulouscreations.homesafe.weather.ski.domain.SkiEntry
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiForecast
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiForecastDay
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiMeasuredSnow
-import com.meticulouscreations.homesafe.weather.ski.domain.SkiSnowOnGround
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiNote
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiOpenState
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiPass
@@ -24,6 +23,7 @@ import com.meticulouscreations.homesafe.weather.ski.domain.SkiResortNews
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiResortPrices
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiResortRef
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiSnowDay
+import com.meticulouscreations.homesafe.weather.ski.domain.SkiSnowOnGround
 import com.meticulouscreations.homesafe.weather.ski.domain.SkiTicketPrice
 import homesafe.shared.generated.resources.Res
 import homesafe.shared.generated.resources.ski_note_clear
