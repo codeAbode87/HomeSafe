@@ -19481,18 +19481,14 @@ def voice_distance_text(person: str, last: dict[str, Any] | None, live: dict[str
 
 def voice_savings_text(accounts: list[dict[str, Any]], now: float) -> str:
     """
-    What's in savings: the total, and each account when there's more than one. `accounts` are
-    {"name", "balance", "updated"}; balances older than a day are said as such.
+    What's in savings: the total of every savings account, without naming them (eight of them
+    took too long to say). `accounts` are {"name", "balance", "updated"}; balances older than a
+    day are said as such.
     """
     held = [a for a in accounts if a.get("balance") is not None]
     if not held:
         return "I don't see a savings account among the linked banks."
-    total = sum(float(a["balance"]) for a in held)
-    if len(held) == 1:
-        text = f"There's {voice_dollars(total)} in {held[0]['name']}."
-    else:
-        parts = [f"{voice_dollars(float(a['balance']))} in {a['name']}" for a in held]
-        text = f"There's {voice_dollars(total)} in savings: {', '.join(parts[:-1])} and {parts[-1]}."
+    text = f"There's {voice_dollars(sum(float(a['balance']) for a in held))} in savings."
     oldest = min(float(a.get("updated") or 0) for a in held)
     if oldest and now - oldest > VOICE_BALANCE_STALE_SECONDS:
         days = max(1, int((now - oldest) // 86400))
