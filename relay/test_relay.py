@@ -12820,3 +12820,201 @@ class SkiTickTest(_ScratchDb):
         """The fields a wish has: public facts about a resort, and the phone's own switches."""
         self.assertEqual({"slug", "name", "lat", "lng", "summit_m", "state", "as_of", "opens", "closes"}, set(relay.SkiResortWish.__annotations__))
         self.assertEqual({"snow", "fresh", "chains", "imperial", "trip_day", "resorts"}, set(relay.SkiWishes.__annotations__))
+
+
+# A made-up home for the voice tests, and a mile north of it.
+VOICE_HOME = {"lat": 37.0, "lng": -122.0, "radius_m": 150}
+MILE_LAT = 1609.344 / 111_195
+
+
+class VoiceWordsTest(unittest.TestCase):
+    """How the speakers' answers are worded (relay.py, "voice questions")."""
+
+    NOW = 1_800_014_400.0  # noon UTC, 4 AM in Los Angeles
+    UTC = None
+
+    def fix(self, miles, age=60, moving=False):
+        return {"lat": VOICE_HOME["lat"] + miles * MILE_LAT, "lng": VOICE_HOME["lng"], "at": self.NOW - age, "moving": moving}
+
+    def distance(self, last, live=None, home=VOICE_HOME):
+        return relay.voice_distance_text("Sarah", last, live, home, self.NOW, None)
+
+    def test_miles_and_minutes_as_theyre_said(self):
+        self.assertEqual("less than a quarter of a mile", relay.voice_miles(200))
+        self.assertEqual("about half a mile", relay.voice_miles(800))
+        self.assertEqual("about a mile", relay.voice_miles(1700))
+        self.assertEqual("about 12 miles", relay.voice_miles(12.3 * 1609.344))
+        self.assertEqual("about 1,203 miles", relay.voice_miles(1203 * 1609.344))
+        self.assertEqual("a minute", relay.voice_minutes(0.4))
+        self.assertEqual("18 minutes", relay.voice_minutes(18.2))
+        self.assertEqual("an hour", relay.voice_minutes(60))
+        self.assertEqual("an hour and 5 minutes", relay.voice_minutes(65))
+        self.assertEqual("2 hours and a minute", relay.voice_minutes(121))
+
+    def test_at_home(self):
+        self.assertEqual("Sarah's car is at home.", self.distance(self.fix(0.05)))
+
+    def test_parked_away(self):
+        self.assertEqual("Sarah's car is parked about 12 miles from home.", self.distance(self.fix(12)))
+
+    def test_an_old_fix_says_when_it_is_from(self):
+        self.assertEqual("Sarah's car is parked about 12 miles from home, as of 10:00 AM UTC.", self.distance(self.fix(12, age=7200)))
+        self.assertEqual("Sarah's car is parked about 12 miles from home, as of 10:00 AM UTC.",
+                         self.distance(self.fix(12, age=7200, moving=True)), "a car that was moving two hours ago has stopped somewhere")
+
+    def test_driving(self):
+        self.assertEqual("Sarah is driving, about 8 miles from home.", self.distance(self.fix(8, moving=True)))
+        live = {"connected": True, "minutes_to_arrival": 17.6, "destination": "Home"}
+        self.assertEqual("Sarah is driving, about 8 miles away, and will be home in 18 minutes.", self.distance(self.fix(8, moving=True), live))
+        live = {"connected": True, "minutes_to_arrival": 65, "destination": "Costco Wholesale"}
+        self.assertEqual("Sarah is driving, about 8 miles from home, and will get to Costco Wholesale in an hour and 5 minutes.",
+                         self.distance(self.fix(8, moving=True), live))
+        live["connected"] = False
+        self.assertEqual("Sarah is driving, about 8 miles from home.", self.distance(self.fix(8, moving=True), live), "a route only from a live stream")
+
+    def test_what_it_cant_say(self):
+        self.assertEqual("I don't know where Sarah's car is right now.", self.distance(None))
+        self.assertIn("home address isn't set", self.distance(self.fix(3), home=None))
+
+    def test_savings(self):
+        ally = {"name": "Ally Savings", "balance": 12345.67, "updated": self.NOW - 3600}
+        marcus = {"name": "Marcus Online Savings", "balance": 2654.4, "updated": self.NOW - 3600}
+        self.assertEqual("There's $12,346 in Ally Savings.", relay.voice_savings_text([ally], self.NOW))
+        self.assertEqual("There's $15,000 in savings: $12,346 in Ally Savings and $2,654 in Marcus Online Savings.",
+                         relay.voice_savings_text([ally, marcus], self.NOW))
+        old = dict(marcus, updated=self.NOW - 3 * 86400)
+        self.assertTrue(relay.voice_savings_text([ally, old], self.NOW).endswith(" The bank last reported 3 days ago."))
+        self.assertEqual("I don't see a savings account among the linked banks.", relay.voice_savings_text([], self.NOW))
+        self.assertEqual("I don't see a savings account among the linked banks.", relay.voice_savings_text([dict(ally, balance=None)], self.NOW))
+
+    def workout(self, focus, days_ago, hours=1, done=True):
+        start = self.NOW - days_ago * 86400 - hours * 3600
+        return {"focus": focus, "start": start, "end": start + 3600 if done else None}
+
+    def test_the_workout_is_whichever_main_day_waited_longest(self):
+        log = [self.workout("CHEST", 2), self.workout("BACK", 5), self.workout("LEGS", 3), self.workout("ARMS", 9)]
+        self.assertEqual("Today is back day. You last trained back 5 days ago.", relay.voice_workout_text(log, self.NOW, None))
+        log.append(self.workout("BACK", 1))
+        self.assertEqual("Today is legs day. You last trained legs 3 days ago.", relay.voice_workout_text(log, self.NOW, None))
+
+    def test_a_main_day_never_done_comes_first(self):
+        log = [self.workout("CHEST", 2), self.workout("BACK", 5)]
+        self.assertEqual("Today is legs day. You haven't logged a legs workout yet.", relay.voice_workout_text(log, self.NOW, None))
+        self.assertEqual("There's nothing in your training log yet, so start with chest.", relay.voice_workout_text([], self.NOW, None))
+
+    def test_done_today_or_under_way(self):
+        log = [self.workout("CHEST", 0), self.workout("BACK", 5), self.workout("LEGS", 3)]
+        self.assertEqual("You've already trained chest today. Next up is back.", relay.voice_workout_text(log, self.NOW, None))
+        log.append(self.workout("BACK", 0, hours=0.5, done=False))
+        self.assertEqual("You're in the middle of a back workout.", relay.voice_workout_text(log, self.NOW, None))
+        stale = [self.workout("BACK", 1, done=False), self.workout("CHEST", 2), self.workout("LEGS", 3)]
+        self.assertEqual("Today is legs day. You last trained legs 3 days ago.", relay.voice_workout_text(stale, self.NOW, None),
+                         "one begun yesterday and never finished isn't under way")
+
+    def test_days_ago_by_the_calendar(self):
+        from zoneinfo import ZoneInfo
+
+        la = ZoneInfo("America/Los_Angeles")
+        self.assertEqual("earlier today", relay.voice_days_ago(self.NOW - 3600, self.NOW, la))
+        self.assertEqual("yesterday", relay.voice_days_ago(self.NOW - 86400, self.NOW, la))
+        self.assertEqual("4 days ago", relay.voice_days_ago(self.NOW - 4 * 86400, self.NOW, la))
+
+    def test_whose_distance_each_car_is(self):
+        cars = {"sarahs_car": "VIN1", "andrews_tesla": "VIN2", "spare": "VIN3"}
+        self.assertEqual({"Sarah": "sarahs_car", "Andrew": "andrews_tesla"}, relay.voice_people({}, cars))
+        self.assertEqual({"Mom": "sarahs_car"}, relay.voice_people({"Mom": "sarahs_car", "Ghost": "nope"}, cars))
+
+
+class VoiceGoogleTest(unittest.TestCase):
+    """The questions reach Google Home as scenes on the camera link."""
+
+    SCENES = {"voice.workout": "Today's workout"}
+
+    def test_sync_lists_the_questions_as_scenes(self):
+        devices = relay.google_sync("r1", GoogleHomeTest.CAMERAS, self.SCENES)["payload"]["devices"]
+        self.assertEqual(["amcrest_1", "hikvision_1", "voice.workout"], [d["id"] for d in devices])
+        scene = devices[-1]
+        self.assertEqual("action.devices.types.SCENE", scene["type"])
+        self.assertEqual(["action.devices.traits.Scene"], scene["traits"])
+        self.assertEqual("Today's workout", scene["name"]["name"])
+        self.assertFalse(scene["attributes"]["sceneReversible"])
+        self.assertEqual(2, len(relay.google_sync("r1", GoogleHomeTest.CAMERAS)["payload"]["devices"]), "none while voice is off")
+
+    def test_query(self):
+        states = relay.google_query("r1", {"devices": [{"id": "voice.workout"}, {"id": "voice.gone"}]}, {}, self.SCENES)["payload"]["devices"]
+        self.assertTrue(states["voice.workout"]["online"])
+        self.assertEqual("deviceNotFound", states["voice.gone"]["errorCode"])
+
+    def execute(self, command, params=None):
+        asked = []
+        payload = {"commands": [{"devices": [{"id": "voice.workout"}], "execution": [{"command": command, "params": params or {}}]}]}
+        result = relay.google_execute("r1", payload, GoogleHomeTest.CAMERAS, lambda cam: "t", self.SCENES, asked.append)
+        return result["payload"]["commands"][0], asked
+
+    def test_activating_a_scene_asks_the_question(self):
+        result, asked = self.execute(relay.GOOGLE_ACTIVATE_SCENE, {"deactivate": False})
+        self.assertEqual("SUCCESS", result["status"])
+        self.assertEqual(["voice.workout"], asked)
+
+    def test_nothing_else_does(self):
+        for command, params in ((relay.GOOGLE_ACTIVATE_SCENE, {"deactivate": True}), (relay.GET_CAMERA_STREAM, {})):
+            result, asked = self.execute(command, params)
+            self.assertEqual("functionNotSupported", result["errorCode"])
+            self.assertEqual([], asked)
+
+
+class VoiceSpeechTest(unittest.TestCase):
+    def test_pcm_becomes_a_wav(self):
+        import io as _io
+        import wave
+
+        wav = relay.voice_wav(b"\x00\x01" * 2400, relay.voice_pcm_rate("audio/L16;codec=pcm;rate=24000"))
+        with wave.open(_io.BytesIO(wav)) as w:
+            self.assertEqual((1, 2, 24000, 2400), (w.getnchannels(), w.getsampwidth(), w.getframerate(), w.getnframes()))
+        self.assertEqual(24000, relay.voice_pcm_rate("audio/L16"))
+        self.assertEqual(16000, relay.voice_pcm_rate("audio/L16;rate=16000"))
+
+    def test_translate_gets_short_pieces(self):
+        text = "There's $15,000 in savings: " + ", ".join(f"${n},000 in Account number {n}" for n in range(1, 15)) + "."
+        chunks = relay.voice_chunks(text)
+        self.assertGreater(len(chunks), 1)
+        self.assertTrue(all(len(c) <= 190 for c in chunks))
+        self.assertEqual(text, " ".join(chunks))
+
+    def test_an_answer_can_be_fetched_for_a_few_minutes(self):
+        token = relay.voice_hold(b"mp3", "audio/mpeg", now=1000.0)
+        self.assertEqual((b"mp3", "audio/mpeg"), relay.voice_held(token, now=1000.0 + relay.VOICE_AUDIO_SECONDS))
+        self.assertIsNone(relay.voice_held(token, now=1001.0 + relay.VOICE_AUDIO_SECONDS))
+        self.assertIsNone(relay.voice_held("guess"))
+
+
+class VoiceDataTest(_ScratchDb):
+    """The questions read the relay's own tables."""
+
+    def test_savings_accounts(self):
+        c = relay.CONN
+        c.execute("INSERT INTO plaid_items (item_id, institution) VALUES ('i1', 'Ally Bank')")
+        rows = [("a1", "i1", "Savings", "depository", "savings", 1200.0, 1100.0),
+                ("a2", "i1", "Ally Bank Money Market", "depository", "money market", None, 500.0),
+                ("a3", "i1", "Checking", "depository", "checking", 9999.0, 9999.0),
+                ("a4", "i1", "Card", "credit", "credit card", 300.0, None)]
+        for account_id, item, name, kind, subtype, current, available in rows:
+            c.execute("INSERT INTO plaid_accounts (account_id, item_id, name, type, subtype, current, available, updated) VALUES (?,?,?,?,?,?,?,?)",
+                      (account_id, item, name, kind, subtype, current, available, 1.0))
+        c.commit()
+        accounts = relay.voice_savings_accounts()
+        self.assertEqual({"Ally Bank Savings": 1200.0, "Ally Bank Money Market": 500.0}, {a["name"]: a["balance"] for a in accounts})
+
+    def test_workouts_are_the_owners_own(self):
+        c = relay.CONN
+        rows = [("andrew", "workout", "1", json.dumps({"focus": "CHEST", "start": 10, "end": 20})),
+                ("andrew", "workout", "2", None),
+                ("andrew", "set", "3", json.dumps({"weight": 100})),
+                ("sarah", "workout", "4", json.dumps({"focus": "LEGS", "start": 30, "end": None}))]
+        for owner, kind, row_id, data in rows:
+            c.execute("INSERT INTO fitness_rows VALUES (?,?,?,?,?,?)", (owner, kind, row_id, 1, data, 1.0))
+        c.commit()
+        self.assertEqual([{"focus": "CHEST", "start": 10, "end": 20}], relay.voice_workouts("andrew"))
+
+    def test_an_unknown_question_has_no_answer(self):
+        self.assertIsNone(relay.voice_answer("voice.nope", "andrew"))

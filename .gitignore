@@ -30,6 +30,7 @@ relay/plaid.env
 relay/tesla.env
 relay/timeline.env
 relay/apns.env
+relay/voice.env
 # Gmail refresh tokens for the Amazon orders (relay/gmail_link.py writes it), and the OAuth client it came from
 relay/amazon.env
 relay/client_secret*.json

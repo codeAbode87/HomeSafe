@@ -92,6 +92,10 @@ services:
       # itself is data/apns-key.p8. Without them the relay can't push to an iPhone.
       - path: apns.env
         required: false
+      # VOICE_SPEAKER and GEMINI_API_KEY (relay.py, "voice questions"; docs/voice.md), only on the
+      # box. Without the first the speakers' questions aren't offered to Google Home.
+      - path: voice.env
+        required: false
     volumes:
       - ./fcm-service-account.json:/secrets/fcm.json:ro
       # relay.db, timeline.db, the vehicle memory's picture of each household car
