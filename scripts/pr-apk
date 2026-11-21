@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# Pulls a pull request's preview APK (the "Preview APK" workflow's build, see
+# .github/workflows/preview-apk.yml) and opens it in Greenroom.
+#
+#   scripts/pr-apk              # this branch's pull request
+#   scripts/pr-apk 357          # pull request 357
+#   scripts/pr-apk 357 --build  # label it preview-apk if it isn't, and wait for the build
+#   scripts/pr-apk 357 --no-open
+#
+# The workflow only builds for a pull request labelled preview-apk, and builds again on each push.
+# This takes the build of the PR's current head, waiting for one that's running; without one it
+# says so (or, with --build, adds the label and waits). The APK lands in build/pr-apks/.
+set -euo pipefail
+
+build=false
+open_it=true
+pr=
+for arg in "$@"; do
+  case "$arg" in
+    --build) build=true ;;
+    --no-open) open_it=false ;;
+    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
+    *) pr=$arg ;;
+  esac
+done
+
+if [[ -z "$pr" ]]; then
+  pr=$(gh pr view --json number --jq .number 2>/dev/null) || { echo "No pull request for this branch; pass its number." >&2; exit 1; }
+fi
+
+head=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
+labelled=$(gh pr view "$pr" --json labels --jq '[.labels[].name] | index("preview-apk") != null')
+tag="preview-pr$pr"
+
+release_sha() { gh release view "$tag" --json targetCommitish --jq .targetCommitish 2>/dev/null || true; }
+
+# The newest preview run for the head, if any: "<id> <status>".
+head_run() {
+  gh run list --workflow preview-apk.yml --commit "$head" --limit 1 \
+    --json databaseId,status --jq '.[0] | select(.) | "\(.databaseId) \(.status)"'
+}
+
+if [[ "$(release_sha)" != "$head" ]]; then
+  if [[ "$labelled" != true ]]; then
+    if ! $build; then
+      echo "PR #$pr isn't labelled preview-apk, so nothing builds an APK for it." >&2
+      echo "Run again with --build to label it and wait for the build (about 10-15 min)." >&2
+      exit 1
+    fi
+    echo "Labelling PR #$pr preview-apk..."
+    gh pr edit "$pr" --add-label preview-apk >/dev/null
+  fi
+
+  run=$(head_run)
+  if [[ -z "$run" && ( "$labelled" != true ) ]]; then
+    echo "Waiting for the build to start..."
+    for _ in $(seq 1 30); do
+      sleep 4
+      run=$(head_run)
+      [[ -n "$run" ]] && break
+    done
+  fi
+
+  if [[ -n "$run" && "${run#* }" != completed ]]; then
+    echo "Waiting for the build of ${head:0:7} (run ${run%% *})..."
+    gh run watch "${run%% *}" --exit-status --interval 20 >/dev/null || {
+      echo "The build failed: gh run view ${run%% *} --log-failed" >&2
+      exit 1
+    }
+  fi
+
+  have=$(release_sha)
+  if [[ -z "$have" ]]; then
+    echo "No preview APK for PR #$pr yet." >&2
+    exit 1
+  elif [[ "$have" != "$head" ]]; then
+    echo "Note: the newest APK is from ${have:0:7}, not the PR's head ${head:0:7} (no build for the head)." >&2
+  fi
+fi
+
+sha=$(release_sha)
+dest="build/pr-apks"
+mkdir -p "$dest"
+apk="$dest/HomeSafe-Preview-pr$pr-${sha:0:7}.apk"
+if [[ ! -f "$apk" ]]; then
+  tmp=$(mktemp -d)
+  gh release download "$tag" --pattern '*.apk' --dir "$tmp"
+  mv "$tmp"/*.apk "$apk"
+  rmdir "$tmp"
+fi
+echo "$apk"
+
+if $open_it; then
+  open -a Greenroom "$apk"
+fi
