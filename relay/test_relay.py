@@ -12962,6 +12962,54 @@ class VoiceGoogleTest(unittest.TestCase):
             self.assertEqual([], asked)
 
 
+class GoogleRequestSyncTest(_ScratchDb):
+    """The relay asks Google Home to sync when what it lists changes, and only then."""
+
+    NAMES = _ScratchDb.NAMES + ("GOOGLE_CLIENT_ID", "GOOGLE_SYNC_ACCOUNT", "GOOGLE_STREAMS", "voice_scenes")
+
+    class Session:
+        def __init__(self, status=200):
+            self.status, self.posts = status, []
+
+        def __call__(self):
+            return self
+
+        def post(self, url, json=None, timeout=None):
+            self.posts.append((url, json))
+            return type("R", (), {"status_code": self.status, "text": "{}"})()
+
+    def setUp(self):
+        super().setUp()
+        relay.GOOGLE_CLIENT_ID, relay.GOOGLE_SYNC_ACCOUNT = "client", "sync@percysafe.iam.gserviceaccount.com"
+        relay.GOOGLE_STREAMS = {"amcrest_1": "amcrest_1_google"}
+        self.scenes = {"voice.workout": "Today's workout"}
+        relay.voice_scenes = lambda: self.scenes
+
+    def test_asks_once_until_something_changes(self):
+        google = self.Session()
+        self.assertEqual("asked", relay.google_request_sync(session_for=google))
+        self.assertEqual([(relay.GOOGLE_SYNC_URL, {"agentUserId": "homesafe", "async": True})], google.posts)
+        self.assertEqual("unchanged", relay.google_request_sync(session_for=google))
+        self.scenes = {**self.scenes, "voice.savings": "Savings balance"}
+        self.assertEqual("asked", relay.google_request_sync(session_for=google))
+        self.assertEqual("asked", relay.google_request_sync(force=True, session_for=google))
+        self.assertEqual(3, len(google.posts))
+
+    def test_a_refusal_is_asked_again_next_time(self):
+        self.assertEqual("failed", relay.google_request_sync(session_for=self.Session(404)))
+        self.assertEqual("asked", relay.google_request_sync(session_for=self.Session()))
+
+    def test_off_without_the_account(self):
+        relay.GOOGLE_SYNC_ACCOUNT = ""
+        google = self.Session()
+        self.assertEqual("off", relay.google_request_sync(session_for=google))
+        self.assertEqual([], google.posts)
+
+    def test_digest_ignores_order(self):
+        self.assertEqual(relay.google_devices_digest(["b", "a"], {"x": "X", "y": "Y"}), relay.google_devices_digest(["a", "b"], {"y": "Y", "x": "X"}))
+        self.assertNotEqual(relay.google_devices_digest(["a"], {"x": "X"}), relay.google_devices_digest(["a"], {"x": "Renamed"}))
+
+
 class VoiceSpeechTest(unittest.TestCase):
     def test_pcm_becomes_a_wav(self):
         import io as _io

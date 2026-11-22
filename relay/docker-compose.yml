@@ -43,6 +43,9 @@ services:
       # go2rtc a display's stream comes from.
       GOOGLE_PUBLIC_URL: https://debian-surveillance.tail4c441a.ts.net
       GO2RTC_URL: http://127.0.0.1:1984
+      # The integration project's account the relay borrows to ask Google Home to sync when the
+      # cameras or the voice questions change (relay.py, GOOGLE_SYNC_ACCOUNT; docs/voice.md).
+      GOOGLE_SYNC_ACCOUNT: homesafe-sync@percysafe.iam.gserviceaccount.com
       # The cameras Google may show, each with a go2rtc stream a display can play: Frigate's go2rtc
       # config makes each camera a `*_google` stream on the GPU, 720p Constrained Baseline H.264
       # (inside Google's 480p-1080p, and the only profile a display offers) with the camera's audio.

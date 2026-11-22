@@ -45,8 +45,23 @@ A person gets a distance question for each Tesla in `TESLA_CARS` named for its o
    ([key-vault.md](key-vault.md)), which are sealed against the relay. Without a key, answers are
    spoken in Google Translate's voice, which needs none.
 
-3. **Restart the relay** (`relay/deploy.sh`), then say *"Hey Google, sync my devices"*. The scenes
-   appear under the HomeSafe link in the Google Home app.
+3. **Restart the relay** (`relay/deploy.sh`). When it starts with a different set of cameras or
+   questions from the last time, it asks Google to sync (Home Graph `requestSync`), and the scenes
+   appear under the HomeSafe link in the Google Home app. *"Hey Google, sync my devices"* isn't
+   needed, and didn't reach the relay when tried. `python relay.py google-sync` asks again by hand.
+
+   The request has to come from an account of the integration's project (`percysafe`), and the
+   relay's key is the Firebase project's, so the relay borrows one, set up once (2026-11-21) as:
+
+   ```bash
+   gcloud services enable homegraph.googleapis.com --project percysafe
+   gcloud iam service-accounts create homesafe-sync --project percysafe
+   gcloud iam service-accounts add-iam-policy-binding homesafe-sync@percysafe.iam.gserviceaccount.com \
+     --project percysafe --role roles/iam.serviceAccountTokenCreator \
+     --member serviceAccount:homesafe-relay@homesafe-percysafe.iam.gserviceaccount.com
+   ```
+
+   No key is made for it. `GOOGLE_SYNC_ACCOUNT` in `docker-compose.yml` names it.
 
 4. **The automations.** Google Home app → Automations → Add → Household. Starter: *When I say to
    Google Assistant* → "How far away is Sarah" (add other wordings: "Where is Sarah"). Action:
@@ -68,8 +83,8 @@ A person gets a distance question for each Tesla in `TESLA_CARS` named for its o
 
 A function that returns the sentence to say, `(user, now) -> str`, and a `VoiceQuestion` for it in
 `voice_questions()`, with an id under `voice.` and the scene's name. Keep the wording in a pure
-`voice_*_text` function and test it in `relay/test_relay.py` (`VoiceWordsTest`). After deploying,
-"sync my devices" again and add its automation.
+`voice_*_text` function and test it in `relay/test_relay.py` (`VoiceWordsTest`). Deploying makes Google sync, so the scene
+appears by itself; then add its automation.
 
 ## What to know
 

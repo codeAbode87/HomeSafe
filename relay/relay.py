@@ -4902,6 +4902,7 @@ def startup() -> None:
     threading.Thread(target=ski_forever, name="ski-notices", daemon=True).start()
     if NEST_PRIMER:
         threading.Thread(target=nest_primer_forever, name="nest-primer", daemon=True).start()
+    threading.Thread(target=google_request_sync, name="google-sync", daemon=True).start()
     log.info("relay up: frigate=%s project=%s poll=%ss", FRIGATE, PROJECT, POLL_SECONDS)
 
 
@@ -8398,6 +8399,58 @@ def google_sync(request_id: str, cameras: dict[str, str], scenes: dict[str, str]
         }
         for scene, name in (scenes or {}).items()
     ]}}
+
+
+# Google asks for SYNC only when an account is linked or someone says "sync my devices", and the
+# second didn't reach the relay once (2026-11-21), so a question added on the relay never showed in
+# Google Home. Home Graph's requestSync makes Google ask now. It has to come from a service account
+# of the integration's own project (GOOGLE_PROJECT_ID), and the relay's key is the Firebase
+# project's, so the relay borrows that account (GOOGLE_SYNC_ACCOUNT) through IAM: the relay's
+# account holds Service Account Token Creator on it, and no second key exists. docs/voice.md, Setup.
+GOOGLE_SYNC_ACCOUNT = os.environ.get("GOOGLE_SYNC_ACCOUNT", "")
+GOOGLE_SYNC_URL = "https://homegraph.googleapis.com/v1/devices:requestSync"
+GOOGLE_SYNCED_KEY = "google_synced_devices"
+_google_sync_lock = threading.Lock()
+
+
+def google_devices_digest(cameras: list[str], scenes: dict[str, str]) -> str:
+    """What Google Home is meant to list, as one value: it changes when a camera or a question does."""
+    return hashlib.sha256(json.dumps([sorted(cameras), sorted(scenes.items())]).encode()).hexdigest()
+
+
+def google_sync_session() -> AuthorizedSession:
+    from google.auth import impersonated_credentials
+
+    source = service_account.Credentials.from_service_account_file(KEY_FILE, scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    return AuthorizedSession(impersonated_credentials.Credentials(
+        source_credentials=source, target_principal=GOOGLE_SYNC_ACCOUNT,
+        target_scopes=["https://www.googleapis.com/auth/homegraph"], lifetime=600,
+    ))
+
+
+def google_request_sync(force: bool = False, session_for: Callable[[], Any] = google_sync_session) -> str:
+    """
+    Asks Google to SYNC again when what it should list has changed since the last time it was asked
+    (or always, with `force`); says what happened. Google's SYNC then reaches /google/fulfillment.
+    """
+    if not (GOOGLE_CLIENT_ID and GOOGLE_SYNC_ACCOUNT):
+        return "off"
+    with _google_sync_lock:
+        digest = google_devices_digest(list(GOOGLE_STREAMS), voice_scenes())
+        if not force and state_get(GOOGLE_SYNCED_KEY) == digest:
+            return "unchanged"
+        try:
+            r = session_for().post(GOOGLE_SYNC_URL, json={"agentUserId": GOOGLE_AGENT_USER, "async": True}, timeout=20)
+        except Exception as e:
+            log.warning("google sync: couldn't ask Google: %s", e)
+            return "failed"
+        if r.status_code != 200:
+            # 404: no Google account has linked HomeSafe yet; that link brings its own SYNC.
+            log.warning("google sync: Google said %s: %s", r.status_code, r.text[:300])
+            return "failed"
+        state_set(GOOGLE_SYNCED_KEY, digest)
+        log.info("google sync: asked Google to sync")
+        return "asked"
 
 
 def google_query(request_id: str, payload: dict[str, Any], cameras: dict[str, str], scenes: dict[str, str] | None = None) -> dict[str, Any]:
@@ -19814,6 +19867,9 @@ if __name__ == "__main__":
         print(json.dumps(charging_summary(time.time(), True), indent=2, default=str))
     elif command == "tesla-telemetry-status":
         print(json.dumps(tesla_telemetry_status(), indent=2, default=str))
+    elif command == "google-sync":
+        # Asks Google Home to list the cameras and questions again, changed or not.
+        print(google_request_sync(force=True))
     elif command == "voice-ask":
         # `python relay.py voice-ask` lists the questions; `voice-ask ID [USER] [--speak]` answers one,
         # as text, and says it on VOICE_SPEAKER too with --speak.
