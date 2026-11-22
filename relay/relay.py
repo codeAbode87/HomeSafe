@@ -19754,6 +19754,15 @@ def voice_cast(audio: bytes, mime: str, title: str) -> None:
         cast.media_controller.play_media(url, mime, title=title, stream_type="BUFFERED")
         cast.media_controller.block_until_active(timeout=15)
     finally:
+        # Each cast keeps a socket thread that reconnects through the browser's zeroconf whenever the
+        # speaker drops it. Left running after stop_discovery, it found the zeroconf stopped and
+        # retried at once, forever: the relay at 100% CPU and its log flooded (2026-11-22). The
+        # answer plays on once it has started: the speaker fetches the audio itself.
+        for cast in casts:
+            try:
+                cast.disconnect(timeout=5)
+            except Exception:
+                log.warning("voice: couldn't close the connection to %r", VOICE_SPEAKER, exc_info=True)
         browser.stop_discovery()
 
 
