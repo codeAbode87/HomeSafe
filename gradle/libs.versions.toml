@@ -25,7 +25,7 @@ material3 = "1.12.0-alpha03"
 material-icons-extended = "1.7.3"
 # Drag to reorder in lazy lists and grids (Calvin Liang), for the Home page's Arrange mode.
 reorderable = "3.1.0"
-metro = "1.5.2"
+metro = "1.5.0"
 navigation3 = "1.2.0"
 # Back as a gesture to animate with (NavigationBackHandler); the same dispatcher Navigation 3 feeds.
 navigationevent = "1.1.0"
