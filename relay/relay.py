@@ -19405,6 +19405,8 @@ VOICE_LANGUAGE = os.environ.get("VOICE_LANGUAGE", "en")
 RELAY_PORT = int(os.environ.get("RELAY_PORT", "8787"))
 # How long a spoken answer can be fetched for: the speaker fetches it at once, perhaps twice.
 VOICE_AUDIO_SECONDS = 300
+# The longest the relay stays connected to the speaker while an answer plays.
+VOICE_PLAY_SECONDS = 90
 # A car's whereabouts older than this are said with the time they're from.
 VOICE_FRESH_SECONDS = 900
 # The bank balances are said with how old they are once they're older than this.
@@ -19753,11 +19755,16 @@ def voice_cast(audio: bytes, mime: str, title: str) -> None:
         url = f"http://{voice_local_address(cast.cast_info.host)}:{RELAY_PORT}/voice/audio/{voice_hold(audio, mime)}"
         cast.media_controller.play_media(url, mime, title=title, stream_type="BUFFERED")
         cast.media_controller.block_until_active(timeout=15)
+        # The speaker's media app quits when its last sender leaves on purpose, cutting the answer off
+        # mid-word (2026-11-22), so stay until it has played.
+        deadline = time.time() + VOICE_PLAY_SECONDS
+        time.sleep(1)
+        while time.time() < deadline and cast.media_controller.status.player_state in ("PLAYING", "BUFFERING"):
+            time.sleep(0.5)
     finally:
         # Each cast keeps a socket thread that reconnects through the browser's zeroconf whenever the
         # speaker drops it. Left running after stop_discovery, it found the zeroconf stopped and
-        # retried at once, forever: the relay at 100% CPU and its log flooded (2026-11-22). The
-        # answer plays on once it has started: the speaker fetches the audio itself.
+        # retried at once, forever: the relay at 100% CPU and its log flooded (2026-11-22).
         for cast in casts:
             try:
                 cast.disconnect(timeout=5)
