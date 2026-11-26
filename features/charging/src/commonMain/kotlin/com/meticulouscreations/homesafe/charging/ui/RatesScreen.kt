@@ -67,6 +67,13 @@ internal fun RatesScreen(state: ChargingUiState, padding: PaddingValues, onChoos
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(padding).testTag("charging_rates"),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        ChargingCard(title = "OFF-PEAK TIP") {
+            Text(
+                "Scheduling home charging overnight avoids peak time-of-use rates.",
+                style = ChargingTheme.type.bodyStrong,
+                color = colors.home,
+            )
+        }
         if (summary.plans.isEmpty()) {
             ChargingCard { Text(stringResource(Res.string.charging_rates_none), style = ChargingTheme.type.body, color = colors.textMuted) }
         } else {

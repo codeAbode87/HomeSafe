@@ -29,7 +29,7 @@ fun AwaySettingsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
 
     SettingsPage(
         title = stringResource(Res.string.presence_title),
-        subtitle = stringResource(Res.string.settings_away_subtitle),
+        subtitle = "Manage household away mode, tracked phones, and automatic home-zone detection.",
         onBack = onBack,
         modifier = modifier,
     ) {

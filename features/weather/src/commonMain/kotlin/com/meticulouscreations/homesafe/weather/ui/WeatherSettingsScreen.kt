@@ -114,6 +114,14 @@ internal fun WeatherSettingsScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        SettingsGroup("WEATHER PREFERENCES") {
+            Text(
+                "Customize temperature units, forecast alerts, and sky motion.",
+                style = type.body,
+                color = colors.accent,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            )
+        }
         SettingsGroup(stringResource(Res.string.weather_settings_units)) {
             ChoiceRow(
                 stringResource(Res.string.weather_settings_temperature),
