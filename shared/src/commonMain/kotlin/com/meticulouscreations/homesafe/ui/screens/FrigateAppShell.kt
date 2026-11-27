@@ -184,6 +184,9 @@ class ShellNavigation(
     /** Whether the drawer the top bar's menu button opens is out. */
     var drawerOpen by mutableStateOf(false)
 
+    /** Whether the thumb-zone quick app switcher beside the bottom nav is open. */
+    var quickSwitcherOpen by mutableStateOf(false)
+
     /** The swipe across the shell that draws the drawer out by hand, and opens it when let go far enough. */
     val drawerPull = DrawerPull(onOpen = { drawerOpen = true })
 
@@ -227,6 +230,7 @@ class ShellNavigation(
         val requestedPackage = packageLink
         if (sidebar) {
             drawerOpen = false
+            quickSwitcherOpen = false
             val open = app.takeIf { appOpen }
             closeApp()
             appsInSidebar = true
@@ -366,6 +370,7 @@ class ShellNavigation(
         this.packageLink = packageLink.takeIf { which == InnerApp.PACKAGES }
         if (which != InnerApp.FITNESS) fitnessWorkoutAsked = false
         drawerOpen = false
+        quickSwitcherOpen = false
         // The app is a destination of its own in the sidebar: it reads what it was asked to show
         // ([financeTab], [weatherLink]) from here when it comes up.
         if (appsInSidebar) {
@@ -494,6 +499,7 @@ class ShellNavigation(
     fun showsBottomNav(tab: TopLevelRoute): Boolean =
         !appOpen &&
             !drawerOpen &&
+            !quickSwitcherOpen &&
             !showsFullScreenVideo(tab) &&
             !(tab == TopLevelRoute.Home && homeBackStack.lastOrNull().let { it is CarTaggingRoute || it is ClipEditorRoute || it is CameraFramingRoute })
 
@@ -569,6 +575,7 @@ class ShellNavigation(
     private fun openDetection(cameraName: String, startEpochSeconds: Double, eventId: String, tagCar: Boolean) {
         // A notification tap lands on the camera whatever was over the shell.
         drawerOpen = false
+        quickSwitcherOpen = false
         closeApp()
         val route = CameraDetailRoute(
             cameraName = cameraName,
@@ -593,6 +600,7 @@ class ShellNavigation(
      */
     fun openDoors() {
         drawerOpen = false
+        quickSwitcherOpen = false
         closeApp()
         // A second tap on a door notification, with the page already up, leaves it as it is.
         if (homeBackStack.lastOrNull() != DoorsHomeRoute) {
@@ -743,6 +751,7 @@ fun FrigateAppShell() {
             when (command) {
                 is ShellCommand.Go -> {
                     nav.drawerOpen = false
+                    nav.quickSwitcherOpen = false
                     nav.closeApp()
                     nav.selectTab(command.tab)
                 }
@@ -845,9 +854,10 @@ private fun ShellTabs(
         },
         selectedTab = nav.selectedTab,
         onSelectTab = nav::selectTab,
+        onOpenApps = if (sidebar) null else ({ nav.quickSwitcherOpen = true }),
         overlay = { ShellOverlays(nav, cardZoom, nav.selectedTab) },
         contentCovered = nav.appCovering,
-        contentObscured = nav.drawerOpen || nav.appOpen,
+        contentObscured = nav.drawerOpen || nav.quickSwitcherOpen || nav.appOpen,
         drawerPull = if (sidebar) null else nav.drawerPullOn(nav.selectedTab),
     ) {
         NavDisplay(
@@ -962,6 +972,15 @@ private fun TabContent(tab: TopLevelRoute, nav: ShellNavigation, cardZoom: Camer
 private fun ShellOverlays(nav: ShellNavigation, cardZoom: CameraCardZoomState, tab: TopLevelRoute) {
     ReturnToAppChip(nav, tab)
     CardZoomOverlay(nav, cardZoom)
+    QuickAppSwitcher(
+        open = nav.quickSwitcherOpen && !nav.appsInSidebar,
+        onOpenApp = { app, origin -> nav.openApp(app, origin, tab) },
+        onOpenDrawer = {
+            nav.quickSwitcherOpen = false
+            nav.drawerOpen = true
+        },
+        onClose = { nav.quickSwitcherOpen = false },
+    )
     LocalShellApps.current(nav, tab)
 }
 
@@ -1042,6 +1061,7 @@ internal fun ShellScaffold(
     contentObscured: Boolean = false,
     immersive: Boolean = false,
     drawerPull: DrawerPull? = null,
+    onOpenApps: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     // While an overlay covers the whole shell (the finance or weather app) the tab content isn't drawn at
@@ -1110,7 +1130,7 @@ internal fun ShellScaffold(
                     enter = fadeIn(tween(NAV_TRANSITION_MS, easing = LinearEasing)) + slideInVertically(tween(NAV_TRANSITION_MS, easing = NavEnterEasing)) { it / 2 },
                     exit = fadeOut(tween(NAV_TRANSITION_MS / 2, easing = LinearEasing)) + slideOutVertically(tween(NAV_TRANSITION_MS / 2)) { it / 2 },
                 ) {
-                    BottomNavBar(selected = selectedTab, onSelect = onSelectTab)
+                    BottomNavBar(selected = selectedTab, onSelect = onSelectTab, onOpenApps = onOpenApps)
                 }
 
                 // The same nav, stood on end beside the content, centred in the height the top
@@ -1124,7 +1144,7 @@ internal fun ShellScaffold(
                     enter = fadeIn(tween(NAV_TRANSITION_MS, easing = LinearEasing)) + slideInHorizontally(tween(NAV_TRANSITION_MS, easing = NavEnterEasing)) { -it / 2 },
                     exit = fadeOut(tween(NAV_TRANSITION_MS / 2, easing = LinearEasing)) + slideOutHorizontally(tween(NAV_TRANSITION_MS / 2)) { -it / 2 },
                 ) {
-                    NavRail(selected = selectedTab, onSelect = onSelectTab)
+                    NavRail(selected = selectedTab, onSelect = onSelectTab, onOpenApps = onOpenApps)
                 }
             }
         }
@@ -1148,6 +1168,7 @@ internal fun ShellSkeleton(onMenu: () -> Unit = {}) {
         topBar = { FrigateTopBar(activeConnection = null, appVersion = "", onMenu = onMenu) },
         selectedTab = TopLevelRoute.Home,
         onSelectTab = {},
+        onOpenApps = onMenu,
     ) {
         // The real home list in its loading state — the same composable Home draws — so the
         // hand-over into the live page changes nothing but the cards' contents.
@@ -1536,66 +1557,88 @@ private fun HomeTabNav(
 }
 
 @Composable
-private fun BottomNavBar(
+internal fun BottomNavBar(
     selected: TopLevelRoute,
     onSelect: (TopLevelRoute) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenApps: (() -> Unit)? = null,
 ) {
     Row(
         modifier = modifier
-            .widthIn(max = 400.dp)
-            .fillMaxWidth(0.9f)
-            // Held, the pill opens the assistant out of itself.
-            .assistantTrigger(LocalAssistant.current)
-            .background(LocalFrigateExtraColors.current.glassFill, CircleShape)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), CircleShape)
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
+            .widthIn(max = if (onOpenApps != null) 440.dp else 400.dp)
+            .fillMaxWidth(0.92f),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TOP_LEVEL_ROUTES.forEach { route ->
-            BottomNavItemView(
-                route = route,
-                isSelected = route == selected,
-                onClick = { onSelect(route) },
-            )
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                // Held, the pill opens the assistant out of itself.
+                .assistantTrigger(LocalAssistant.current)
+                .background(LocalFrigateExtraColors.current.glassFill, CircleShape)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), CircleShape)
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TOP_LEVEL_ROUTES.forEach { route ->
+                BottomNavItemView(
+                    route = route,
+                    isSelected = route == selected,
+                    onClick = { onSelect(route) },
+                    horizontalPadding = if (onOpenApps != null) 14.dp else 24.dp,
+                )
+            }
+        }
+        if (onOpenApps != null) {
+            AppsNavButton(onClick = onOpenApps)
         }
     }
 }
 
 /**
  * [BottomNavBar] for a phone on its side (see [showsNavRail]): the same three tabs in the same
- * glass, one above the other. The items carry the same test tags, so a test — or a finger —
- * finds a tab wherever the nav happens to be.
+ * glass, one above the other, with the Apps button below them when offered. The items carry the
+ * same test tags, so a test — or a finger — finds a tab wherever the nav happens to be.
  */
 @Composable
 private fun NavRail(
     selected: TopLevelRoute,
     onSelect: (TopLevelRoute) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenApps: (() -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(NAV_RAIL_CORNER)
     Column(
-        modifier = modifier
-            .width(NAV_RAIL_WIDTH)
-            .assistantTrigger(LocalAssistant.current)
-            .background(LocalFrigateExtraColors.current.glassFill, shape)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), shape)
-            .padding(8.dp)
-            .testTag(NAV_RAIL_TEST_TAG),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        TOP_LEVEL_ROUTES.forEach { route ->
-            BottomNavItemView(
-                route = route,
-                isSelected = route == selected,
-                onClick = { onSelect(route) },
-                // Every item as wide as the rail, so the selected one's highlight doesn't change
-                // width with the length of its label.
-                modifier = Modifier.fillMaxWidth(),
-                horizontalPadding = 4.dp,
-            )
+        Column(
+            modifier = Modifier
+                .width(NAV_RAIL_WIDTH)
+                .assistantTrigger(LocalAssistant.current)
+                .background(LocalFrigateExtraColors.current.glassFill, shape)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), shape)
+                .padding(8.dp)
+                .testTag(NAV_RAIL_TEST_TAG),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            TOP_LEVEL_ROUTES.forEach { route ->
+                BottomNavItemView(
+                    route = route,
+                    isSelected = route == selected,
+                    onClick = { onSelect(route) },
+                    // Every item as wide as the rail, so the selected one's highlight doesn't change
+                    // width with the length of its label.
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalPadding = 4.dp,
+                )
+            }
+        }
+        if (onOpenApps != null) {
+            AppsNavButton(onClick = onOpenApps)
         }
     }
 }
