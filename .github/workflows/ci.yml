@@ -59,6 +59,9 @@ jobs:
             # All three share every module's Android compilation, so they belong on one runner.
             # Each module with composables has its own stability baseline (<module>/stability).
             tasks: :androidApp:assembleDebug :androidApp:lintDebug stabilityCheck
+            # The debug APK it builds is kept too (homesafe-debug-apk), so a commit's build can
+            # be installed without building it again: Greenroom's ci recipe fetches it.
+            apk: androidApp/build/outputs/apk/debug/androidApp-debug.apk
             artifact: android-reports
             reports: |
               androidApp/build/reports/**
@@ -105,6 +108,14 @@ jobs:
 
       - name: ./gradlew ${{ matrix.tasks }}
         run: ./gradlew ${{ matrix.tasks }} --stacktrace
+
+      - uses: actions/upload-artifact@v7
+        # Kept when lint or the stability gate fails after the APK was built: it still installs.
+        if: ${{ !cancelled() && matrix.apk && hashFiles(matrix.apk) != '' }}
+        with:
+          name: homesafe-debug-apk
+          path: ${{ matrix.apk }}
+          retention-days: 14
 
       - uses: actions/upload-artifact@v7
         if: ${{ always() && matrix.artifact }}

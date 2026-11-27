@@ -8,9 +8,9 @@ name: Preview APK
 # The APK is kept two ways: as this run's artifact, and on a pre-release named preview-pr<N>
 # (replaced on each push), which is the easy one to find from a phone's browser.
 #
-# It is signed with the runner's throwaway debug key (the release key lives in the play-internal
-# environment, for main only), so each build has a new signature: uninstall HomeSafe Preview
-# before installing a newer one. Push is off in it (Firebase has no client for the package).
+# It is signed with the repository's shared debug key (androidApp/debug-signing.ks; the release
+# key lives in the play-internal environment, for main only), so a newer preview installs over
+# the one before it. Push is off in it (Firebase has no client for the package).
 
 on:
   pull_request:
@@ -71,4 +71,4 @@ jobs:
             --target "$SHA" \
             --prerelease \
             --title "HomeSafe Preview — PR #$PR (${SHA:0:7})" \
-            --notes "Installs beside HomeSafe as \"HomeSafe Preview\". Built from ${SHA:0:7} of #$PR. Uninstall the previous preview before installing this one (each build is signed with a new debug key)."
+            --notes "Installs beside HomeSafe as \"HomeSafe Preview\". Built from ${SHA:0:7} of #$PR. It installs over an earlier preview."
