@@ -1,6 +1,5 @@
 package com.meticulouscreations.homesafe.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,7 +24,11 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -131,7 +134,7 @@ internal fun QuickActionsRow(
  * phone, enlarged text) it takes a row of its own above them rather than being cut short, and
  * within that row the pill and the time wrap onto separate lines if they must ([PlayerBarLayout]).
  */
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun CameraQuickActions(
     displayName: String,
@@ -151,7 +154,7 @@ internal fun CameraQuickActions(
             .fillMaxWidth()
             .heightIn(min = PLAYER_BAR_HEIGHT)
             .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-            .padding(start = 16.dp, end = 4.dp),
+            .padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
         leading = {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -174,13 +177,13 @@ internal fun CameraQuickActions(
             ) {
                 Text(
                     text = qualityName,
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelSmallEmphasized,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     modifier = Modifier
-                        .border(1.5.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(5.dp))
-                        .padding(horizontal = 5.dp, vertical = 1.dp),
+                        .border(1.5.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(6.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
                 )
             }
             QualityMenu(
@@ -193,29 +196,46 @@ internal fun CameraQuickActions(
                 onDismiss = { qualityMenuOpen = false },
             )
         }
-        // Speaker: the saved sound preference. It flips even while what's playing is silent
-        // (go2rtc's sub-streams and Frigate's recordings are video-only), so the choice is
-        // ready when audio arrives; the dimming says the stream has nothing to play right now.
-        PlayerBarButton(
-            contentDescription = stringResource(if (isMuted) Res.string.camera_sound_turn_on else Res.string.camera_sound_turn_off),
-            available = hasAudio,
-            onClick = onToggleSound,
+        // Speaker: Expressive shape-morphing toggle (circle when muted, rounded-square in
+        // primaryContainer when audio is active). Stays clickable when silent so tapping explains why.
+        val soundDesc = stringResource(if (isMuted) Res.string.camera_sound_turn_on else Res.string.camera_sound_turn_off)
+        FilledTonalIconToggleButton(
+            checked = !isMuted,
+            onCheckedChange = { onToggleSound() },
+            shapes = IconButtonDefaults.toggleableShapes(),
+            colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ),
+            modifier = Modifier
+                .alpha(if (hasAudio) 1f else UNAVAILABLE_ALPHA)
+                .semantics {
+                    contentDescription = soundDesc
+                },
         ) {
             Icon(
                 imageVector = if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
                 contentDescription = null,
-                tint = if (isMuted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary,
             )
         }
         // Scissors: cut a clip from what's playing (or just behind live). The button remembers
         // where it is so the editor's splash can land exactly under the finger.
         val clipOrigin = remember { OriginProbe() }
-        PlayerBarButton(
-            contentDescription = stringResource(Res.string.camera_action_clip_description, displayName),
+        val clipDesc = stringResource(Res.string.camera_action_clip_description, displayName)
+        FilledTonalIconButton(
             onClick = { onClip(clipOrigin.fraction()) },
-            modifier = Modifier.onGloballyPositioned { clipOrigin.coordinates = it },
+            shapes = IconButtonDefaults.shapes(),
+            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+            ),
+            modifier = Modifier
+                .onGloballyPositioned { clipOrigin.coordinates = it }
+                .semantics { contentDescription = clipDesc },
         ) {
-            Icon(imageVector = Icons.Filled.ContentCut, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
+            Icon(imageVector = Icons.Filled.ContentCut, contentDescription = null)
         }
     }
 }
@@ -229,7 +249,7 @@ internal fun CameraQuickActions(
 @Composable
 private fun PlayerBarLayout(leading: @Composable () -> Unit, modifier: Modifier = Modifier, buttons: @Composable RowScope.() -> Unit) {
     Layout(
-        contents = listOf(leading, { Row(verticalAlignment = Alignment.CenterVertically, content = buttons) }),
+        contents = listOf(leading, { Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically, content = buttons) }),
         modifier = modifier,
     ) { (leadingMeasurables, buttonMeasurables), constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
@@ -275,10 +295,8 @@ internal fun QualityMenu(expanded: Boolean, selected: StreamQuality, onSelect: (
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        // The same hairline as the camera screen's overflow menu.
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shape = RoundedCornerShape(20.dp),
     ) {
         Text(
             text = stringResource(Res.string.camera_quality_menu_title),

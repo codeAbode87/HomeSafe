@@ -8,14 +8,15 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -47,14 +48,20 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.VideocamOff
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.ToggleButtonShapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LaunchedEffect
@@ -137,6 +144,7 @@ import com.meticulouscreations.homesafe.ui.formatDuration
 import com.meticulouscreations.homesafe.ui.isCompactLandscape
 import com.meticulouscreations.homesafe.ui.showsTwoPanes
 import com.meticulouscreations.homesafe.ui.theme.LocalFrigateExtraColors
+import com.meticulouscreations.homesafe.ui.theme.segmentedCardShape
 import com.meticulouscreations.homesafe.ui.windowHeight
 import com.meticulouscreations.homesafe.ui.windowWidth
 import com.meticulouscreations.homesafe.viewmodel.CameraDetailUiState
@@ -209,7 +217,7 @@ import kotlin.math.roundToInt
  * player, picture-in-picture, as does the menu's "Picture-in-picture": the window shrinks to the
  * player, which is laid out full screen with none of its chrome (see [LocalPictureInPicture]).
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CameraDetailScreen(
     cameraName: String,
@@ -346,10 +354,10 @@ fun CameraDetailScreen(
         // its own, and takes no room when there's nothing to ask about.
         LiveLabelingSection(cameraName = cameraName)
 
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
                 text = stringResource(Res.string.camera_recent_activity),
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmallEmphasized,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             val moments = recentMoments
@@ -361,11 +369,12 @@ fun CameraDetailScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    moments.forEach { item ->
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    moments.forEachIndexed { index, item ->
                         // Tapping a detection plays it in the player, from its start.
                         RecentMomentCard(
                             item = item,
+                            shape = segmentedCardShape(index, moments.size),
                             onClick = {
                                 viewModel.playMoment(item.event.startEpochSeconds)
                                 scope.launch { scrollState.animateScrollTo(0) }
@@ -392,7 +401,7 @@ fun CameraDetailScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = onBack) {
+                IconButton(onClick = onBack, shapes = IconButtonDefaults.shapes()) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(Res.string.common_back),
@@ -401,7 +410,7 @@ fun CameraDetailScreen(
                 }
                 Text(
                     text = cameraDisplayName(cameraName),
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineMediumEmphasized,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
@@ -577,6 +586,7 @@ internal fun cameraDetailViewModel(cameraName: String): CameraDetailViewModel =
  * but the spinner: the window is too small for the chrome, and takes no touches to bring it up.
  * [pictureInPicture] is told where the picture's box is, for the mini player to grow from.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun PlayerSurface(
     cameraAvailable: Boolean,
@@ -863,10 +873,10 @@ private fun PlayerSurface(
                 // Only whether it is still coming fits in the mini player.
                 inPictureInPicture && !(playback.isLoadingPlaylist || playback.isBuffering) -> Unit
 
-                playback.isLoadingPlaylist || playback.isBuffering -> CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center).size(40.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 3.dp,
+                playback.isLoadingPlaylist || playback.isBuffering -> ContainedLoadingIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
+                    indicatorColor = MaterialTheme.colorScheme.primary,
                 )
 
                 // The chrome has a play button of its own in this very spot, and that one works.
@@ -876,8 +886,7 @@ private fun PlayerSurface(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .size(64.dp)
-                        .background(LocalFrigateExtraColors.current.glassFill, CircleShape)
-                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), CircleShape),
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.9f), CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
@@ -972,12 +981,20 @@ private fun SeekPreview(epochSeconds: Double, snapshotUrlFor: (Double) -> String
  * seconds in all. It fades in on the first step, counts up with each further one, and goes once
  * the tapping stops. It takes no touches, so the taps that keep it going land on the video under it.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SkipBadge(skip: SkipFeedback?, modifier: Modifier = Modifier) {
     // The badge outlasts the step by the length of its fade.
     var lastSkip by remember { mutableStateOf(skip) }
     if (skip != null) lastSkip = skip
-    AnimatedVisibility(visible = skip != null, modifier = modifier, enter = fadeIn(tween(SKIP_BADGE_FADE_MS)), exit = fadeOut(tween(SKIP_BADGE_FADE_MS))) {
+    val spatial = MaterialTheme.motionScheme.fastSpatialSpec<Float>()
+    val effects = MaterialTheme.motionScheme.fastEffectsSpec<Float>()
+    AnimatedVisibility(
+        visible = skip != null,
+        modifier = modifier,
+        enter = fadeIn(effects) + scaleIn(spatial, initialScale = 0.85f),
+        exit = fadeOut(effects) + scaleOut(spatial, targetScale = 0.9f),
+    ) {
         val shown = lastSkip ?: return@AnimatedVisibility
         val back = shown.edge == TapEdge.Left
         Box(modifier = Modifier.fillMaxSize()) {
@@ -1030,7 +1047,6 @@ private const val SCROLL_RESTORE_TIMEOUT_MS = 1_000L
 
 /** How long the badge stays after the last step: long enough for the next tap of a run to find it up. */
 private const val SKIP_BADGE_MS = 900L
-private const val SKIP_BADGE_FADE_MS = 120
 
 /** The badge's side of the video is the third the taps land in. */
 private const val SKIP_BADGE_WIDTH_FRACTION = 1f / 3f
@@ -1091,15 +1107,17 @@ internal fun playerSurfaceHeight(width: Int, viewportHeight: Int, bottomInsetPx:
 /** A fresh instance per tap (identity equality), so repeating the same words restarts the auto-clear. */
 private class QuickActionHint(val text: StringResource)
 
-/** Red and pulsing at the live edge; grey (and a button back to live) while watching history. */
+/** Red and pulsing at the live edge; tonal Expressive pill (and a button back to live) while watching history. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun LivePill(isLive: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val container = if (isLive) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.9f) else MaterialTheme.colorScheme.surfaceContainerHigh
+    val content = if (isLive) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface
     val dotColor = if (isLive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
     Row(
         modifier = modifier
             .clip(CircleShape)
-            .background(LocalFrigateExtraColors.current.glassFill, CircleShape)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), CircleShape)
+            .background(container, CircleShape)
             .clickable(enabled = !isLive, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -1112,8 +1130,8 @@ internal fun LivePill(isLive: Boolean, onClick: () -> Unit, modifier: Modifier =
         }
         Text(
             text = stringResource(if (isLive) Res.string.camera_live else Res.string.camera_go_live),
-            style = MaterialTheme.typography.labelSmall,
-            color = if (isLive) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelSmallEmphasized,
+            color = content,
         )
     }
 }
@@ -1176,6 +1194,7 @@ internal fun BehindLiveReadout(playheadEpochSeconds: Double, nowEpochSeconds: Do
  * its place to the "behind live" readout (which on the page sits on the bar under the player), and
  * [onTouch] reports each use of it, so the chrome it is part of stays up while it is in use.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun TimelineSection(cameraName: String, modifier: Modifier = Modifier, overVideo: Boolean = false, onTouch: () -> Unit = {}) {
     val viewModel = cameraDetailViewModel(cameraName)
@@ -1196,15 +1215,22 @@ internal fun TimelineSection(cameraName: String, modifier: Modifier = Modifier, 
             } else {
                 Text(
                     text = stringResource(Res.string.camera_timeline),
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.headlineSmallEmphasized,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                TimelineSpan.entries.forEach { span ->
+            Row(horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)) {
+                val spans = TimelineSpan.entries
+                spans.forEachIndexed { index, span ->
+                    val shapes = when (index) {
+                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                        spans.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                    }
                     SpanChip(
                         span = span,
                         selected = span == playback.span,
+                        shapes = shapes,
                         onClick = {
                             onTouch()
                             viewModel.setSpan(span)
@@ -1245,25 +1271,40 @@ internal fun TimelineSection(cameraName: String, modifier: Modifier = Modifier, 
             val from = playback.scrubEpochSeconds ?: playback.playheadEpochSeconds ?: now
             val previous = detectionStep(detections, from, forward = false)
             val next = detectionStep(detections, from, forward = true)
-            val tint = if (overVideo) Color.White else MaterialTheme.colorScheme.primary
-            val colors = IconButtonDefaults.iconButtonColors(contentColor = tint, disabledContentColor = tint.copy(alpha = DISABLED_DETECTION_STEP_ALPHA))
+            val colors = if (overVideo) {
+                IconButtonDefaults.filledTonalIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.72f),
+                    contentColor = Color.White,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.35f),
+                    disabledContentColor = Color.White.copy(alpha = DISABLED_DETECTION_STEP_ALPHA),
+                )
+            } else {
+                IconButtonDefaults.filledTonalIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = DISABLED_DETECTION_STEP_ALPHA),
+                )
+            }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                IconButton(
+                FilledTonalIconButton(
                     onClick = {
                         onTouch()
                         previous?.let(viewModel::playMoment)
                     },
                     enabled = previous != null,
+                    shapes = IconButtonDefaults.shapes(),
                     colors = colors,
                 ) {
                     Icon(imageVector = Icons.Filled.SkipPrevious, contentDescription = stringResource(Res.string.camera_previous_detection))
                 }
-                IconButton(
+                FilledTonalIconButton(
                     onClick = {
                         onTouch()
                         next?.let(viewModel::playMoment)
                     },
                     enabled = next != null,
+                    shapes = IconButtonDefaults.shapes(),
                     colors = colors,
                 ) {
                     Icon(imageVector = Icons.Filled.SkipNext, contentDescription = stringResource(Res.string.camera_next_detection))
@@ -1290,21 +1331,32 @@ internal fun TimelineSection(cameraName: String, modifier: Modifier = Modifier, 
 /** Material's disabled-content alpha, for a detection step with nowhere to go. */
 private const val DISABLED_DETECTION_STEP_ALPHA = 0.38f
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-internal fun SpanChip(span: TimelineSpan, selected: Boolean, onClick: () -> Unit) {
-    val background = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
-    val foreground = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-    Text(
-        text = stringResource(span.label),
-        style = MaterialTheme.typography.labelMedium,
-        color = foreground,
-        modifier = Modifier
-            .clip(CircleShape)
-            .background(background, CircleShape)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (selected) 0f else 0.2f), CircleShape)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 4.dp),
-    )
+internal fun SpanChip(
+    span: TimelineSpan,
+    selected: Boolean,
+    onClick: () -> Unit,
+    shapes: ToggleButtonShapes = ToggleButtonDefaults.shapes(),
+) {
+    ToggleButton(
+        checked = selected,
+        onCheckedChange = { onClick() },
+        shapes = shapes,
+        colors = ToggleButtonDefaults.toggleButtonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+    ) {
+        Text(
+            text = stringResource(span.label),
+            style = if (selected) MaterialTheme.typography.labelMediumEmphasized else MaterialTheme.typography.labelMedium,
+            maxLines = 1,
+        )
+    }
 }
 
 /**
@@ -1318,6 +1370,7 @@ internal fun SpanChip(span: TimelineSpan, selected: Boolean, onClick: () -> Unit
  * The full-screen player's chrome carries the same menu, in its own [tint], and is told through
  * [onOpenChange] while the menu is open so it doesn't fade away from under it.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CameraOverflowMenu(
     onEditDetectionZones: () -> Unit,
@@ -1334,7 +1387,7 @@ private fun CameraOverflowMenu(
         onOpenChange(open)
     }
     Box {
-        IconButton(onClick = { setExpanded(true) }, modifier = Modifier.size(48.dp)) {
+        IconButton(onClick = { setExpanded(true) }, shapes = IconButtonDefaults.shapes(), modifier = Modifier.size(48.dp)) {
             Icon(
                 imageVector = Icons.Filled.MoreVert,
                 contentDescription = stringResource(Res.string.common_more_options),
@@ -1344,10 +1397,8 @@ private fun CameraOverflowMenu(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { setExpanded(false) },
-            containerColor = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(16.dp),
-            // The same hairline every card on this screen carries, so the menu reads as one of them.
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            shape = RoundedCornerShape(20.dp),
         ) {
             DropdownMenuItem(
                 text = { Text(text = stringResource(Res.string.camera_menu_detection_zones), style = MaterialTheme.typography.labelLarge) },
@@ -1393,14 +1444,18 @@ private fun CameraOverflowMenu(
 }
 
 @Composable
-private fun RecentMomentCard(item: MomentItem, onClick: () -> Unit, onTagCar: () -> Unit) {
+private fun RecentMomentCard(
+    item: MomentItem,
+    onClick: () -> Unit,
+    onTagCar: () -> Unit,
+    shape: RoundedCornerShape = RoundedCornerShape(20.dp),
+) {
     val p = item.presentation
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .clickable(onClick = onClick)
             .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -1409,7 +1464,7 @@ private fun RecentMomentCard(item: MomentItem, onClick: () -> Unit, onTagCar: ()
         Box(
             modifier = Modifier
                 .size(64.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(14.dp))
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh),
             contentAlignment = Alignment.Center,
         ) {

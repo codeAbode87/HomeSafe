@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
@@ -28,11 +29,15 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PictureInPictureAlt
 import androidx.compose.material.icons.filled.VideocamOff
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ContainedLoadingIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -139,7 +144,7 @@ import kotlin.math.roundToInt
  * button between the two appears once the picture turns out not to be 16:9, and the choice is
  * saved for every Nest camera, cards included (see [ShapedVideo]).
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NestCameraScreen(
     streamName: String,
@@ -321,10 +326,10 @@ fun NestCameraScreen(
                 }
             } else if (request != null && status != LiveStreamStatus.Live) {
                 // The badge's words are gone, but not the sign that the picture is on its way.
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center).size(40.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 3.dp,
+                ContainedLoadingIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
+                    indicatorColor = MaterialTheme.colorScheme.primary,
                 )
             }
         }
@@ -344,11 +349,18 @@ fun NestCameraScreen(
             Row(modifier = Modifier.align(Alignment.TopStart).padding(8.dp)) {
                 BackButton(onBack = onBack, tint = Color.White)
             }
-            Row(modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp)) {
-                if (fitMatters) FitButton(fit = fit, onToggle = viewModel::toggleFit, tint = Color.White)
-                pictureInPictureButton?.invoke(Color.White)
-                TalkIconButton(onTalk = viewModel::talkInGoogleHome, tint = Color.White)
-                SoundButton(soundOn = soundOn, onToggle = toggleSound, tint = Color.White)
+            Surface(
+                modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.84f),
+                tonalElevation = 4.dp,
+            ) {
+                Row(modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                    if (fitMatters) FitButton(fit = fit, onToggle = viewModel::toggleFit, tint = Color.White)
+                    pictureInPictureButton?.invoke(Color.White)
+                    TalkIconButton(onTalk = viewModel::talkInGoogleHome, tint = Color.White)
+                    SoundButton(soundOn = soundOn, onToggle = toggleSound, tint = Color.White)
+                }
             }
         }
         return
@@ -367,7 +379,7 @@ fun NestCameraScreen(
             BackButton(onBack = onBack, tint = MaterialTheme.colorScheme.primary)
             Text(
                 text = cameraDisplayName(streamName),
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.headlineMediumEmphasized,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
@@ -477,13 +489,14 @@ internal fun nestVideoRestSize(width: Int, available: Int, boxAspect: Float): In
  * Under the video: talking through the camera, named for the app it opens since the tap leaves
  * HomeSafe, and why the page has nothing else.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun NestCameraFooter(onTalk: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.padding(horizontal = contentGutter(), vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        FilledTonalButton(onClick = onTalk) {
+        FilledTonalButton(onClick = onTalk, shapes = ButtonDefaults.shapes()) {
             Icon(Icons.Filled.Mic, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
             Spacer(Modifier.width(ButtonDefaults.IconSpacing))
             Text(stringResource(Res.string.camera_nest_talk))
@@ -497,24 +510,27 @@ internal fun NestCameraFooter(onTalk: () -> Unit, modifier: Modifier = Modifier)
 }
 
 /** Full screen, where there is no room for the footer's labelled button. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TalkIconButton(onTalk: () -> Unit, tint: Color) {
-    IconButton(onClick = onTalk) {
+    IconButton(onClick = onTalk, shapes = IconButtonDefaults.shapes()) {
         Icon(imageVector = Icons.Filled.Mic, contentDescription = stringResource(Res.string.camera_nest_talk), tint = tint)
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun BackButton(onBack: () -> Unit, tint: Color) {
-    IconButton(onClick = onBack) {
+    IconButton(onClick = onBack, shapes = IconButtonDefaults.shapes()) {
         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back), tint = tint)
     }
 }
 
 /** Between the whole picture and filling the frame; the icon is what a tap does. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun FitButton(fit: VideoFit, onToggle: () -> Unit, tint: Color) {
-    IconButton(onClick = onToggle) {
+    IconButton(onClick = onToggle, shapes = IconButtonDefaults.shapes()) {
         Icon(
             imageVector = if (fit == VideoFit.Fit) Icons.Filled.Crop else Icons.Filled.FitScreen,
             contentDescription = stringResource(if (fit == VideoFit.Fit) Res.string.camera_nest_fit_fill else Res.string.camera_nest_fit_whole),
@@ -526,20 +542,31 @@ private fun FitButton(fit: VideoFit, onToggle: () -> Unit, tint: Color) {
 /** How far from 16:9 a picture's shape must be before fitting and filling look any different. */
 private const val FIT_ASPECT_TOLERANCE = 0.05f
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun PictureInPictureButton(onClick: () -> Unit, tint: Color) {
-    IconButton(onClick = onClick) {
+    IconButton(onClick = onClick, shapes = IconButtonDefaults.shapes()) {
         Icon(imageVector = Icons.Filled.PictureInPictureAlt, contentDescription = stringResource(Res.string.camera_picture_in_picture), tint = tint)
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SoundButton(soundOn: Boolean, onToggle: () -> Unit, tint: Color) {
-    IconButton(onClick = onToggle) {
+    FilledTonalIconToggleButton(
+        checked = soundOn,
+        onCheckedChange = { onToggle() },
+        shapes = IconButtonDefaults.toggleableShapes(),
+        colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
+            containerColor = Color.Transparent,
+            contentColor = tint,
+            checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
+    ) {
         Icon(
             imageVector = if (soundOn) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff,
             contentDescription = stringResource(if (soundOn) Res.string.camera_sound_turn_off else Res.string.camera_sound_turn_on),
-            tint = tint,
         )
     }
 }

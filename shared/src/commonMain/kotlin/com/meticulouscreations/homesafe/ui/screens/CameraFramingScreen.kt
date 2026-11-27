@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -44,11 +45,15 @@ import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -186,7 +191,7 @@ fun CameraFramingScreen(
  * gestures that land between two frames. [straighteningAtFirst] draws the straightening grid
  * from the start (a preview's).
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun CameraFramingEditor(
     cameraName: String,
@@ -268,20 +273,25 @@ internal fun CameraFramingEditor(
         ) {
             TextButton(
                 onClick = onCancel,
+                shapes = ButtonDefaults.shapes(),
                 colors = ButtonDefaults.textButtonColors(contentColor = Color.White),
             ) { Text(stringResource(Res.string.common_cancel)) }
             Text(
                 text = stringResource(Res.string.camera_frame_title, cameraDisplayName(cameraName)),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 color = Color.White,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(
+            FilledTonalButton(
                 onClick = onDone,
-                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+                shapes = ButtonDefaults.shapes(),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
                 modifier = Modifier.testTag(CAMERA_FRAME_DONE_TEST_TAG),
             ) { Text(stringResource(Res.string.camera_frame_done)) }
         }
@@ -463,6 +473,7 @@ private fun FrameOverlay(frame: () -> Rect, denseGrid: Boolean, modifier: Modifi
  * moves things while a finger is still on them and [onLetGo] saves; [onSet] is a button,
  * shown and saved at once.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun FramingControls(
     framing: CameraFraming,
@@ -520,25 +531,42 @@ private fun FramingControls(
                 Icon(Icons.Filled.ZoomIn, contentDescription = null, tint = Color.White)
             }
         }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+        Box(
+            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+            contentAlignment = Alignment.Center,
         ) {
-            IconButton(onClick = { onSet(framing.copy(orientation = orientation.turned(clockwise = false))) }) {
-                Icon(Icons.Filled.RotateLeft, contentDescription = stringResource(Res.string.camera_turn_left), tint = Color.White)
-            }
-            TextButton(
-                onClick = { onSet(CameraFraming.UNTOUCHED) },
-                enabled = !framing.isUntouched,
-                colors = ButtonDefaults.textButtonColors(contentColor = Color.White, disabledContentColor = Color.White.copy(alpha = 0.38f)),
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
             ) {
-                Icon(Icons.Filled.RestartAlt, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
-                Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                Text(stringResource(Res.string.camera_frame_reset))
-            }
-            IconButton(onClick = { onSet(framing.copy(orientation = orientation.turned(clockwise = true))) }) {
-                Icon(Icons.Filled.RotateRight, contentDescription = stringResource(Res.string.camera_turn_right), tint = Color.White)
+                Row(
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(
+                        onClick = { onSet(framing.copy(orientation = orientation.turned(clockwise = false))) },
+                        shapes = IconButtonDefaults.shapes(),
+                    ) {
+                        Icon(Icons.Filled.RotateLeft, contentDescription = stringResource(Res.string.camera_turn_left), tint = Color.White)
+                    }
+                    TextButton(
+                        onClick = { onSet(CameraFraming.UNTOUCHED) },
+                        enabled = !framing.isUntouched,
+                        shapes = ButtonDefaults.shapes(),
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color.White, disabledContentColor = Color.White.copy(alpha = 0.38f)),
+                    ) {
+                        Icon(Icons.Filled.RestartAlt, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                        Text(stringResource(Res.string.camera_frame_reset))
+                    }
+                    IconButton(
+                        onClick = { onSet(framing.copy(orientation = orientation.turned(clockwise = true))) },
+                        shapes = IconButtonDefaults.shapes(),
+                    ) {
+                        Icon(Icons.Filled.RotateRight, contentDescription = stringResource(Res.string.camera_turn_right), tint = Color.White)
+                    }
+                }
             }
         }
     }

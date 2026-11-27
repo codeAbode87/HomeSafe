@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -15,7 +16,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -51,8 +51,10 @@ import androidx.compose.material.icons.filled.ViewSidebar
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -76,8 +78,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -129,7 +133,6 @@ import com.meticulouscreations.homesafe.ui.handCursor
 import com.meticulouscreations.homesafe.ui.isCompactLandscape
 import com.meticulouscreations.homesafe.ui.showsSidebar
 import com.meticulouscreations.homesafe.ui.showsTwoPanes
-import com.meticulouscreations.homesafe.ui.theme.LocalFrigateExtraColors
 import com.meticulouscreations.homesafe.viewmodel.AppShellViewModel
 import com.meticulouscreations.homesafe.viewmodel.CameraTile
 import dev.zacsweers.metrox.viewmodel.metroViewModel
@@ -709,6 +712,7 @@ class ShellNavigation(
  * are heard outside its composition.
  */
 // Public for another module to place; it fills whatever it is given, so it takes no Modifier.
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Suppress("ktlint:compose:modifier-missing-check")
 @Composable
 fun FrigateAppShell() {
@@ -766,7 +770,7 @@ fun FrigateAppShell() {
 
     val sidebarWidth by animateDpAsState(
         targetValue = if (sidebarShown) SIDEBAR_WIDTH else 0.dp,
-        animationSpec = tween(NAV_TRANSITION_MS, easing = NavEnterEasing),
+        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
         label = "sidebar-width",
     )
     // The tabs and each app keep what they had scrolled to and typed while another is beside the sidebar.
@@ -1030,6 +1034,7 @@ private fun AnimatedContentTransitionScope<Scene<TopLevelRoute>>.tabHandOver(): 
  * the content or either bar, wherever nothing under the finger wants the swipe itself. Null where
  * the drawer isn't on offer; and it is never taken under an overlay.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun ShellScaffold(
     showTopBar: Boolean,
@@ -1051,7 +1056,7 @@ internal fun ShellScaffold(
     // The content gives the rail its strip of the window, and takes it back as the rail leaves.
     val railClearance by animateDpAsState(
         targetValue = if (navRail && showBottomNav) NAV_RAIL_CLEARANCE else 0.dp,
-        animationSpec = tween(NAV_TRANSITION_MS, easing = NavEnterEasing),
+        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
         label = "nav-rail-clearance",
     )
     Box(
@@ -1168,6 +1173,7 @@ internal enum class TopBarMenuButton { Drawer, ShowSidebar }
  * [arrange] is Home's way into Arrange mode, the first thing in the badge's menu while Home is up
  * with cameras to arrange (the status icon opens the same menu before there is a route).
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun FrigateTopBar(
     activeConnection: ActiveConnection?,
@@ -1193,7 +1199,7 @@ internal fun FrigateTopBar(
         if (onMenu != null) {
             val label = stringResource(if (menu == TopBarMenuButton.ShowSidebar) Res.string.shell_sidebar_show else Res.string.shell_menu)
             WithTooltip(label, modifier = Modifier.align(Alignment.CenterStart)) {
-                IconButton(onClick = onMenu, modifier = Modifier.size(48.dp).handCursor().testTag("shell_menu")) {
+                IconButton(onClick = onMenu, shapes = IconButtonDefaults.shapes(), modifier = Modifier.size(48.dp).handCursor().testTag("shell_menu")) {
                     Icon(
                         if (menu == TopBarMenuButton.ShowSidebar) Icons.Filled.ViewSidebar else Icons.Filled.Menu,
                         contentDescription = label,
@@ -1205,7 +1211,7 @@ internal fun FrigateTopBar(
         if (showTitle) {
             Text(
                 text = stringResource(Res.string.shell_app_title),
-                style = MaterialTheme.typography.headlineMedium.copy(letterSpacing = 0.03.em),
+                style = MaterialTheme.typography.headlineMediumEmphasized.copy(letterSpacing = 0.02.em),
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.align(Alignment.Center),
             )
@@ -1213,7 +1219,7 @@ internal fun FrigateTopBar(
             // Where a Mac app's toolbar names the page: at the start, after the button there if there is one.
             Text(
                 text = pageTitle,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmallEmphasized,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.align(Alignment.CenterStart).padding(start = if (onMenu != null) 56.dp else 0.dp),
             )
@@ -1224,7 +1230,7 @@ internal fun FrigateTopBar(
             Box(modifier = Modifier.align(Alignment.CenterEnd)) {
                 val status = stringResource(Res.string.shell_status)
                 WithTooltip(status) {
-                    IconButton(onClick = { showMenu = arrange != null }, modifier = Modifier.size(48.dp).handCursor(arrange != null)) {
+                    IconButton(onClick = { showMenu = arrange != null }, shapes = IconButtonDefaults.shapes(), modifier = Modifier.size(48.dp).handCursor(arrange != null)) {
                         Icon(Icons.Filled.Sensors, contentDescription = status, tint = MaterialTheme.colorScheme.primary)
                     }
                 }
@@ -1239,16 +1245,20 @@ internal fun FrigateTopBar(
 
 /**
  * "Local" (the local network) vs "Tailscale" at a glance — the former is the fast, direct video
- * path — or "Offline" while the server can't be reached on either. The names are the routes'
- * short ones: the badge shares the bar with the centred title, and "Local network" ran into it.
- * A tap drops down the app's version, which is how to tell which release is on the phone, under
- * Home's Arrange while there is an [arrange].
+ * path — or "Offline" while the server can't be reached on either. Tonal Expressive pill using
+ * semantic container colors so status reads at a glance without a hairline border.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ConnectionRouteBadge(route: ConnectionRoute, appVersion: String, offline: Boolean, arrange: ArrangeAction?) {
+    val container = when {
+        offline -> MaterialTheme.colorScheme.errorContainer
+        route == ConnectionRoute.LOCAL_NETWORK -> MaterialTheme.colorScheme.secondaryContainer
+        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+    }
     val tint = when {
-        offline -> MaterialTheme.colorScheme.error
-        route == ConnectionRoute.LOCAL_NETWORK -> MaterialTheme.colorScheme.secondary
+        offline -> MaterialTheme.colorScheme.onErrorContainer
+        route == ConnectionRoute.LOCAL_NETWORK -> MaterialTheme.colorScheme.onSecondaryContainer
         else -> MaterialTheme.colorScheme.primary
     }
     var showVersion by remember { mutableStateOf(false) }
@@ -1269,8 +1279,7 @@ private fun ConnectionRouteBadge(route: ConnectionRoute, appVersion: String, off
         Row(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(LocalFrigateExtraColors.current.glassFill, CircleShape)
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), CircleShape)
+                .background(container, CircleShape)
                 .indication(interactionSource, ripple())
                 .padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -1283,7 +1292,7 @@ private fun ConnectionRouteBadge(route: ConnectionRoute, appVersion: String, off
             } else {
                 PulsingDot(color = tint, size = 6.dp, pulsing = false)
             }
-            Text(text = stringResource(if (offline) Res.string.shell_offline else route.shortLabel), style = MaterialTheme.typography.labelSmall, color = tint)
+            Text(text = stringResource(if (offline) Res.string.shell_offline else route.shortLabel), style = MaterialTheme.typography.labelSmallEmphasized, color = tint)
         }
         TopBarMenu(expanded = showVersion, onDismiss = { showVersion = false }, appVersion = appVersion, arrange = arrange)
     }
@@ -1547,9 +1556,9 @@ private fun BottomNavBar(
             .fillMaxWidth(0.9f)
             // Held, the pill opens the assistant out of itself.
             .assistantTrigger(LocalAssistant.current)
-            .background(LocalFrigateExtraColors.current.glassFill, CircleShape)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), CircleShape)
-            .padding(8.dp),
+            .shadow(8.dp, CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.94f), CircleShape)
+            .padding(6.dp),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -1565,8 +1574,8 @@ private fun BottomNavBar(
 
 /**
  * [BottomNavBar] for a phone on its side (see [showsNavRail]): the same three tabs in the same
- * glass, one above the other. The items carry the same test tags, so a test — or a finger —
- * finds a tab wherever the nav happens to be.
+ * Expressive tonal container, one above the other. The items carry the same test tags, so a test
+ * — or a finger — finds a tab wherever the nav happens to be.
  */
 @Composable
 private fun NavRail(
@@ -1579,9 +1588,9 @@ private fun NavRail(
         modifier = modifier
             .width(NAV_RAIL_WIDTH)
             .assistantTrigger(LocalAssistant.current)
-            .background(LocalFrigateExtraColors.current.glassFill, shape)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), shape)
-            .padding(8.dp)
+            .shadow(8.dp, shape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.94f), shape)
+            .padding(6.dp)
             .testTag(NAV_RAIL_TEST_TAG),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -1605,6 +1614,7 @@ private val NAV_RAIL_CORNER = 28.dp
 /** The side nav itself, for tests: there when the shell is laid out for a phone on its side. */
 const val NAV_RAIL_TEST_TAG = "nav_rail"
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun BottomNavItemView(
     route: TopLevelRoute,
@@ -1613,17 +1623,26 @@ private fun BottomNavItemView(
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 24.dp,
 ) {
-    val contentColor = if (isSelected) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val containerColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+        label = "bottom-nav-container",
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (isSelected) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+        label = "bottom-nav-content",
+    )
     val interactionSource = remember { MutableInteractionSource() }
     Column(
         modifier = modifier
             .clip(CircleShape)
-            .let { if (isSelected) it.background(MaterialTheme.colorScheme.primaryContainer) else it }
-            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
+            .background(containerColor, CircleShape)
+            .clickable(interactionSource = interactionSource, indication = ripple(), onClick = onClick)
             .handCursor()
             // Which tab is up, for accessibility services and tests alike.
             .semantics { selected = isSelected }
@@ -1634,7 +1653,12 @@ private fun BottomNavItemView(
     ) {
         val label = stringResource(route.label)
         Icon(route.icon, contentDescription = label, tint = contentColor, modifier = Modifier.size(22.dp))
-        Text(text = label, style = MaterialTheme.typography.labelMedium, color = contentColor, maxLines = 1)
+        Text(
+            text = label,
+            style = if (isSelected) MaterialTheme.typography.labelMediumEmphasized else MaterialTheme.typography.labelMedium,
+            color = contentColor,
+            maxLines = 1,
+        )
     }
 }
 

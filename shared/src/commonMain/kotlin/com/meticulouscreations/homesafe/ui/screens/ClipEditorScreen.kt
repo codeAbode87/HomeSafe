@@ -57,12 +57,20 @@ import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.ContainedLoadingIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.ToggleButtonShapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -407,6 +415,7 @@ private fun Modifier.chromeRise(splashProgress: () -> Float, fromTop: Boolean): 
     translationY = (1f - eased) * CHROME_RISE.toPx() * if (fromTop) -1f else 1f
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun EditorTopBar(
     title: String,
@@ -423,7 +432,7 @@ private fun EditorTopBar(
             .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onClose) {
+        IconButton(onClick = onClose, shapes = IconButtonDefaults.shapes()) {
             Icon(imageVector = Icons.Filled.Close, contentDescription = stringResource(Res.string.clip_close_editor), tint = Color.White)
         }
         Column(
@@ -514,19 +523,19 @@ private fun SaveButton(save: ClipSaveState, enabled: Boolean, onSave: () -> Unit
 
 private enum class SavePhase { READY, SAVING, SAVED }
 
-/** Spins until the size of the download is known, then fills (smoothly, between the downloader's reports). */
+/** Spins with a wavy ring until the size of the download is known, then fills smoothly. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SaveProgressRing(fraction: Float?, color: Color) {
-    val modifier = Modifier.size(16.dp)
+    val modifier = Modifier.size(18.dp)
     if (fraction == null) {
-        CircularProgressIndicator(modifier = modifier, color = color, strokeWidth = 2.dp)
+        CircularWavyProgressIndicator(modifier = modifier, color = color)
     } else {
         val shown by animateFloatAsState(targetValue = fraction, animationSpec = tween(400), label = "save-progress")
-        CircularProgressIndicator(
+        CircularWavyProgressIndicator(
             progress = { shown },
             modifier = modifier,
             color = color,
-            strokeWidth = 2.dp,
             trackColor = color.copy(alpha = 0.3f),
         )
     }
@@ -540,6 +549,7 @@ private fun percent(fraction: Float): Int = (fraction * 100).toInt()
  * or the playhead is held (or a seek hasn't landed yet) a real frame of that instant covers the
  * video, so what's on screen is always exactly where the selection starts, ends, or is scrubbed to.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun PreviewStage(
     state: ClipEditorUiState,
@@ -608,10 +618,10 @@ private fun PreviewStage(
                     }
                 }
                 if (state.isBuffering && state.isPlaying && !holding) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center).size(36.dp),
-                        color = Color.White,
-                        strokeWidth = 3.dp,
+                    ContainedLoadingIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
+                        indicatorColor = MaterialTheme.colorScheme.primary,
                     )
                 }
                 state.playheadEpochSeconds?.let { playhead ->
@@ -799,21 +809,27 @@ private fun ClipTimeReadout(range: ClipRange?, playheadEpochSeconds: Double?, mo
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun PlayPauseButton(isPlaying: Boolean, enabled: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val pressScale by animateFloatAsState(if (enabled) 1f else 0.9f, label = "play-enabled")
-    Box(
-        modifier = modifier
-            .size(PLAY_BUTTON_SIZE)
-            .graphicsLayer {
-                scaleX = pressScale
-                scaleY = pressScale
-                alpha = if (enabled) 1f else 0.4f
-            }
-            .clip(CircleShape)
-            .background(Color.White.copy(alpha = 0.12f))
-            .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
-        contentAlignment = Alignment.Center,
+    FilledTonalIconToggleButton(
+        checked = isPlaying,
+        onCheckedChange = { onClick() },
+        enabled = enabled,
+        shapes = IconButtonDefaults.toggleableShapes(
+            shape = CircleShape,
+            pressedShape = RoundedCornerShape(14.dp),
+            checkedShape = RoundedCornerShape(16.dp),
+        ),
+        colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = Color.White,
+            checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+            disabledContentColor = Color.White.copy(alpha = 0.38f),
+        ),
+        modifier = modifier.size(PLAY_BUTTON_SIZE),
     ) {
         AnimatedContent(
             targetState = isPlaying,
@@ -826,7 +842,6 @@ private fun PlayPauseButton(isPlaying: Boolean, enabled: Boolean, onClick: () ->
             Icon(
                 imageVector = if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                 contentDescription = stringResource(if (playing) Res.string.clip_pause else Res.string.clip_play),
-                tint = Color.White,
                 modifier = Modifier.size(26.dp),
             )
         }
@@ -834,9 +849,11 @@ private fun PlayPauseButton(isPlaying: Boolean, enabled: Boolean, onClick: () ->
 }
 
 /**
- * One-tap lengths. The one the clip already is (to the second) is lit; picking one keeps the
- * clip's start and moves its end, sliding the whole clip back only if it would run past what exists.
+ * One-tap lengths as an Expressive connected button group. The one the clip already is (to the
+ * second) is lit; picking one keeps the clip's start and moves its end, sliding the whole clip
+ * back only if it would run past what exists.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LengthChips(range: ClipRange, onSetLength: (Double) -> Unit) {
     Row(
@@ -848,14 +865,23 @@ private fun LengthChips(range: ClipRange, onSetLength: (Double) -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(text = stringResource(Res.string.clip_length), style = MaterialTheme.typography.labelLarge, color = EditorSecondaryText, modifier = Modifier.padding(end = 4.dp))
-        ClipLimits.PRESET_SECONDS.forEach { seconds ->
-            val length = lengthLabel(seconds).resolve()
-            EditorChip(
-                selected = abs(range.durationSeconds - seconds) < 0.5,
-                onClick = { onSetLength(seconds) },
-                contentDescription = stringResource(Res.string.clip_make_length, length),
-            ) {
-                Text(text = length, style = MaterialTheme.typography.labelLarge)
+        Row(horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)) {
+            val presets = ClipLimits.PRESET_SECONDS
+            presets.forEachIndexed { index, seconds ->
+                val length = lengthLabel(seconds).resolve()
+                val shapes = when (index) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    presets.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                }
+                EditorChip(
+                    selected = abs(range.durationSeconds - seconds) < 0.5,
+                    onClick = { onSetLength(seconds) },
+                    contentDescription = stringResource(Res.string.clip_make_length, length),
+                    shapes = shapes,
+                ) {
+                    Text(text = length, style = MaterialTheme.typography.labelLarge)
+                }
             }
         }
     }
@@ -866,6 +892,7 @@ private fun LengthChips(range: ClipRange, onSetLength: (Double) -> Unit) {
  * one makes the clip exactly that event; the chips of every event the clip already holds are lit,
  * so "does this clip have the person in it?" is answered at a glance.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun MomentChips(moments: List<ClipMoment>, range: ClipRange?, onSelect: (ClipMoment) -> Unit) {
     val extra = LocalFrigateExtraColors.current
@@ -907,30 +934,35 @@ private fun MomentChips(moments: List<ClipMoment>, range: ClipRange?, onSelect: 
     }
 }
 
-/** A pill on black: a hairline when off, the accent container when [selected]. */
+/** An Expressive shape-morphing toggle pill on black: tonal when off, primaryContainer when [selected]. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun EditorChip(
     selected: Boolean,
     onClick: () -> Unit,
     contentDescription: String,
+    shapes: ToggleButtonShapes = ToggleButtonDefaults.shapes(shape = CircleShape, checkedShape = RoundedCornerShape(12.dp)),
     content: @Composable () -> Unit,
 ) {
-    val background = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.White.copy(alpha = 0.06f)
-    val foreground = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else Color.White
-    val border = if (selected) Color.Transparent else Color.White.copy(alpha = 0.16f)
-    Row(
+    ToggleButton(
+        checked = selected,
+        onCheckedChange = { onClick() },
+        shapes = shapes,
+        colors = ToggleButtonDefaults.toggleButtonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = Color.White,
+            checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
+        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
         modifier = Modifier
-            .height(36.dp)
-            .clip(CircleShape)
-            .background(background)
-            .border(1.dp, border, CircleShape)
-            .clickable(role = Role.Button, onClick = onClick)
-            .semantics { this.contentDescription = contentDescription }
-            .padding(horizontal = 14.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .height(38.dp)
+            .semantics { this.contentDescription = contentDescription },
     ) {
-        CompositionLocalProvider(LocalContentColor provides foreground) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             content()
         }
     }
@@ -1067,7 +1099,7 @@ private const val TABULAR_FIGURES = "tnum"
 private const val CHROME_REVEAL_FROM = 0.55f
 private val CHROME_RISE = 24.dp
 
-private val PREVIEW_CORNER = 16.dp
+private val PREVIEW_CORNER = 24.dp
 
 /**
  * The widest the controls' column gets beside the picture on a phone on its side: the width of a

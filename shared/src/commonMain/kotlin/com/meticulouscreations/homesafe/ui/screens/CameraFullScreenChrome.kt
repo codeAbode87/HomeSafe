@@ -4,8 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,6 +17,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
@@ -27,10 +26,14 @@ import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconToggleButton
+import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,7 +51,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -84,6 +86,7 @@ import org.jetbrains.compose.resources.stringResource
  * top row here because there is no page to say it on. [overflowMenu] is the page header's menu
  * (detection zones, tag cars), which ends the top row and reports its own opening and closing.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun FullScreenPlayerChrome(
     cameraName: String,
@@ -110,11 +113,11 @@ internal fun FullScreenPlayerChrome(
                 .fillMaxWidth()
                 .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = CHROME_SCRIM_ALPHA), Color.Transparent)))
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
-                .padding(start = 8.dp, end = 4.dp, top = 4.dp, bottom = 20.dp),
+                .padding(start = 8.dp, end = 8.dp, top = 6.dp, bottom = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            IconButton(onClick = onBack) {
+            IconButton(onClick = onBack, shapes = IconButtonDefaults.shapes()) {
                 Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back), tint = Color.White)
             }
             // The name and the pill take what the buttons leave, the name giving way first.
@@ -125,7 +128,7 @@ internal fun FullScreenPlayerChrome(
             ) {
                 Text(
                     text = displayName,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLargeEmphasized,
                     color = Color.White,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -142,58 +145,80 @@ internal fun FullScreenPlayerChrome(
                 }
             }
 
-            // The buttons from the bar under the page's player: the icon and its tint say the
-            // state, and a tap that changes something says what in the hint under this row.
-            var qualityMenuOpen by remember { mutableStateOf(false) }
-            Box {
-                ChromeButton(
-                    icon = Icons.Filled.Tune,
-                    contentDescription = stringResource(Res.string.camera_quality_button_description, stringResource(qualityLabel(playback.quality))),
-                    available = hasQualityChoice,
-                    onClick = {
-                        onTouch()
-                        if (hasQualityChoice) {
-                            qualityMenuOpen = true
-                            onHold(true)
-                        } else {
-                            showHint(Res.string.camera_hint_single_quality)
-                        }
-                    },
-                )
-                QualityMenu(
-                    expanded = qualityMenuOpen,
-                    selected = playback.quality,
-                    onSelect = { choice ->
-                        qualityMenuOpen = false
-                        onHold(false)
-                        viewModel.setQuality(choice)
-                    },
-                    onDismiss = {
-                        qualityMenuOpen = false
-                        onHold(false)
-                    },
-                )
+            // Expressive floating toolbar capsule grouping quality, sound, clip, and overflow.
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.84f),
+                tonalElevation = 4.dp,
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    var qualityMenuOpen by remember { mutableStateOf(false) }
+                    Box {
+                        ChromeButton(
+                            icon = Icons.Filled.Tune,
+                            contentDescription = stringResource(Res.string.camera_quality_button_description, stringResource(qualityLabel(playback.quality))),
+                            available = hasQualityChoice,
+                            onClick = {
+                                onTouch()
+                                if (hasQualityChoice) {
+                                    qualityMenuOpen = true
+                                    onHold(true)
+                                } else {
+                                    showHint(Res.string.camera_hint_single_quality)
+                                }
+                            },
+                        )
+                        QualityMenu(
+                            expanded = qualityMenuOpen,
+                            selected = playback.quality,
+                            onSelect = { choice ->
+                                qualityMenuOpen = false
+                                onHold(false)
+                                viewModel.setQuality(choice)
+                            },
+                            onDismiss = {
+                                qualityMenuOpen = false
+                                onHold(false)
+                            },
+                        )
+                    }
+                    FilledTonalIconToggleButton(
+                        checked = !playback.isMuted,
+                        onCheckedChange = {
+                            onTouch()
+                            showHint(soundToggleHint(wasMuted = playback.isMuted, hasAudio = playback.hasAudio))
+                            viewModel.toggleMuted()
+                        },
+                        shapes = IconButtonDefaults.toggleableShapes(),
+                        colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color.White,
+                            checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                        modifier = Modifier.alpha(if (playback.hasAudio) 1f else UNAVAILABLE_CHROME_ALPHA),
+                    ) {
+                        Icon(
+                            imageVector = if (playback.isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+                            contentDescription = stringResource(if (playback.isMuted) Res.string.camera_sound_turn_on else Res.string.camera_sound_turn_off),
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+                    // The editor's splash lands where the scissors are, as it does from the page.
+                    val clipOrigin = remember { OriginProbe() }
+                    ChromeButton(
+                        icon = Icons.Filled.ContentCut,
+                        contentDescription = stringResource(Res.string.camera_action_clip_description, displayName),
+                        onClick = { onClip(clipOrigin.fraction()) },
+                        modifier = Modifier.onGloballyPositioned { clipOrigin.coordinates = it },
+                    )
+                    overflowMenu(onHold)
+                }
             }
-            ChromeButton(
-                icon = if (playback.isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
-                contentDescription = stringResource(if (playback.isMuted) Res.string.camera_sound_turn_on else Res.string.camera_sound_turn_off),
-                active = !playback.isMuted,
-                available = playback.hasAudio,
-                onClick = {
-                    onTouch()
-                    showHint(soundToggleHint(wasMuted = playback.isMuted, hasAudio = playback.hasAudio))
-                    viewModel.toggleMuted()
-                },
-            )
-            // The editor's splash lands where the scissors are, as it does from the page.
-            val clipOrigin = remember { OriginProbe() }
-            ChromeButton(
-                icon = Icons.Filled.ContentCut,
-                contentDescription = stringResource(Res.string.camera_action_clip_description, displayName),
-                onClick = { onClip(clipOrigin.fraction()) },
-                modifier = Modifier.onGloballyPositioned { clipOrigin.coordinates = it },
-            )
-            overflowMenu(onHold)
         }
 
         AnimatedVisibility(
@@ -217,24 +242,32 @@ internal fun FullScreenPlayerChrome(
         }
 
         // Nothing to play or pause without a stream, and the spinner has this spot while one loads.
+        // Morphs between circle (paused) and rounded square (playing) via M3 Expressive shapes.
         if (playback.playerRequest != null && !playback.isLoadingPlaylist && !playback.isBuffering) {
-            Box(
+            FilledIconToggleButton(
+                checked = playback.isPlaying,
+                onCheckedChange = {
+                    onTouch()
+                    viewModel.togglePlayPause()
+                },
+                shapes = IconButtonDefaults.toggleableShapes(
+                    shape = CircleShape,
+                    pressedShape = RoundedCornerShape(18.dp),
+                    checkedShape = RoundedCornerShape(22.dp),
+                ),
+                colors = IconButtonDefaults.filledIconToggleButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
+                    contentColor = Color.White,
+                    checkedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.92f),
+                    checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .background(LocalFrigateExtraColors.current.glassFill, CircleShape)
-                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), CircleShape)
-                    .clickable(role = Role.Button) {
-                        onTouch()
-                        viewModel.togglePlayPause()
-                    },
-                contentAlignment = Alignment.Center,
+                    .size(72.dp),
             ) {
                 Icon(
                     imageVector = if (playback.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                     contentDescription = stringResource(if (playback.isPlaying) Res.string.camera_pause else Res.string.camera_play),
-                    tint = Color.White,
                     modifier = Modifier.size(36.dp),
                 )
             }
@@ -255,25 +288,25 @@ internal fun FullScreenPlayerChrome(
 }
 
 /**
- * One of the chrome's round buttons: glass, white, a full 48dp to tap. [active] true tints it in
- * the accent (the speaker, on); [available] false dims it but keeps it tappable, so the tap can
- * say why it did nothing — the same language as the page's quick actions.
+ * One of the chrome's toolbar buttons: shape-morphing on press, white, a full 48dp to tap.
+ * [available] false dims it but keeps it tappable, so the tap can say why it did nothing.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ChromeButton(
     icon: ImageVector,
     contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    active: Boolean = false,
     available: Boolean = true,
 ) {
     IconButton(
         onClick = onClick,
+        shapes = IconButtonDefaults.shapes(),
         modifier = modifier.alpha(if (available) 1f else UNAVAILABLE_CHROME_ALPHA),
         colors = IconButtonDefaults.iconButtonColors(
-            containerColor = if (active) MaterialTheme.colorScheme.primaryContainer else LocalFrigateExtraColors.current.glassFill,
-            contentColor = if (active) MaterialTheme.colorScheme.onPrimaryContainer else Color.White,
+            containerColor = Color.Transparent,
+            contentColor = Color.White,
         ),
     ) {
         Icon(imageVector = icon, contentDescription = contentDescription, modifier = Modifier.size(22.dp))
