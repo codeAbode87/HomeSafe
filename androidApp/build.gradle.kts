@@ -178,6 +178,17 @@ android {
         }
     }
     signingConfigs {
+        // One debug key for everyone, committed on purpose: it is no secret (password "android",
+        // like AGP's own), and it signs only the .debug package. Without it every machine and CI
+        // runner signs with its own ~/.android/debug.keystore, so CI's debug APK (and Greenroom's
+        // builds of it) can't install over one built here without an uninstall. Named .ks so tools
+        // that hold back *.keystore/*.jks as secrets still send it along.
+        getByName("debug") {
+            storeFile = file("debug-signing.ks")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         // All four or none: a half-configured signing config fails deep inside the packaging task
         // with a much worse message than the debug-key warning below.
         if (keystoreProperties.keys.containsAll(listOf("storeFile", "storePassword", "keyAlias", "keyPassword"))) {
