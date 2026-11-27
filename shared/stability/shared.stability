@@ -2167,14 +2167,6 @@ public fun com.meticulouscreations.homesafe.ui.screens.NotificationsSettingsScre
     - modifier: STABLE (marked @Stable or @Immutable)
 
 @Composable
-private fun com.meticulouscreations.homesafe.ui.screens.OpenAppsButton(onClick: kotlin.Function0<kotlin.Unit>, extraColors: com.meticulouscreations.homesafe.ui.theme.FrigateExtraColors): kotlin.Unit
-  skippable: true
-  restartable: true
-  params:
-    - onClick: STABLE (function type)
-    - extraColors: STABLE (marked @Stable or @Immutable)
-
-@Composable
 internal fun com.meticulouscreations.homesafe.ui.screens.OtherAppsNotifications(state: com.meticulouscreations.homesafe.viewmodel.SettingsUiState, onOpenDoors: kotlin.Function0<kotlin.Unit>, onWeatherNotices: kotlin.Function1<com.meticulouscreations.homesafe.weather.domain.WeatherNoticeSettings, kotlin.Unit>, onAllowNotifications: kotlin.Function0<kotlin.Unit>, onBudgetAlerts: kotlin.Function1<com.meticulouscreations.homesafe.finance.domain.BudgetAlertSwitches, kotlin.Unit>, onRetryBudget: kotlin.Function0<kotlin.Unit>): kotlin.Unit
   skippable: true
   restartable: true
@@ -2822,6 +2814,15 @@ private fun com.meticulouscreations.homesafe.ui.screens.ShellTabs(nav: com.metic
     - appVersion: STABLE (String is immutable)
     - offline: STABLE (primitive type)
     - sidebar: STABLE (primitive type)
+
+@Composable
+private fun com.meticulouscreations.homesafe.ui.screens.SignInAppShortcuts(onOpen: kotlin.Function2<com.meticulouscreations.homesafe.ui.screens.InnerApp, androidx.compose.ui.geometry.Offset, kotlin.Unit>, onAllApps: kotlin.Function0<kotlin.Unit>, modifier: androidx.compose.ui.Modifier): kotlin.Unit
+  skippable: true
+  restartable: true
+  params:
+    - onOpen: STABLE (function type)
+    - onAllApps: STABLE (function type)
+    - modifier: STABLE (marked @Stable or @Immutable)
 
 @Composable
 private fun com.meticulouscreations.homesafe.ui.screens.Shimmer(modifier: androidx.compose.ui.Modifier): kotlin.Unit

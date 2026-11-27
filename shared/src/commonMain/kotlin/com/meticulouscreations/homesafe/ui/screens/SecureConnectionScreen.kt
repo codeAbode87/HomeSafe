@@ -9,7 +9,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,7 +34,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Fingerprint
@@ -65,11 +63,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -85,6 +82,7 @@ import com.meticulouscreations.homesafe.navigation.TopLevelRoute
 import com.meticulouscreations.homesafe.text.resolve
 import com.meticulouscreations.homesafe.ui.components.PulsingDot
 import com.meticulouscreations.homesafe.ui.components.ReportFullyDrawnWhen
+import com.meticulouscreations.homesafe.ui.handCursor
 import com.meticulouscreations.homesafe.ui.preview.FrigatePreview
 import com.meticulouscreations.homesafe.ui.theme.FrigateExtraColors
 import com.meticulouscreations.homesafe.ui.theme.LocalFrigateExtraColors
@@ -92,6 +90,7 @@ import com.meticulouscreations.homesafe.viewmodel.ConnectUiState
 import com.meticulouscreations.homesafe.viewmodel.SecureConnectionViewModel
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import homesafe.shared.generated.resources.Res
+import homesafe.shared.generated.resources.connection_all_apps
 import homesafe.shared.generated.resources.connection_autofill_test_credentials
 import homesafe.shared.generated.resources.connection_biometric_enable
 import homesafe.shared.generated.resources.connection_biometric_enable_body
@@ -103,7 +102,6 @@ import homesafe.shared.generated.resources.connection_biometric_update_title
 import homesafe.shared.generated.resources.connection_brand_wordmark
 import homesafe.shared.generated.resources.connection_connect
 import homesafe.shared.generated.resources.connection_forget_saved_login
-import homesafe.shared.generated.resources.connection_open_apps
 import homesafe.shared.generated.resources.connection_open_apps_hint
 import homesafe.shared.generated.resources.connection_password_hide
 import homesafe.shared.generated.resources.connection_password_placeholder
@@ -156,13 +154,14 @@ internal class ServerUrlField(private val stored: () -> String?) {
     }
 }
 
-/** The button under the form that opens the apps' drawer, which needs no sign-in. */
+/** The link above the form that opens the apps' drawer, which needs no sign-in. */
 const val SIGN_IN_APPS_TEST_TAG = "sign_in_apps"
 
 /**
  * Sign-in to the camera server, and the way to everything that doesn't need it: Weather, Fitness
- * and Finance live in the shell's drawer, and the drawer opens from here as well (a button under
- * the form, and the menu button of the skeleton shown while the server is being asked), so a
+ * and Finance live in the shell's drawer, and they open from here as well (shortcuts above the
+ * form, a link to the whole drawer beside them, and the menu button of the skeleton shown while
+ * the server is being asked), so a
  * server that is slow to answer, or a Tailscale that isn't up yet, keeps nobody from them.
  * [onConnected] waits for an app opened that way to be closed: the shell doesn't take the screen
  * out from under it.
@@ -319,6 +318,14 @@ fun SecureConnectionScreen(
                             )
                         }
                     }
+
+                    // Above the fields, not under the buttons: on launch with a saved login,
+                    // Android's biometric sheet covers the bottom half of the screen, and the
+                    // apps that need no sign-in should be a tap away right then.
+                    SignInAppShortcuts(
+                        onOpen = { app, origin -> apps.openApp(app, origin, TopLevelRoute.Home) },
+                        onAllApps = { apps.drawerOpen = true },
+                    )
 
                     Column(
                         modifier = Modifier.fillMaxWidth(),
@@ -480,8 +487,6 @@ fun SecureConnectionScreen(
                                 )
                             }
                         }
-
-                        OpenAppsButton(onClick = { apps.drawerOpen = true }, extraColors = extraColors)
                     }
                 }
             }
@@ -495,25 +500,33 @@ fun SecureConnectionScreen(
     }
 }
 
-/** The way from the sign-in form to the apps that don't need it: opens the drawer they live in. */
+/**
+ * The apps that don't need the server, one tap each, with a link to the drawer they live in
+ * (which adds their glance cards). Sits above the sign-in form.
+ */
 @Composable
-private fun OpenAppsButton(onClick: () -> Unit, extraColors: FrigateExtraColors) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(role = Role.Button, onClick = onClick)
-            .testTag(SIGN_IN_APPS_TEST_TAG)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Icon(Icons.Filled.Apps, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(stringResource(Res.string.connection_open_apps), style = MaterialTheme.typography.labelLarge, color = extraColors.textPrimary)
-            Text(stringResource(Res.string.connection_open_apps_hint), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun SignInAppShortcuts(
+    onOpen: (InnerApp, Offset) -> Unit,
+    onAllApps: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(Res.string.connection_open_apps_hint),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onAllApps, modifier = Modifier.handCursor().testTag(SIGN_IN_APPS_TEST_TAG)) {
+                Text(stringResource(Res.string.connection_all_apps), style = MaterialTheme.typography.labelLarge)
+                Icon(Icons.Filled.ChevronRight, contentDescription = null, modifier = Modifier.size(18.dp))
+            }
         }
-        Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        DrawerQuickStrip(onOpen = onOpen, modifier = Modifier.padding(top = 4.dp))
     }
 }
 
@@ -674,6 +687,18 @@ private fun ConnectionTextFieldsPreview() {
                 enabled = true,
                 field = ConnectionField.PASSWORD,
             )
+        }
+    }
+}
+
+/** The shortcuts above the sign-in form: what is reachable before any sign-in. */
+@Preview(name = "Sign-in app shortcuts", widthDp = 412)
+@Preview(name = "Sign-in app shortcuts, in Spanish", widthDp = 412, locale = "es")
+@Composable
+private fun SignInAppShortcutsPreview() {
+    FrigatePreview {
+        Box(Modifier.background(MaterialTheme.colorScheme.background).padding(24.dp)) {
+            SignInAppShortcuts(onOpen = { _, _ -> }, onAllApps = {})
         }
     }
 }

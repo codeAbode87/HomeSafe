@@ -24,9 +24,8 @@ class AppsWithoutServerJourneyTest {
 
     private fun AppJourney.openDrawerFromTheForm() {
         signIn.awaitForm()
-        // Under the buttons, which on a short window is below the fold.
-        scrollIntoView(hasTestTag(SIGN_IN_APPS_TEST_TAG), "the apps button under the form")
-        tap(hasTestTag(SIGN_IN_APPS_TEST_TAG), "the apps button under the form")
+        // Above the fields, so it is on screen without scrolling.
+        tap(hasTestTag(SIGN_IN_APPS_TEST_TAG), "the all-apps link above the form")
         awaitTag("drawer_fitness")
     }
 
@@ -91,6 +90,19 @@ class AppsWithoutServerJourneyTest {
     fun quickStripAtTheTopOfTheDrawerOpensFitnessWithoutScrolling() = runAppJourney {
         openDrawerFromTheForm()
         tap(hasTestTag(drawerQuickAppTestTag(InnerApp.FITNESS)), "Fitness in the drawer's quick strip")
+        awaitTag("fitness_app")
+
+        tap(hasTestTag("fitness_back"), "Fitness's close button")
+        awaitGone(hasTestTag("fitness_app"), "the fitness app")
+        signIn.awaitForm()
+        assertTrue(server.requests.isEmpty(), "the server was never asked for anything: ${server.requests}")
+    }
+
+    @Test
+    fun theShortcutsAboveTheFormOpenAnAppWithoutTheDrawer() = runAppJourney {
+        signIn.awaitForm()
+        // Above the fields, where a biometric sheet over the bottom of the screen leaves them.
+        tap(hasTestTag(drawerQuickAppTestTag(InnerApp.FITNESS)), "Fitness in the shortcuts above the form")
         awaitTag("fitness_app")
 
         tap(hasTestTag("fitness_back"), "Fitness's close button")
