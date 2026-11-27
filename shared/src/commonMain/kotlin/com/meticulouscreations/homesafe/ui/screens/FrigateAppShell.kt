@@ -97,6 +97,7 @@ import com.meticulouscreations.homesafe.domain.model.ConnectionRoute
 import com.meticulouscreations.homesafe.domain.model.MomentEvent
 import com.meticulouscreations.homesafe.domain.model.VideoFit
 import com.meticulouscreations.homesafe.finance.ui.FinanceTab
+import com.meticulouscreations.homesafe.navigation.AppDeepLinks
 import com.meticulouscreations.homesafe.navigation.BackStackViewModelStores
 import com.meticulouscreations.homesafe.navigation.DoorDeepLinks
 import com.meticulouscreations.homesafe.navigation.FinanceDeepLinks
@@ -693,8 +694,23 @@ class ShellNavigation(
      */
     suspend fun openFinanceFromNotifications() {
         FinanceDeepLinks.pending.filterNotNull().collect { link ->
-            openApp(InnerApp.FINANCE, Offset.Zero, selectedTab, link.tab)
+            val host = selectedTab
+            openApp(InnerApp.FINANCE, Offset.Zero, host, link.tab)
+            if (!appsInSidebar) onTabSelected(host)
             FinanceDeepLinks.consume(link)
+        }
+    }
+
+    /**
+     * Opens Atlas or Charging whenever a pinned home-screen shortcut or deep link asks for it
+     * (`homesafe://atlas`, `homesafe://charging`), for as long as the caller runs.
+     */
+    suspend fun openAppsFromLinks() {
+        AppDeepLinks.pending.filterNotNull().collect { link ->
+            val host = selectedTab
+            openApp(link.app, Offset.Zero, host)
+            if (!appsInSidebar) onTabSelected(host)
+            AppDeepLinks.consume(link)
         }
     }
 }
@@ -727,6 +743,7 @@ fun FrigateAppShell() {
     LaunchedEffect(nav) { nav.openFinanceFromNotifications() }
     LaunchedEffect(nav) { nav.openPackagesFromNotifications() }
     LaunchedEffect(nav) { nav.openFitnessFromLinks() }
+    LaunchedEffect(nav) { nav.openAppsFromLinks() }
     AssistantScreenContext { nav.assistantContext() }
 
     // Laid out from the window's answer straight away; the navigation catches up after the frame.

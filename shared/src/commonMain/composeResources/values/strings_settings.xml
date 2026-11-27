@@ -386,6 +386,15 @@
     <string name="settings_app_icon_glitch">Glitch</string>
     <string name="settings_app_icon_peephole">Peephole</string>
 
+    <!-- The "Home screen shortcuts" row, for pinning Weather, Fitness, etc. directly onto Android's home screen. -->
+    <string name="settings_shortcuts_title">Home screen shortcuts</string>
+    <string name="settings_shortcuts_summary">Pin Weather, Fitness and other apps</string>
+    <string name="settings_shortcuts_caption">Add any app straight to your home screen so it opens in one tap without waiting on the camera server.</string>
+    <!-- %1$s: the app's name, e.g. "Weather". -->
+    <string name="settings_shortcuts_add_label">Add %1$s to home screen</string>
+    <!-- %1$s: the app's name, e.g. "Fitness". -->
+    <string name="settings_shortcuts_requested">Asked your launcher to add %1$s to the home screen.</string>
+
     <!-- A tablet's Settings, with the page a row opens beside the list: what that side shows before a row is picked. -->
     <string name="settings_pane_empty">Pick a setting, and its page opens here.</string>
 </resources>

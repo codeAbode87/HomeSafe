@@ -109,6 +109,9 @@ class IosShell {
         MainScope().launch { nav.openWeatherFromNotifications() }
         MainScope().launch { nav.openDoorsFromNotifications() }
         MainScope().launch { nav.openPackagesFromNotifications() }
+        MainScope().launch { nav.openFitnessFromLinks() }
+        MainScope().launch { nav.openFinanceFromNotifications() }
+        MainScope().launch { nav.openAppsFromLinks() }
         MainScope().launch {
             snapshotFlow { nav.showsBottomNav(TopLevelRoute.Home) }
                 .distinctUntilChanged()

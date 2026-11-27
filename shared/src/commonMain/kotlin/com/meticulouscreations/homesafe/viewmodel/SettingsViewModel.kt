@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meticulouscreations.homesafe.appicon.AppIcon
 import com.meticulouscreations.homesafe.appicon.AppIconSwitcher
+import com.meticulouscreations.homesafe.appicon.AppShortcutPinner
 import com.meticulouscreations.homesafe.domain.model.ActiveConnection
 import com.meticulouscreations.homesafe.domain.model.AlertPreset
 import com.meticulouscreations.homesafe.domain.model.AlertSettings
@@ -54,6 +55,7 @@ import com.meticulouscreations.homesafe.maps.MapProvider
 import com.meticulouscreations.homesafe.maps.MapSettings
 import com.meticulouscreations.homesafe.text.UiText
 import com.meticulouscreations.homesafe.text.userMessage
+import com.meticulouscreations.homesafe.ui.screens.InnerApp
 import com.meticulouscreations.homesafe.vault.HouseholdKeys
 import com.meticulouscreations.homesafe.weather.domain.WeatherNoticePreferences
 import com.meticulouscreations.homesafe.weather.domain.WeatherNoticeSettings
@@ -130,6 +132,10 @@ data class SettingsUiState(
     val appIconsSupported: Boolean = false,
     /** The home-screen icon in use. */
     val appIcon: AppIcon = AppIcon.DEFAULT,
+    /** Whether this launcher lets the app pin standalone app shortcuts onto the home screen. */
+    val pinShortcutsSupported: Boolean = false,
+    /** The app whose home-screen shortcut was just requested to be pinned, for inline feedback. */
+    val pinnedShortcutApp: InnerApp? = null,
     /** Whose map the app's maps are drawn on, and how Google's is getting on when it's picked. */
     val maps: MapSettings = MapSettings(),
     /** Which of the weather app's notifications are wanted. They share this phone's one notification permission with the cameras'. */
@@ -198,6 +204,7 @@ private data class LocalState(
     val alertVolume: AlertVolume? = null,
     val alertVolumeRequested: Boolean = false,
     val appIcon: AppIcon = AppIcon.DEFAULT,
+    val pinnedShortcutApp: InnerApp? = null,
     val budgetAlerts: BudgetAlertsState = BudgetAlertsState.Loading,
 )
 
@@ -243,6 +250,7 @@ class SettingsViewModel(
     private val budgetAlertPreferences: BudgetAlertPreferences,
     private val notificationMute: NotificationMute,
     private val appIcons: AppIconSwitcher,
+    private val shortcutPinner: AppShortcutPinner,
     private val baseMaps: BaseMaps,
     private val householdKeys: HouseholdKeys,
 ) : ViewModel() {
@@ -286,6 +294,8 @@ class SettingsViewModel(
                 alertVolume = local.alertVolume,
                 appIconsSupported = appIcons.supported,
                 appIcon = local.appIcon,
+                pinShortcutsSupported = shortcutPinner.supported,
+                pinnedShortcutApp = local.pinnedShortcutApp,
                 budgetAlerts = local.budgetAlerts,
             )
         },
@@ -322,6 +332,7 @@ class SettingsViewModel(
                 geofenceSupported = geofenceSupported,
                 appIconsSupported = appIcons.supported,
                 appIcon = local.value.appIcon,
+                pinShortcutsSupported = shortcutPinner.supported,
             ),
         )
 
@@ -494,6 +505,15 @@ class SettingsViewModel(
         viewModelScope.launch {
             appIcons.set(icon)
             local.update { it.copy(appIcon = appIcons.current()) }
+        }
+    }
+
+    /** Asks the launcher to pin [app] onto the home screen as a one-tap shortcut icon. */
+    fun pinAppShortcut(app: InnerApp) {
+        viewModelScope.launch {
+            if (shortcutPinner.pin(app)) {
+                local.update { it.copy(pinnedShortcutApp = app) }
+            }
         }
     }
 

@@ -329,5 +329,11 @@
     <string name="settings_app_icon_glitch">Glitch</string>
     <string name="settings_app_icon_peephole">Mirilla</string>
 
+    <string name="settings_shortcuts_title">Accesos directos</string>
+    <string name="settings_shortcuts_summary">Fija Clima, Fitness y otras apps en tu inicio</string>
+    <string name="settings_shortcuts_caption">Agrega cualquier app directo a tu pantalla de inicio para abrirla con un toque sin esperar al servidor de cámaras.</string>
+    <string name="settings_shortcuts_add_label">Agregar %1$s a la pantalla de inicio</string>
+    <string name="settings_shortcuts_requested">Se pidió al lanzador agregar %1$s a la pantalla de inicio.</string>
+
     <string name="settings_pane_empty">Elige una opción y su página se abrirá aquí.</string>
 </resources>
