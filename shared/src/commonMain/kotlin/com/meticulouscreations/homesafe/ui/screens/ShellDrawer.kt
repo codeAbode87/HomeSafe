@@ -191,6 +191,7 @@ fun ShellDrawer(
     open: Boolean,
     pull: DrawerPull,
     onClose: () -> Unit,
+    quickStrip: @Composable (animated: Boolean) -> Unit = {},
     apps: @Composable (animated: Boolean) -> Unit = {},
 ) {
     val reveal = remember { Animatable(if (open) 1f else 0f) }
@@ -261,8 +262,9 @@ fun ShellDrawer(
                     stringResource(Res.string.shell_app_title),
                     style = MaterialTheme.typography.headlineMedium.copy(letterSpacing = 0.03.em),
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(start = 8.dp, top = 12.dp, bottom = 24.dp),
+                    modifier = Modifier.padding(start = 8.dp, top = 12.dp, bottom = 16.dp),
                 )
+                quickStrip(open || pulling)
                 DrawerLabel(stringResource(Res.string.shell_drawer_section_apps))
                 apps(open || pulling)
             }
