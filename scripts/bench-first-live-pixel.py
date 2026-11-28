@@ -59,10 +59,22 @@ def focused_window(serial):
     return focus.group(1).strip() if focus else "unknown"
 
 
-def find_bounds(serial, text, timeout_s):
-    """Centre of the first node whose text is [text], polling uiautomator until it appears."""
+def swipe_up(serial):
+    """Scrolls the page under the finger up by about a third of the screen."""
+    size = re.search(r"(\d+)x(\d+)", adb(serial, "shell", "wm", "size", check=False))
+    w, h = (int(size.group(1)), int(size.group(2))) if size else (1080, 1920)
+    adb(serial, "shell", "input", "swipe", str(w // 2), str(h * 3 // 4), str(w // 2), str(h * 2 // 5), "300", check=False)
+
+
+def find_bounds(serial, text, timeout_s, scroll=False):
+    """Centre of the first node whose text is [text], polling uiautomator until it appears.
+
+    With [scroll], a screen that is up but doesn't show it is scrolled down every couple of
+    seconds: the sign-in form's buttons sit under the app shortcuts, below the fold on a small
+    emulator."""
     deadline = time.monotonic() + timeout_s
     seen = None
+    swiped_at = time.monotonic()
     while time.monotonic() < deadline:
         nodes = screen(serial)
         if nodes is not None:
@@ -70,6 +82,9 @@ def find_bounds(serial, text, timeout_s):
                 if node.get("text") == text:
                     return centre(node)
             seen = [n.get("text") for n in nodes if n.get("text")]
+            if scroll and seen and time.monotonic() - swiped_at > 2:
+                swipe_up(serial)
+                swiped_at = time.monotonic()
         time.sleep(0.2)
     # What was there instead is the whole diagnosis: a system dialog, the launcher, a blank screen.
     if seen is None:
@@ -136,15 +151,12 @@ def run_once(serial, package, cameras, timeout_s, settle_s, taps, launch_only=Fa
     total = re.search(r"TotalTime: (\d+)", launch)
     if launch_only:
         # A build from before the milestones existed: only the cold launch itself can be timed.
-        find_bounds(serial, "Autofill test credentials", 15)
+        find_bounds(serial, "Autofill test credentials", 15, scroll=True)
         return {"launch.totalTime": int(total.group(1)) if total else None}
-    if "autofill" not in taps:
-        taps["autofill"] = find_bounds(serial, "Autofill test credentials", 15)
-    else:
-        find_bounds(serial, "Autofill test credentials", 15)
+    # Found afresh every run: where the page scrolled to put them on screen can differ by a few pixels.
+    taps["autofill"] = find_bounds(serial, "Autofill test credentials", 15, scroll=True)
     adb(serial, "shell", "input", "tap", *map(str, taps["autofill"]))
-    if "connect" not in taps:
-        taps["connect"] = find_bounds(serial, "Connect", 15)
+    taps["connect"] = find_bounds(serial, "Connect", 15, scroll=True)
     adb(serial, "shell", "input", "tap", *map(str, taps["connect"]))
     deadline = time.monotonic() + timeout_s
     marks = {}
