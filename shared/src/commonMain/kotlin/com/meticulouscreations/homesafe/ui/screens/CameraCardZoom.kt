@@ -323,7 +323,7 @@ class CameraCardZoomState(private val scope: CoroutineScope) {
         val window = zoomWindow(IntSize(size.width.roundToInt(), size.height.roundToInt()))
         val center = Offset(size.width / 2f, size.height / 2f) + frame.translation
         val half = Offset(window.width * frame.scale / 2f, window.height * frame.scale / 2f)
-        return WindowShape(Rect(center - half, center + half), cornerRadius * (1f - shownLift))
+        return WindowShape(Rect(center - half, center + half), cornerRadius * (1f - shownLift).coerceIn(0f, 1f))
     }
 
     private fun begin(tile: CameraTile, cardBoundsInRoot: Rect) {
@@ -371,6 +371,7 @@ class CameraCardZoomState(private val scope: CoroutineScope) {
     private val IntSize.center: Offset get() = Offset(width / 2f, height / 2f)
 
     private companion object {
+        // Underdamped: the lift overshoots 0..1, so whatever can't (alpha, a corner radius) clamps it.
         val LIFT_SPEC = spring<Float>(dampingRatio = 0.85f, stiffness = 420f)
 
         /** How much of the way home to its card a full back swipe draws the video. */
@@ -424,7 +425,7 @@ internal fun CameraCardZoomOverlay(state: CameraCardZoomState, onOpenCamera: (Ca
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .drawBehind { drawRect(Color.Black, alpha = SCRIM_ALPHA * state.shownLift) }
+            .drawBehind { drawRect(Color.Black, alpha = SCRIM_ALPHA * state.shownLift.coerceIn(0f, 1f)) }
             .clickable(interactionSource = null, indication = null, onClick = state::close)
             .onGloballyPositioned { state.overlayOriginInRoot = it.positionInRoot() }
             .onSizeChanged { state.viewportSize = it }
