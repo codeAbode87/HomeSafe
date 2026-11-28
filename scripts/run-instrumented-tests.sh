@@ -31,7 +31,7 @@ adb logcat -c || true
 # variable and matched there, never piped into `grep -q` or `head`: those stop reading at the first
 # line, adb dies of SIGPIPE, and under pipefail a match then reads as "not found".
 current_focus() {
-  adb shell dumpsys window 2>/dev/null | grep 'mCurrentFocus=' || true
+  timeout 30 adb shell dumpsys window 2>/dev/null | grep 'mCurrentFocus=' || true
 }
 
 # A system "isn't responding" or "keeps stopping" dialog keeps window focus until somebody answers
@@ -114,15 +114,16 @@ if [ "$status" -ne 0 ]; then
   # or "keeps stopping" dialog on the emulator. Show what took focus and any ANRs, so a failure
   # like that names its cause instead of looking like the app broke.
   echo "::group::System dialogs, ANRs and window focus changes"
-  adb logcat -d -b main,system,crash -v time \
+  # timeout: on an emulator that went offline, adb waits for it forever (the job then ran to its limit).
+  timeout 60 adb logcat -d -b main,system,crash -v time \
     | grep -E "ANR in|not responding|isn't responding|keeps stopping|AppErrorDialog|FATAL EXCEPTION|Changing focus from|mCurrentFocus|focus-request" \
     | tail -n 120
-  adb shell dumpsys window 2>/dev/null | grep -E "mCurrentFocus|mFocusedApp" || true
+  timeout 30 adb shell dumpsys window 2>/dev/null | grep -E "mCurrentFocus|mFocusedApp" || true
   echo "::endgroup::"
 fi
 
 echo "::group::Last tests the runner started and finished"
-adb logcat -d -s TestRunner:I | grep -E "started:|finished:|failed:" | tail -n 40
+timeout 60 adb logcat -d -s TestRunner:I | grep -E "started:|finished:|failed:" | tail -n 40
 echo "::endgroup::"
 
 exit "$status"
