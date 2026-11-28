@@ -64,7 +64,8 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-api${{ env.API_LEVEL }}-google_apis-x86_64
+          # Its own key: the AVD is a Pixel 6, not the 320x640 default the other workflows cache.
+          key: avd-api${{ env.API_LEVEL }}-google_apis-x86_64-pixel_6
       - name: Create AVD and snapshot
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
@@ -72,6 +73,12 @@ jobs:
           api-level: ${{ env.API_LEVEL }}
           target: google_apis
           arch: x86_64
+          # A phone's screen, as apksim gives the same tests: the runner's default is 320x640, where forms
+          # run below the fold and tests disagreed with apksim over it (#335). Drawing it in
+          # software needs the four cores (android-cli-journeys.yml found two starve the system).
+          profile: pixel_6
+          cores: 4
+          ram-size: 4096M
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
@@ -94,6 +101,9 @@ jobs:
           api-level: ${{ env.API_LEVEL }}
           target: google_apis
           arch: x86_64
+          profile: pixel_6
+          cores: 4
+          ram-size: 4096M
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true

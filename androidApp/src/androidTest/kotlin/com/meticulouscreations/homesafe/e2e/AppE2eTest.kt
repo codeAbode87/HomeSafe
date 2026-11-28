@@ -13,6 +13,7 @@ import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import com.meticulouscreations.homesafe.MainActivity
 import com.meticulouscreations.homesafe.fakefrigate.FakeFrigateServer
@@ -141,8 +142,10 @@ class AppE2eTest {
             // MainActivity turns on testTagsAsResourceId; this is what UiAutomator, Macrobenchmark
             // journeys and `android layout` (Android CLI journeys) find the form by.
             val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-            assertNotNull(device.wait(Until.findObject(By.res(SIGN_IN_CONNECT_TEST_TAG)), 10_000))
-            assertNotNull(device.findObject(By.res(SIGN_IN_SERVER_URL_TEST_TAG)))
+            assertNotNull(device.wait(Until.findObject(By.res(SIGN_IN_SERVER_URL_TEST_TAG)), 10_000))
+            // Connect sits below the fold on a small screen (CI's 320x640 emulator), and
+            // UiAutomator only finds what is on screen: scroll the form down until it shows.
+            assertNotNull(device.findScrollingDown(SIGN_IN_CONNECT_TEST_TAG))
         }
     }
 
@@ -241,4 +244,15 @@ class AppE2eTest {
         }
         return resumed
     }
+}
+
+/** The node with resource id [res], scrolling down a third of the screen at a time until it shows. */
+private fun UiDevice.findScrollingDown(res: String): UiObject2? {
+    repeat(4) {
+        wait(Until.findObject(By.res(res)), 2_000)?.let { return it }
+        val x = displayWidth / 2
+        swipe(x, displayHeight * 3 / 4, x, displayHeight * 2 / 5, 20)
+        waitForIdle()
+    }
+    return findObject(By.res(res))
 }
