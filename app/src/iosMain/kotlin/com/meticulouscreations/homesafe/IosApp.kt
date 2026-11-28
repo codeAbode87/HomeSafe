@@ -8,8 +8,20 @@ import com.meticulouscreations.homesafe.fitness.IosLiveActivities
 import com.meticulouscreations.homesafe.fitness.IosLiveWorkoutSurface
 import com.meticulouscreations.homesafe.fitness.live.LiveWorkoutPresenter
 import com.meticulouscreations.homesafe.fitness.live.LiveWorkouts
+import com.meticulouscreations.homesafe.navigation.AppDeepLink
+import com.meticulouscreations.homesafe.navigation.AppDeepLinks
+import com.meticulouscreations.homesafe.navigation.DoorDeepLink
+import com.meticulouscreations.homesafe.navigation.DoorDeepLinks
+import com.meticulouscreations.homesafe.navigation.FinanceDeepLink
+import com.meticulouscreations.homesafe.navigation.FinanceDeepLinks
 import com.meticulouscreations.homesafe.navigation.FitnessDeepLink
 import com.meticulouscreations.homesafe.navigation.FitnessDeepLinks
+import com.meticulouscreations.homesafe.navigation.MomentDeepLink
+import com.meticulouscreations.homesafe.navigation.MomentDeepLinks
+import com.meticulouscreations.homesafe.navigation.PackageDeepLink
+import com.meticulouscreations.homesafe.navigation.PackageDeepLinks
+import com.meticulouscreations.homesafe.navigation.WeatherDeepLink
+import com.meticulouscreations.homesafe.navigation.WeatherDeepLinks
 import com.meticulouscreations.homesafe.ui.components.IosWebRtc
 import com.meticulouscreations.homesafe.ui.components.IosWebRtcPeerFactory
 import com.meticulouscreations.homesafe.weather.data.IosWeatherRefresh
@@ -82,14 +94,41 @@ fun onWorkoutRestAction(action: String, seconds: Int): Boolean {
 }
 
 /**
- * A link the app was opened with (SwiftUI's `onOpenURL`): a tap on the workout's Live Activity
- * arrives this way, as `homesafe://fitness?page=workout`. True when it was one of the app's.
+ * A link the app was opened with (SwiftUI's `onOpenURL`, or a Home Screen Quick Action from
+ * `AppDelegate.swift`): handles any `homesafe://` link for the apps or doors/moments. True when
+ * it was one of the app's.
  */
 @Suppress("unused")
 fun onOpenUrl(url: String): Boolean {
-    val fitness = FitnessDeepLink.fromUri(url) ?: return false
-    FitnessDeepLinks.open(fitness)
-    return true
+    WeatherDeepLink.fromUri(url)?.let {
+        WeatherDeepLinks.open(it)
+        return true
+    }
+    FitnessDeepLink.fromUri(url)?.let {
+        FitnessDeepLinks.open(it)
+        return true
+    }
+    FinanceDeepLink.fromUri(url)?.let {
+        FinanceDeepLinks.open(it)
+        return true
+    }
+    PackageDeepLink.fromUri(url)?.let {
+        PackageDeepLinks.open(it)
+        return true
+    }
+    DoorDeepLink.fromUri(url)?.let {
+        DoorDeepLinks.open(it)
+        return true
+    }
+    AppDeepLink.fromUri(url)?.let {
+        AppDeepLinks.open(it)
+        return true
+    }
+    MomentDeepLink.fromUri(url)?.let {
+        MomentDeepLinks.open(it)
+        return true
+    }
+    return false
 }
 
 /**

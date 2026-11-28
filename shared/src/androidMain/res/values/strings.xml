@@ -116,10 +116,17 @@
         <item quantity="other">%1$d open</item>
     </plurals>
     <string name="tile_doors_unreachable">Can\'t reach the server</string>
-    <!-- The shortcuts a long press on the launcher icon offers. -->
+    <!-- The shortcuts a long press on the launcher icon offers, and the ones the user can pin to the home screen. -->
     <string name="shortcut_doors">Doors</string>
     <string name="shortcut_radar">Radar</string>
     <string name="shortcut_budget">Budget</string>
+    <string name="shortcut_workout">Workout</string>
+    <string name="shortcut_weather">Weather</string>
+    <string name="shortcut_fitness">Fitness</string>
+    <string name="shortcut_finance">Finance</string>
+    <string name="shortcut_packages">Packages</string>
+    <string name="shortcut_atlas">Atlas</string>
+    <string name="shortcut_charging">Charging</string>
     <string name="notif_channel_packages_name">Packages</string>
     <string name="notif_channel_packages_description">A parcel on its way, delivered, or left out too long</string>
     <string name="notif_group_packages">Packages</string>

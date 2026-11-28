@@ -25,6 +25,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.meticulouscreations.homesafe.appicon.AppShortcuts
+import com.meticulouscreations.homesafe.navigation.AppDeepLink
+import com.meticulouscreations.homesafe.navigation.AppDeepLinks
 import com.meticulouscreations.homesafe.navigation.DoorDeepLink
 import com.meticulouscreations.homesafe.navigation.DoorDeepLinks
 import com.meticulouscreations.homesafe.navigation.PackageDeepLink
@@ -160,6 +162,7 @@ class MainActivity : FragmentActivity() {
         // A budget notification's tap asks for the finance app instead (`homesafe://finance`).
         intent.dataString?.let(FinanceDeepLink::fromUri)?.let { return FinanceDeepLinks.open(it) }
         FitnessDeepLink.fromUri(intent.dataString)?.let { return FitnessDeepLinks.open(it) }
+        AppDeepLink.fromUri(intent.dataString)?.let { return AppDeepLinks.open(it) }
         val link = intent.dataString?.let(MomentDeepLink::fromUri)
             ?: MomentDeepLink.from { key -> intent.getStringExtra(key) }
             ?: return

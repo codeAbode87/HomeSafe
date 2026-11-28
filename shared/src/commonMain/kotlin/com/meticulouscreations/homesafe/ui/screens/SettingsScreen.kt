@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ShowChart
+import androidx.compose.material.icons.filled.AddToHomeScreen
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Dns
@@ -182,6 +183,8 @@ import homesafe.shared.generated.resources.settings_server_unreachable
 import homesafe.shared.generated.resources.settings_server_update_available
 import homesafe.shared.generated.resources.settings_server_uptime
 import homesafe.shared.generated.resources.settings_server_version
+import homesafe.shared.generated.resources.settings_shortcuts_summary
+import homesafe.shared.generated.resources.settings_shortcuts_title
 import homesafe.shared.generated.resources.settings_storage_loading
 import homesafe.shared.generated.resources.settings_storage_percent_used
 import homesafe.shared.generated.resources.settings_storage_recordings
@@ -236,6 +239,7 @@ fun SettingsTabContent(
         onFinanceDrawerItems = viewModel::setFinanceDrawerItems,
         onFigureStyle = viewModel::setFigureStyle,
         onAppIcon = viewModel::setAppIcon,
+        onPinAppShortcut = viewModel::pinAppShortcut,
         onMapProvider = viewModel::setMapProvider,
         onGoogleMapsKey = viewModel::setGoogleMapsKey,
         modifier = Modifier
@@ -249,7 +253,7 @@ fun SettingsTabContent(
 }
 
 /** The rows of the main Settings page that open out in place rather than onto a page of their own. */
-internal enum class SettingsFold { CAMERAS, ECONOMY, FINANCE_DRAWER, FIGURES, MAPS, APP_ICON }
+internal enum class SettingsFold { CAMERAS, ECONOMY, FINANCE_DRAWER, FIGURES, MAPS, APP_ICON, SHORTCUTS }
 
 /**
  * The Settings tab's page, from a [SettingsUiState]. Three groups of rows: every app's
@@ -277,6 +281,7 @@ internal fun SettingsHome(
     onFigureStyle: (FigureStyle) -> Unit,
     onAppIcon: (AppIcon) -> Unit,
     modifier: Modifier = Modifier,
+    onPinAppShortcut: (InnerApp) -> Unit = {},
     onMapProvider: (MapProvider) -> Unit = {},
     onGoogleMapsKey: (String?) -> Unit = {},
     onOpenDoors: (() -> Unit)? = null,
@@ -379,6 +384,19 @@ internal fun SettingsHome(
                     onToggle = { openFold = SettingsFold.APP_ICON.takeIf { it != openFold } },
                 ) {
                     AppIconOptions(icon = state.appIcon, onIcon = onAppIcon)
+                }
+                SettingsRowDivider()
+            }
+            if (state.pinShortcutsSupported) {
+                SettingsExpandableRow(
+                    icon = Icons.Filled.AddToHomeScreen,
+                    title = stringResource(Res.string.settings_shortcuts_title),
+                    summary = stringResource(Res.string.settings_shortcuts_summary),
+                    expanded = openFold == SettingsFold.SHORTCUTS,
+                    onToggle = { openFold = SettingsFold.SHORTCUTS.takeIf { it != openFold } },
+                    modifier = Modifier.testTag("settings_shortcuts"),
+                ) {
+                    HomeShortcutsOptions(pinnedApp = state.pinnedShortcutApp, onPin = onPinAppShortcut)
                 }
                 SettingsRowDivider()
             }

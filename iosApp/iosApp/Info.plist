@@ -70,5 +70,44 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<!--
+	  Home Screen Quick Actions (long-press the app icon): jump straight into Weather, Workout,
+	  Budget, or Doors. Handled by AppDelegate.swift via IosAppKt.onOpenUrl(url:).
+	-->
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>homesafe://weather</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>ShortcutWeather</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>cloud.sun.fill</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>homesafe://fitness?page=workout</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>ShortcutWorkout</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>figure.strengthtraining.traditional</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>homesafe://finance?tab=budget</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>ShortcutBudget</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>chart.line.uptrend.xyaxis</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>homesafe://doors</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>ShortcutDoors</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>door.left.hand.open</string>
+		</dict>
+	</array>
 </dict>
 </plist>

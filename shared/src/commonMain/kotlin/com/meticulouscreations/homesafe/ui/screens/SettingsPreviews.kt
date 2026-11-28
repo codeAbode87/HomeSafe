@@ -163,6 +163,12 @@ private fun SettingsHomeFiguresPreview() {
     SettingsHomePreviewContent(previewSettings, initialFold = SettingsFold.FIGURES)
 }
 
+@Preview(name = "Settings, home screen shortcuts open", widthDp = 412, heightDp = 915)
+@Composable
+private fun SettingsHomeShortcutsPreview() {
+    SettingsHomePreviewContent(previewSettings.copy(pinShortcutsSupported = true, pinnedShortcutApp = InnerApp.WEATHER), initialFold = SettingsFold.SHORTCUTS)
+}
+
 @Preview(name = "Settings, maps open on Google, key needed", widthDp = 412, heightDp = 1400)
 @Composable
 private fun SettingsHomeMapsNoKeyPreview() {

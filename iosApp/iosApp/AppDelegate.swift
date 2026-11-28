@@ -11,7 +11,31 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         application.registerForRemoteNotifications()
+        if let shortcut = launchOptions?[.shortcutItem] as? UIApplicationShortcutItem {
+            _ = IosAppKt.onOpenUrl(url: shortcut.type)
+        }
         return true
+    }
+
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
+        if let shortcut = options.shortcutItem {
+            _ = IosAppKt.onOpenUrl(url: shortcut.type)
+        }
+        let configuration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+        configuration.delegateClass = QuickActionSceneDelegate.self
+        return configuration
+    }
+
+    func application(
+        _ application: UIApplication,
+        performActionFor shortcutItem: UIApplicationShortcutItem,
+        completionHandler: @escaping (Bool) -> Void
+    ) {
+        completionHandler(IosAppKt.onOpenUrl(url: shortcutItem.type))
     }
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -42,5 +66,16 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         // A simulator, or a build signed without the Push Notifications capability: the app keeps
         // its own in-app alerts, as before.
         print("HomeSafe: no APNs token: \(error.localizedDescription)")
+    }
+}
+
+/// Receives Home Screen Quick Actions while the app is already running on a Scene-based SwiftUI app.
+final class QuickActionSceneDelegate: NSObject, UIWindowSceneDelegate {
+    func windowScene(
+        _ windowScene: UIWindowScene,
+        performActionFor shortcutItem: UIApplicationShortcutItem,
+        completionHandler: @escaping (Bool) -> Void
+    ) {
+        completionHandler(IosAppKt.onOpenUrl(url: shortcutItem.type))
     }
 }

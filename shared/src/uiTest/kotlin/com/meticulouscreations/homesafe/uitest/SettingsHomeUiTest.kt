@@ -37,6 +37,7 @@ import com.meticulouscreations.homesafe.finance.domain.EconomyTone
 import com.meticulouscreations.homesafe.finance.domain.FinanceDrawerItem
 import com.meticulouscreations.homesafe.fitness.domain.FigureStyle
 import com.meticulouscreations.homesafe.ui.preview.FrigatePreview
+import com.meticulouscreations.homesafe.ui.screens.InnerApp
 import com.meticulouscreations.homesafe.ui.screens.SettingsFold
 import com.meticulouscreations.homesafe.ui.screens.SettingsHome
 import com.meticulouscreations.homesafe.viewmodel.SettingsUiState
@@ -107,6 +108,7 @@ class SettingsHomeUiTest {
         onFinanceDrawerItems: (List<FinanceDrawerItem>) -> Unit = {},
         onFigureStyle: (FigureStyle) -> Unit = {},
         onAppIcon: (AppIcon) -> Unit = {},
+        onPinAppShortcut: (InnerApp) -> Unit = {},
         block: ComposeUiTest.() -> Unit,
     ) = runComposeUiTest {
         mainClock.autoAdvance = false
@@ -126,6 +128,7 @@ class SettingsHomeUiTest {
                     onFinanceDrawerItems = onFinanceDrawerItems,
                     onFigureStyle = onFigureStyle,
                     onAppIcon = onAppIcon,
+                    onPinAppShortcut = onPinAppShortcut,
                     modifier = Modifier.verticalScroll(rememberScrollState()),
                     initialFold = initialFold,
                 )
@@ -291,6 +294,24 @@ class SettingsHomeUiTest {
     @Test
     fun theAppIconRowIsLeftOutWhereTheIconCantChange() = runHome(state = loaded.copy(appIconsSupported = false)) {
         onNodeWithText("App icon").assertDoesNotExist()
+    }
+
+    @Test
+    fun theShortcutsRowPinsAnAppToTheHomeScreen() {
+        val pinned = mutableListOf<InnerApp>()
+        val state = loaded.copy(pinShortcutsSupported = true)
+        runHome(state = state, initialFold = SettingsFold.SHORTCUTS, onPinAppShortcut = { pinned += it }) {
+            onNodeWithTag("settings_shortcuts").assertExists()
+            scrollIntoView(onNodeWithTag("settings_pin_fitness")).performClick()
+            mainClock.advanceTimeBy(SETTLE_MS)
+
+            assertEquals(listOf(InnerApp.FITNESS), pinned)
+        }
+    }
+
+    @Test
+    fun theShortcutsRowIsLeftOutWhenPinningIsUnsupported() = runHome(state = loaded.copy(pinShortcutsSupported = false)) {
+        onNodeWithTag("settings_shortcuts").assertDoesNotExist()
     }
 
     private companion object {
