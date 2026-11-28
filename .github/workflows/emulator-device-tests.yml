@@ -36,6 +36,12 @@ jobs:
     env:
       API_LEVEL: 34
       JOURNEYS_PACKAGE: com.meticulouscreations.homesafe.integration
+      # The AVD's screen, written into its config.ini before each boot (see "Create AVD and snapshot").
+      AVD_SCREEN: >-
+        cfg="$ANDROID_AVD_HOME/test.avd/config.ini";
+        sed -i -E '/^(hw\.lcd\.(width|height|density)|skin\.(name|path))=/d' "$cfg";
+        printf 'hw.lcd.width=412\nhw.lcd.height=915\nhw.lcd.density=160\nskin.name=412x915\nskin.path=_no_skin\n' >> "$cfg";
+        grep -E '^(hw\.lcd|skin)\.' "$cfg"
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
@@ -64,7 +70,9 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-api${{ env.API_LEVEL }}-google_apis-x86_64
+          # Its own key: this AVD has a phone's screen (AVD_SCREEN), not the 320x640 the other
+          # workflows cache.
+          key: avd-api${{ env.API_LEVEL }}-google_apis-x86_64-lcd412x915
       - name: Create AVD and snapshot
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
@@ -72,6 +80,13 @@ jobs:
           api-level: ${{ env.API_LEVEL }}
           target: google_apis
           arch: x86_64
+          # A phone's screen in dp, as apksim gives the same tests: the runner's default is 320x640,
+          # where forms run below the fold and tests disagreed with apksim over it (#335). 412x915
+          # at the AVD's own density (160) rather than a Pixel 6 profile: that is 1080x2400 pixels
+          # drawn in software, and the suites ran over twice as long and an emulator went offline.
+          # Set in the AVD's config.ini: the emulator ignores -skin for an AVD that names its size.
+          pre-emulator-launch-script: ${{ env.AVD_SCREEN }}
+          cores: 4
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
@@ -94,6 +109,8 @@ jobs:
           api-level: ${{ env.API_LEVEL }}
           target: google_apis
           arch: x86_64
+          pre-emulator-launch-script: ${{ env.AVD_SCREEN }}
+          cores: 4
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true

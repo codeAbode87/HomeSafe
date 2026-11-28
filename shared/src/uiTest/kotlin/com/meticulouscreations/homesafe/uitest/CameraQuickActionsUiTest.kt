@@ -182,7 +182,8 @@ class CameraQuickActionsUiTest {
                 val density = LocalDensity.current
                 CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale)) {
                     // wrapContentSize first: iOS's test root hands its content the window's width exactly, which a bare width() can't narrow.
-                    Box(Modifier.wrapContentSize(Alignment.TopStart).width(width)) {
+                    // Unbounded, so the bar gets the whole width asked for even in a narrower window (CI's 320dp emulator).
+                    Box(Modifier.wrapContentSize(Alignment.TopStart, unbounded = true).width(width)) {
                         CameraQuickActions(
                             displayName = "Front Yard",
                             quality = StreamQuality.AUTO,

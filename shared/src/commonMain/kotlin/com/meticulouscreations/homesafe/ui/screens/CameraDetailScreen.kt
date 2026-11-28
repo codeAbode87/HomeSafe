@@ -869,11 +869,14 @@ private fun PlayerSurface(
 
             SkipBadge(skip = skip, modifier = Modifier.matchParentSize())
 
+            // A paused player can sit buffering (a live HLS stream paused before its first
+            // segments came): that is not waiting for anything, and the play button must show.
+            val waiting = playback.isLoadingPlaylist || (playback.isBuffering && playback.isPlaying)
             when {
                 // Only whether it is still coming fits in the mini player.
-                inPictureInPicture && !(playback.isLoadingPlaylist || playback.isBuffering) -> Unit
+                inPictureInPicture && !waiting -> Unit
 
-                playback.isLoadingPlaylist || playback.isBuffering -> ContainedLoadingIndicator(
+                waiting -> ContainedLoadingIndicator(
                     modifier = Modifier.align(Alignment.Center),
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
                     indicatorColor = MaterialTheme.colorScheme.primary,

@@ -242,8 +242,9 @@ internal fun FullScreenPlayerChrome(
         }
 
         // Nothing to play or pause without a stream, and the spinner has this spot while one loads.
+        // Paused, the button stays even if the player is still buffering, so it can be resumed.
         // Morphs between circle (paused) and rounded square (playing) via M3 Expressive shapes.
-        if (playback.playerRequest != null && !playback.isLoadingPlaylist && !playback.isBuffering) {
+        if (playback.playerRequest != null && !playback.isLoadingPlaylist && !(playback.isBuffering && playback.isPlaying)) {
             FilledIconToggleButton(
                 checked = playback.isPlaying,
                 onCheckedChange = {
