@@ -223,6 +223,12 @@
     <string name="shell_drawer_quick_open">Open %1$s</string>
     <!-- Announced on the Fitness quick-jump tile while a workout is active; %1$s is "Fitness". -->
     <string name="shell_drawer_quick_workout_active">%1$s, workout in progress</string>
+    <!-- The circular Apps button beside the floating bottom nav, and the thumb-zone switcher it opens. -->
+    <string name="shell_apps_button">Apps</string>
+    <string name="shell_quick_apps_close">Close apps</string>
+    <string name="shell_quick_apps_all_cards">All cards</string>
+    <!-- Accessibility label on one app's quick-launch tile; %1$s is the app's name, e.g. "Weather". -->
+    <string name="shell_quick_apps_open_app">Open %1$s</string>
     <!-- Drawer section heading (shown in capitals). -->
     <string name="shell_drawer_section_apps">Apps</string>
     <string name="shell_drawer_finance">Finance</string>
