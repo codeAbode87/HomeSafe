@@ -71,6 +71,23 @@
 		<true/>
 	</dict>
 	<!--
+	  homesafe:// links from outside the app (Shortcuts, Safari, Messages, another app): the same
+	  links the quick actions and the workout Live Activity use, handed to IosAppKt.onOpenUrl(url:)
+	  by iOSApp.swift's onOpenURL. They only open a page; anything behind a sign-in or the Finance
+	  lock still asks for it. Android takes the same scheme in AndroidManifest.xml.
+	-->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.meticulouscreations.homesafe</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>homesafe</string>
+			</array>
+		</dict>
+	</array>
+	<!--
 	  Home Screen Quick Actions (long-press the app icon): jump straight into Weather, Workout,
 	  Budget, or Doors. Handled by AppDelegate.swift via IosAppKt.onOpenUrl(url:).
 	-->
