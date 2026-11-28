@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -209,7 +210,9 @@ internal fun CameraQuickActions(
                 checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                 checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             ),
+            // The bar's full touch target, not the 40dp default: a thumb finds it on a small phone.
             modifier = Modifier
+                .size(PLAYER_BAR_BUTTON_SIZE)
                 .alpha(if (hasAudio) 1f else UNAVAILABLE_ALPHA)
                 .semantics {
                     contentDescription = soundDesc
@@ -232,6 +235,7 @@ internal fun CameraQuickActions(
                 contentColor = MaterialTheme.colorScheme.onSurface,
             ),
             modifier = Modifier
+                .size(PLAYER_BAR_BUTTON_SIZE)
                 .onGloballyPositioned { clipOrigin.coordinates = it }
                 .semantics { contentDescription = clipDesc },
         ) {

@@ -153,6 +153,10 @@
     <string name="shell_show_options">Mostrar opciones y la versión de la app</string>
     <string name="shell_app_version">Versión %1$s</string>
     <string name="shell_drawer_close">Cerrar menú</string>
+    <string name="shell_apps_button">Apps</string>
+    <string name="shell_quick_apps_close">Cerrar apps</string>
+    <string name="shell_quick_apps_all_cards">Ver tarjetas</string>
+    <string name="shell_quick_apps_open_app">Abrir %1$s</string>
     <string name="shell_drawer_section_apps">Apps</string>
     <string name="shell_drawer_finance">Finanzas</string>
     <string name="shell_drawer_finance_subtitle">Mercados y tu dinero</string>
