@@ -10,7 +10,7 @@
 # Where the journeys run:
 # - apksim (https://github.com/aglose/apksim), when APKSIM is set: the command that starts an
 #   instance, such as `apksim` on a Mac or, on Linux, `docker run --rm --network host -v "$PWD:/work"
-#   ghcr.io/aglose/apksim:0.5.0`. Each journey gets an instance of its own, started with no app data
+#   ghcr.io/aglose/apksim:0.69.0`. Each journey gets an instance of its own, started with no app data
 #   and stopped after it, so APK must be the debug APK's path as that command sees it.
 # - Otherwise the device adb already has (one emulator or phone), with the debug APK installed.
 #
