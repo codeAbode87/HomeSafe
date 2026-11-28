@@ -47,6 +47,8 @@ import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -478,6 +480,7 @@ internal fun HomeFeed(
  * The Outdoor | Indoor switch, floating just above the nav where a thumb reaches it. Out of the
  * way while [shown] says so (a lambda, so the scroll that decides it recomposes only this).
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun FloatingPlacementSwitch(
     selected: CameraPlacement,
@@ -485,16 +488,18 @@ private fun FloatingPlacementSwitch(
     shown: () -> Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val spatial = MaterialTheme.motionScheme.fastSpatialSpec<androidx.compose.ui.unit.IntOffset>()
+    val effects = MaterialTheme.motionScheme.fastEffectsSpec<Float>()
     AnimatedVisibility(
         visible = shown(),
         modifier = modifier.padding(bottom = bottomNavClearance()),
-        enter = fadeIn(tween(FLOATING_SWITCH_MS)) + slideInVertically(tween(FLOATING_SWITCH_MS)) { it },
-        exit = fadeOut(tween(FLOATING_SWITCH_MS)) + slideOutVertically(tween(FLOATING_SWITCH_MS)) { it },
+        enter = fadeIn(effects) + slideInVertically(spatial) { it },
+        exit = fadeOut(effects) + slideOutVertically(spatial) { it },
     ) {
         CameraPlacementSwitch(
             selected = selected,
             onSelect = onSelect,
-            modifier = Modifier.shadow(6.dp, CircleShape),
+            modifier = Modifier.shadow(8.dp, CircleShape),
             testTag = FLOATING_PLACEMENT_SWITCH_TEST_TAG,
         )
     }
@@ -506,23 +511,34 @@ private val FLOATING_SWITCH_ROOM = 64.dp
 /** How far the list has to scroll one way, however slowly, before that hides or brings back the floating switch. */
 private val FLOATING_SWITCH_SCROLL_TRAVEL = 16.dp
 
-private const val FLOATING_SWITCH_MS = 200
-
 /**
- * What heads the cameras in Arrange mode: a line saying how it works, and the way out, Done,
- * filled in the primary colour so it is the loudest thing on the page. The way in is the top
- * bar's menu.
+ * What heads the cameras in Arrange mode: a Material 3 Expressive tonal banner saying how it
+ * works, with the way out, Done, filled in the primary colour and morphing on press.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ArrangeHeader(onDone: () -> Unit, modifier: Modifier = Modifier) {
-    Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .padding(start = 18.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
         Text(
             text = stringResource(Res.string.home_arrange_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f),
         )
-        Button(onClick = onDone, modifier = Modifier.testTag(HOME_ARRANGE_DONE_TEST_TAG), contentPadding = ButtonDefaults.ButtonWithIconContentPadding) {
+        Button(
+            onClick = onDone,
+            shapes = ButtonDefaults.shapes(),
+            modifier = Modifier.testTag(HOME_ARRANGE_DONE_TEST_TAG),
+            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+        ) {
             Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
             Spacer(Modifier.width(ButtonDefaults.IconSpacing))
             Text(stringResource(Res.string.home_arrange_done))
@@ -553,7 +569,7 @@ private fun PullToRefreshUnderTopBar(refreshing: Boolean, onRefresh: (() -> Unit
  * quarter turns ([onTurn]), the editor's button and the hide toggle ([onHiddenChange]) along its
  * bottom. A [CameraTile.hidden] card, which only Arrange mode shows, is dimmed and says so.
  */
-@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalLayoutApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun CameraCard(
     tile: CameraTile,
@@ -610,7 +626,6 @@ internal fun CameraCard(
             .fillMaxWidth()
             .aspectRatio(16f / 9f)
             .clip(shape)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), shape)
             .background(
                 Brush.verticalGradient(
                     listOf(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.colorScheme.surfaceContainerHigh),
@@ -699,14 +714,14 @@ internal fun CameraCard(
         FlowRow(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent)))
-                .padding(16.dp),
+                .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.65f), Color.Transparent)))
+                .padding(horizontal = 18.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
                 text = camera.displayName,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmallEmphasized,
                 color = extraColors.textPrimary,
                 modifier = Modifier.padding(end = 12.dp),
             )
@@ -777,27 +792,35 @@ private fun Modifier.arrangeActions(onMoveEarlier: (() -> Unit)?, onMoveLater: (
  * Away mode: nobody is home, so every person on any camera goes out loud to both phones. One
  * slim pill in the style of the camera cards, with the way back on it.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AwayBanner(onBack: () -> Unit) {
-    val extraColors = LocalFrigateExtraColors.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-            .padding(start = 16.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+            .padding(start = 18.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         PulsingDot(color = MaterialTheme.colorScheme.primary, size = 8.dp)
         Text(
             text = stringResource(Res.string.home_away_banner),
-            style = MaterialTheme.typography.labelMedium,
-            color = extraColors.textPrimary,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
         )
-        TextButton(onClick = onBack) { Text(stringResource(Res.string.home_away_back)) }
+        FilledTonalButton(
+            onClick = onBack,
+            shapes = ButtonDefaults.shapes(),
+            colors = ButtonDefaults.filledTonalButtonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ),
+        ) {
+            Text(stringResource(Res.string.home_away_back))
+        }
     }
 }
 
@@ -808,6 +831,7 @@ private fun AwayBanner(onBack: () -> Unit) {
  * read as the server being down. With Tailscale the cause and [onOpenTailscale] given (the
  * platform can open it), a second button goes straight there.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun ConnectionProblemNotice(
     problem: ConnectionProblem,
@@ -820,32 +844,50 @@ internal fun ConnectionProblemNotice(
         ConnectionProblem.TailscaleOff -> Res.string.home_connection_tailscale_off_title to Res.string.home_connection_tailscale_off_body
         ConnectionProblem.ServerUnreachable -> Res.string.home_connection_unreachable_title to Res.string.home_connection_unreachable_body
     }
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(24.dp)
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.35f))
-            .border(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f), shape)
-            .padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 4.dp)
+            .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.55f))
+            .padding(start = 18.dp, end = 12.dp, top = 14.dp, bottom = 10.dp)
             .testTag(CONNECTION_NOTICE_TEST_TAG),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Filled.CloudOff, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
-            Text(text = stringResource(title), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+            Icon(Icons.Filled.CloudOff, contentDescription = null, tint = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.size(20.dp))
+            Text(
+                text = stringResource(title),
+                style = MaterialTheme.typography.labelLargeEmphasized,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.weight(1f),
+            )
         }
         Text(
             text = stringResource(body),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(end = 8.dp),
+            color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f),
+            modifier = Modifier.padding(end = 6.dp),
         )
-        Row(modifier = Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(modifier = Modifier.align(Alignment.End).padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (problem == ConnectionProblem.TailscaleOff && onOpenTailscale != null) {
-                TextButton(onClick = onOpenTailscale) { Text(stringResource(Res.string.home_connection_open_tailscale)) }
+                TextButton(
+                    onClick = onOpenTailscale,
+                    shapes = ButtonDefaults.shapes(),
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onErrorContainer),
+                ) {
+                    Text(stringResource(Res.string.home_connection_open_tailscale))
+                }
             }
-            TextButton(onClick = onRetry, enabled = !retrying) {
+            FilledTonalButton(
+                onClick = onRetry,
+                enabled = !retrying,
+                shapes = ButtonDefaults.shapes(),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                ),
+            ) {
                 Text(stringResource(if (retrying) Res.string.home_connection_retrying else Res.string.home_connection_retry))
             }
         }
@@ -983,6 +1025,7 @@ internal fun rememberCameraVideoOverlayClip(
  *  - nothing playing yet — "Connecting", also on [BufferingDots]. Never "Live": the word is
  *    reserved for a stream that has actually put a frame on screen.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun StatusBadge(
     enabled: Boolean,
@@ -991,6 +1034,16 @@ internal fun StatusBadge(
     pillColor: Color,
 ) {
     val label = stringResource(statusBadgeLabel(enabled = enabled, status = status))
+    val container = when {
+        !enabled -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.92f)
+        status == LiveStreamStatus.Live -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f)
+        else -> pillColor
+    }
+    val content = when {
+        !enabled -> MaterialTheme.colorScheme.onErrorContainer
+        status == LiveStreamStatus.Live -> MaterialTheme.colorScheme.onSecondaryContainer
+        else -> textColor
+    }
     val statusColor = when {
         !enabled -> MaterialTheme.colorScheme.error
         status == LiveStreamStatus.Live -> MaterialTheme.colorScheme.secondary
@@ -998,9 +1051,8 @@ internal fun StatusBadge(
     }
     Row(
         modifier = Modifier
-            .background(pillColor, CircleShape)
-            .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape)
-            .padding(horizontal = 12.dp, vertical = 4.dp),
+            .background(container, CircleShape)
+            .padding(horizontal = 12.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -1013,8 +1065,8 @@ internal fun StatusBadge(
         }
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor,
+            style = MaterialTheme.typography.labelSmallEmphasized,
+            color = content,
         )
     }
 }

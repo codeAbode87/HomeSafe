@@ -1,10 +1,8 @@
 package com.meticulouscreations.homesafe.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -48,7 +46,7 @@ private const val LOADING_PHASE_PERIOD_MS = 2400
 private const val STILL_PHASE = 0.35f
 
 /** Corner radius shared with the real camera cards, so the outline sits on the card it stands for. */
-val SkeletonCardCornerRadius: Dp = 20.dp
+val SkeletonCardCornerRadius: Dp = 24.dp
 
 /**
  * A 0..1 phase that advances with the display's frame clock. It is derived from the absolute
@@ -102,8 +100,7 @@ fun SkeletonCameraCard(
                 still = LocalInspectionMode.current,
             )
             .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.55f))
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), shape),
+            .background(MaterialTheme.colorScheme.surfaceContainerLow),
     )
 }
 

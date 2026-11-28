@@ -79,6 +79,7 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meticulouscreations.homesafe.domain.model.SavedCredentials
 import com.meticulouscreations.homesafe.navigation.TopLevelRoute
+import com.meticulouscreations.homesafe.navigation.hasPendingServerFreeAppLink
 import com.meticulouscreations.homesafe.text.resolve
 import com.meticulouscreations.homesafe.ui.components.PulsingDot
 import com.meticulouscreations.homesafe.ui.components.ReportFullyDrawnWhen
@@ -191,16 +192,24 @@ fun SecureConnectionScreen(
     // No cameras under the apps yet, so none of them offers the hop to them.
     val apps = remember { ShellNavigation().apply { camerasReachable = false } }
     val appsUp = apps.drawerOpen || apps.appOpen
-    // A weather notification's tap opens the weather app here rather than waiting on a sign-in
-    // that may not be possible; taken here first, the shell finds nothing left to open.
+    // Any server-free app link (a weather or budget notification, a workout Live Activity, a
+    // launcher or pinned home-screen shortcut) opens straight over the sign-in screen without
+    // waiting on a camera-server sign-in that may not be possible or wanted right now. Taken here
+    // first, the shell finds nothing left to open.
+    // Sampled before the effects below take the link: they act on it (and clear it) as soon as they run.
+    val launchedIntoApp = remember { hasPendingServerFreeAppLink() }
     LaunchedEffect(apps) { apps.openWeatherFromNotifications() }
+    LaunchedEffect(apps) { apps.openFitnessFromLinks() }
+    LaunchedEffect(apps) { apps.openFinanceFromNotifications() }
+    LaunchedEffect(apps) { apps.openPackagesFromNotifications() }
+    LaunchedEffect(apps) { apps.openAppsFromLinks() }
 
     // If biometric login is set up, prompt for it immediately on launch instead of making the
-    // user tap the button first. Keyed on Unit so it only fires once per screen entry — if the
-    // user cancels or it fails, they land on the manual form and can retry via the button
-    // without being re-prompted in a loop.
+    // user tap the button first — unless the user launched straight into a server-free app like
+    // Weather or Workout via a shortcut, notification or share, in which case don't interrupt it.
+    // Keyed on Unit so it only fires once per screen entry.
     LaunchedEffect(Unit) {
-        if (viewModel.biometricLoginAvailable && hasSavedBiometricCredentials) {
+        if (viewModel.biometricLoginAvailable && hasSavedBiometricCredentials && !launchedIntoApp) {
             viewModel.signInWithBiometrics()
         }
     }

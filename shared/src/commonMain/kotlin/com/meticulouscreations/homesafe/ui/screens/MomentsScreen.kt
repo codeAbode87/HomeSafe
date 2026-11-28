@@ -1,9 +1,8 @@
 package com.meticulouscreations.homesafe.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
@@ -29,7 +28,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,14 +51,21 @@ import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Videocam
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
@@ -80,6 +86,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -107,6 +114,7 @@ import com.meticulouscreations.homesafe.ui.components.PulsingDot
 import com.meticulouscreations.homesafe.ui.components.eventThumbnailRequest
 import com.meticulouscreations.homesafe.ui.fitVideo
 import com.meticulouscreations.homesafe.ui.theme.LocalFrigateExtraColors
+import com.meticulouscreations.homesafe.ui.theme.segmentedCardShape
 import com.meticulouscreations.homesafe.ui.windowHeight
 import com.meticulouscreations.homesafe.viewmodel.DownloadUiState
 import com.meticulouscreations.homesafe.viewmodel.MomentCameraOption
@@ -428,13 +436,19 @@ internal fun MomentsFeed(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(start = gutter, end = gutter, bottom = bottomNavClearance()),
-                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    state.groups.forEach { group ->
+                    state.groups.forEachIndexed { groupIndex, group ->
                         item(key = group.headerKey, contentType = "date-header") {
-                            MomentDateHeader(dateGroup = group.dateGroup, dateSubLabel = group.dateSubLabel, onRefresh = onRefresh)
+                            MomentDateHeader(
+                                dateGroup = group.dateGroup,
+                                dateSubLabel = group.dateSubLabel,
+                                onRefresh = onRefresh,
+                                modifier = Modifier.padding(top = if (groupIndex == 0) 4.dp else 20.dp, bottom = 8.dp),
+                            )
                         }
-                        items(group.items, key = { it.key }, contentType = { if (it.kind == VisitKind.ROUTINE) "routine-row" else "moment-card" }) { item ->
+                        itemsIndexed(group.items, key = { _, it -> it.key }, contentType = { _, it -> if (it.kind == VisitKind.ROUTINE) "routine-row" else "moment-card" }) { itemIndex, item ->
+                            val cardShape = segmentedCardShape(itemIndex, group.items.size, outer = 24.dp, inner = 6.dp)
                             // The clip open in this entry, if the one playing is any of its detections.
                             val playing = state.expandedEventId?.let { id -> item.eventFor(id) }
                             val clipsOpen = item.key in openEntries
@@ -452,6 +466,7 @@ internal fun MomentsFeed(
                             if (item.kind == VisitKind.ROUTINE) {
                                 RoutineRow(
                                     item = item,
+                                    shape = cardShape,
                                     clipsOpen = clipsOpen,
                                     player = player,
                                     onToggleClips = onToggleClips,
@@ -469,6 +484,7 @@ internal fun MomentsFeed(
                                 val downloadErrorMessage = downloadState.resultError.takeIf { downloadState.resultEventId == item.event.id }
                                 MomentCard(
                                     item = item,
+                                    shape = cardShape,
                                     clipsOpen = clipsOpen,
                                     player = player,
                                     isDownloading = isDownloading,
@@ -557,13 +573,16 @@ private fun LoadOlderWhenNearTheEnd(listState: LazyListState, hasOlder: Boolean,
  * The list's last item: a spinner while the next page is on its way, a button when the reader
  * beat the lookahead to the end, and a full stop once the server has nothing older.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun FeedEnd(hasOlder: Boolean, loadingOlder: Boolean, onLoadOlder: () -> Unit) {
-    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), contentAlignment = Alignment.Center) {
         when {
-            loadingOlder -> CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+            loadingOlder -> LoadingIndicator(modifier = Modifier.size(32.dp))
 
-            hasOlder -> TextButton(onClick = onLoadOlder) { Text(stringResource(Res.string.moments_feed_load_older)) }
+            hasOlder -> FilledTonalButton(onClick = onLoadOlder, shapes = ButtonDefaults.shapes()) {
+                Text(stringResource(Res.string.moments_feed_load_older))
+            }
 
             else -> Text(
                 text = stringResource(Res.string.moments_feed_end),
@@ -574,6 +593,7 @@ private fun FeedEnd(hasOlder: Boolean, loadingOlder: Boolean, onLoadOlder: () ->
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun EmptyMoments(
     category: MomentCategory,
@@ -628,8 +648,11 @@ private fun EmptyMoments(
             // A filter can empty the loaded pages without the server being out of moments: offer
             // the next page rather than leaving a wall the reader can't see past.
             when {
-                loadingOlder -> CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                hasOlder -> TextButton(onClick = onLoadOlder) { Text(stringResource(Res.string.moments_empty_look_further)) }
+                loadingOlder -> LoadingIndicator(modifier = Modifier.size(32.dp))
+
+                hasOlder -> FilledTonalButton(onClick = onLoadOlder, shapes = ButtonDefaults.shapes()) {
+                    Text(stringResource(Res.string.moments_empty_look_further))
+                }
             }
         }
     }
@@ -640,24 +663,19 @@ private fun EmptyMoments(
  * it is just the icon, the width the chips can spare; once a day is picked it names the day
  * ([dayLabel], null while live) and grows a close that returns the feed to now.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun HistoryChip(dayLabel: String?, onClick: () -> Unit, onClear: () -> Unit) {
     val selected = dayLabel != null
-    val contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    val shape = if (selected) RoundedCornerShape(12.dp) else CircleShape
+    val containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh
+    val contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
     Row(
         modifier = Modifier
-            .clip(CircleShape)
-            .then(
-                if (selected) {
-                    Modifier.background(MaterialTheme.colorScheme.primary, CircleShape)
-                } else {
-                    Modifier
-                        .background(MaterialTheme.colorScheme.surface, CircleShape)
-                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), CircleShape)
-                },
-            )
+            .clip(shape)
+            .background(containerColor, shape)
             .clickable(onClick = onClick)
-            .padding(start = if (selected) 14.dp else 9.dp, end = if (selected) 8.dp else 9.dp, top = 8.dp, bottom = 8.dp),
+            .padding(start = if (selected) 14.dp else 10.dp, end = if (selected) 8.dp else 10.dp, top = 8.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -670,7 +688,7 @@ private fun HistoryChip(dayLabel: String?, onClick: () -> Unit, onClear: () -> U
         if (dayLabel != null) {
             Text(
                 text = stringResource(Res.string.moments_history_from, dayLabel),
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelMediumEmphasized,
                 color = contentColor,
             )
         }
@@ -797,6 +815,7 @@ private fun CategoryFilterChip(
  * that option narrows the feed ([active]) and outlined when it doesn't. [menu] gets a dismiss to
  * call as an item is picked.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun FilterMenuChip(
     label: String,
@@ -806,20 +825,19 @@ private fun FilterMenuChip(
     menu: @Composable (dismiss: () -> Unit) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val contentColor = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    val shape = if (active) RoundedCornerShape(12.dp) else CircleShape
+    val containerColor = if (active) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh
+    val contentColor = if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+        label = "filter-chevron",
+    )
     Box {
         Row(
             modifier = Modifier
-                .clip(CircleShape)
-                .then(
-                    if (active) {
-                        Modifier.background(MaterialTheme.colorScheme.primary, CircleShape)
-                    } else {
-                        Modifier
-                            .background(MaterialTheme.colorScheme.surface, CircleShape)
-                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), CircleShape)
-                    },
-                )
+                .clip(shape)
+                .background(containerColor, shape)
                 .clickable(onClickLabel = menuDescription) { expanded = true }
                 .padding(start = if (icon != null) 12.dp else 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -836,7 +854,7 @@ private fun FilterMenuChip(
             // A camera name too long for a line gives way to an ellipsis, keeping the arrow in view.
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium,
+                style = if (active) MaterialTheme.typography.labelMediumEmphasized else MaterialTheme.typography.labelMedium,
                 color = contentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -846,16 +864,17 @@ private fun FilterMenuChip(
                 imageVector = Icons.Filled.ArrowDropDown,
                 contentDescription = null,
                 tint = contentColor,
-                modifier = Modifier.width(18.dp).aspectRatio(1f),
+                modifier = Modifier
+                    .width(18.dp)
+                    .aspectRatio(1f)
+                    .graphicsLayer { rotationZ = chevronRotation },
             )
         }
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            containerColor = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(16.dp),
-            // The hairline the feed's cards carry, as the camera screen's overflow menu does.
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            shape = RoundedCornerShape(20.dp),
         ) {
             menu { expanded = false }
         }
@@ -879,13 +898,19 @@ private fun FilterMenuItem(label: String, icon: ImageVector?, checked: Boolean, 
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun MomentDateHeader(dateGroup: UiText, dateSubLabel: UiText, onRefresh: () -> Unit) {
+private fun MomentDateHeader(
+    dateGroup: UiText,
+    dateSubLabel: UiText,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val refreshAction = stringResource(Res.string.moments_refresh_action)
     Row(
         // A heading, so a screen reader can jump between days; and where it offers the refresh the
         // pull gives everyone else, since a screen reader only offers the actions of the node it's on.
-        modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {
+        modifier = modifier.fillMaxWidth().semantics(mergeDescendants = true) {
             heading()
             customActions = listOf(
                 CustomAccessibilityAction(refreshAction) {
@@ -897,11 +922,14 @@ private fun MomentDateHeader(dateGroup: UiText, dateSubLabel: UiText, onRefresh:
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = dateGroup.resolve(), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
+        Text(text = dateGroup.resolve(), style = MaterialTheme.typography.headlineSmallEmphasized, color = MaterialTheme.colorScheme.onSurface)
         Text(
             text = dateSubLabel.resolve().uppercase(),
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.labelSmallEmphasized,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
+                .padding(horizontal = 10.dp, vertical = 4.dp),
         )
     }
 }
@@ -973,6 +1001,7 @@ private fun MomentCard(
     onDownloadClick: () -> Unit,
     onFullScreenClick: () -> Unit,
     onTagCar: (MomentEvent) -> Unit,
+    shape: RoundedCornerShape = RoundedCornerShape(24.dp),
     onNotAPerson: (MomentEvent) -> Unit = {},
     markingNotAPersonId: String? = null,
 ) {
@@ -982,9 +1011,8 @@ private fun MomentCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), RoundedCornerShape(16.dp)),
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainer),
     ) {
         // Intrinsic height so the preview can fill whatever the details beside it come to:
         // a 16:9 band left the frame barely half the card's height, and squeezing Frigate's
@@ -1158,13 +1186,14 @@ private fun RoutineRow(
     onClipPauseToggle: () -> Unit,
     onFullScreenClick: () -> Unit,
     onTagCar: (MomentEvent) -> Unit,
+    shape: RoundedCornerShape = RoundedCornerShape(24.dp),
 ) {
     val p = item.presentation
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), RoundedCornerShape(16.dp)),
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
         Row(
             modifier = Modifier
@@ -1353,6 +1382,7 @@ private fun MomentClipList(
  * [INLINE_PLAYER_MAX_HEIGHT_FRACTION] of the window allows, centred in the card's width, so the
  * card it belongs to is still in sight above it.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun InlineClipPlayer(
     player: ClipPlayerState,
@@ -1400,14 +1430,17 @@ private fun InlineClipPlayer(
                 )
                 // Drawn after the player so it sits on top of the poster, which stays until the first frame.
                 if (player.buffering) {
-                    CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
+                    ContainedLoadingIndicator(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
+                        indicatorColor = MaterialTheme.colorScheme.primary,
+                    )
                 } else if (paused) {
                     // The same play badge as the card's thumbnail: the picture is waiting for a tap.
                     Icon(
                         imageVector = Icons.Filled.PlayArrow,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(48.dp).background(LocalFrigateExtraColors.current.glassFill, CircleShape).padding(8.dp),
+                        modifier = Modifier.size(48.dp).background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.9f), CircleShape).padding(8.dp),
                     )
                 }
             }
@@ -1425,7 +1458,10 @@ private fun InlineClipPlayer(
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                ContainedLoadingIndicator(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
+                    indicatorColor = MaterialTheme.colorScheme.primary,
+                )
             }
         }
 
@@ -1440,27 +1476,28 @@ private fun InlineClipPlayer(
 }
 
 /** Leaves the card-sized player for the camera's detail screen, at this moment's place in the recording. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun FullScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val extraColors = LocalFrigateExtraColors.current
-    Box(
-        modifier = modifier
-            .size(32.dp)
-            .clip(CircleShape)
-            .background(extraColors.glassFill)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
+    FilledTonalIconButton(
+        onClick = onClick,
+        shapes = IconButtonDefaults.shapes(),
+        colors = IconButtonDefaults.filledTonalIconButtonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        modifier = modifier.size(36.dp),
     ) {
         Icon(
             imageVector = Icons.Filled.Fullscreen,
             contentDescription = stringResource(Res.string.moments_play_full_screen),
-            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(20.dp),
         )
     }
 }
 
-/** The card's download control: idle download icon, a spinner while in flight, then a brief check or error flash. */
+/** The card's download control: Expressive morphing button with wavy progress while downloading, settling into secondaryContainer on success. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun DownloadButton(
     isDownloading: Boolean,
@@ -1469,42 +1506,50 @@ private fun DownloadButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier
-            .size(32.dp)
-            .clip(CircleShape)
-            // On the card's own surface now rather than over the thumbnail, so it takes the
-            // badge's fill beside it instead of the glass used for overlays on video.
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .clickable(enabled = !isDownloading, onClick = onClick),
-        contentAlignment = Alignment.Center,
+    val containerColor = when {
+        succeeded -> MaterialTheme.colorScheme.secondaryContainer
+        errorMessage != null -> MaterialTheme.colorScheme.errorContainer
+        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+    }
+    val contentColor = when {
+        succeeded -> MaterialTheme.colorScheme.onSecondaryContainer
+        errorMessage != null -> MaterialTheme.colorScheme.onErrorContainer
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    FilledTonalIconButton(
+        onClick = onClick,
+        enabled = !isDownloading,
+        shapes = IconButtonDefaults.shapes(),
+        colors = IconButtonDefaults.filledTonalIconButtonColors(
+            containerColor = containerColor,
+            contentColor = contentColor,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            disabledContentColor = MaterialTheme.colorScheme.primary,
+        ),
+        modifier = modifier.size(36.dp),
     ) {
         when {
-            isDownloading -> CircularProgressIndicator(
-                modifier = Modifier.size(14.dp),
-                strokeWidth = 2.dp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            isDownloading -> CircularWavyProgressIndicator(
+                modifier = Modifier.size(18.dp),
+                color = MaterialTheme.colorScheme.primary,
             )
 
             succeeded -> Icon(
                 imageVector = Icons.Filled.Check,
                 contentDescription = stringResource(Res.string.moments_downloaded),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(18.dp),
             )
 
             errorMessage != null -> Icon(
                 imageVector = Icons.Filled.ErrorOutline,
                 contentDescription = stringResource(Res.string.moments_download_failed, errorMessage.resolve()),
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(18.dp),
             )
 
             else -> Icon(
                 imageVector = Icons.Filled.Download,
                 contentDescription = stringResource(Res.string.moments_download_clip),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(18.dp),
             )
         }
     }

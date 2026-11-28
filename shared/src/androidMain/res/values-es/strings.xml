@@ -132,4 +132,14 @@
     <string name="notif_channel_rest_over_name">Fin del descanso</string>
     <string name="notif_channel_rest_over_description">Una vibración cuando se acaba el descanso entre series</string>
     <string name="notif_workout_title">Entrenamiento en curso</string>
+    <string name="shortcut_doors">Puertas</string>
+    <string name="shortcut_radar">Radar</string>
+    <string name="shortcut_budget">Presupuesto</string>
+    <string name="shortcut_workout">Entrenamiento</string>
+    <string name="shortcut_weather">Clima</string>
+    <string name="shortcut_fitness">Fitness</string>
+    <string name="shortcut_finance">Finanzas</string>
+    <string name="shortcut_packages">Paquetes</string>
+    <string name="shortcut_atlas">Atlas</string>
+    <string name="shortcut_charging">Carga</string>
 </resources>

@@ -1,30 +1,33 @@
 package com.meticulouscreations.homesafe.ui.screens
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Park
 import androidx.compose.material.icons.outlined.Weekend
+import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.meticulouscreations.homesafe.domain.model.CameraPlacement
 import homesafe.shared.generated.resources.Res
@@ -34,10 +37,11 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * The Home page's quick swap between the outdoor cameras and the indoor ones: two pills in one,
- * the chosen side filled. A pair of tabs to a screen reader, since that is what it does to the
- * list under it.
+ * The Home page's quick swap between the outdoor cameras and the indoor ones: a Material 3
+ * Expressive connected button group in a floating tonal capsule, with shape-morphing segments.
+ * A pair of tabs to a screen reader, since that is what it does to the list under it.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun CameraPlacementSwitch(
     selected: CameraPlacement,
@@ -45,48 +49,55 @@ internal fun CameraPlacementSwitch(
     modifier: Modifier = Modifier,
     testTag: String = CAMERA_PLACEMENT_SWITCH_TEST_TAG,
 ) {
-    Row(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainer, CircleShape)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), CircleShape)
-            .padding(4.dp)
-            .selectableGroup()
-            .testTag(testTag),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    Surface(
+        modifier = modifier.testTag(testTag),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        tonalElevation = 4.dp,
     ) {
-        CameraPlacement.entries.forEach { placement ->
-            PlacementOption(
-                label = placement.label,
-                icon = placement.icon,
-                selected = placement == selected,
-                onClick = { onSelect(placement) },
-            )
+        Row(
+            modifier = Modifier
+                .padding(4.dp)
+                .selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+        ) {
+            val entries = CameraPlacement.entries
+            entries.forEachIndexed { index, placement ->
+                val isSelected = placement == selected
+                val shapes = when (index) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    entries.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                }
+                ToggleButton(
+                    checked = isSelected,
+                    onCheckedChange = { onSelect(placement) },
+                    shapes = shapes,
+                    colors = ToggleButtonDefaults.toggleButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier.semantics {
+                        role = Role.Tab
+                        this.selected = isSelected
+                    },
+                ) {
+                    Icon(
+                        imageVector = placement.icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(ToggleButtonDefaults.IconSize),
+                    )
+                    Spacer(Modifier.width(ToggleButtonDefaults.IconSpacing))
+                    Text(
+                        text = stringResource(placement.label),
+                        style = if (isSelected) MaterialTheme.typography.labelLargeEmphasized else MaterialTheme.typography.labelLarge,
+                    )
+                }
+            }
         }
-    }
-}
-
-@Composable
-private fun PlacementOption(label: StringResource, icon: ImageVector, selected: Boolean, onClick: () -> Unit) {
-    val background by animateColorAsState(
-        if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-        label = "placement-option-background",
-    )
-    val foreground by animateColorAsState(
-        if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-        label = "placement-option-foreground",
-    )
-    Row(
-        modifier = Modifier
-            .clip(CircleShape)
-            .background(background, CircleShape)
-            .selectable(selected = selected, role = Role.Tab, onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        Icon(imageVector = icon, contentDescription = null, tint = foreground, modifier = Modifier.size(18.dp))
-        Text(text = stringResource(label), style = MaterialTheme.typography.labelLarge, color = foreground)
     }
 }
 
