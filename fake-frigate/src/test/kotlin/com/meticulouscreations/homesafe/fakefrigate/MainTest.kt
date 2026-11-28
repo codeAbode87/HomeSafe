@@ -3,37 +3,40 @@ package com.meticulouscreations.homesafe.fakefrigate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class MainTest {
-    @Test
-    fun nowStartsTheClockAtTheInstantAndItRunsOn() {
-        var nanos = 5_000_000_000L
-        val clock = clockStartingAt(epochSecondsOf("2026-01-05T09:00:00Z")) { nanos }
-        assertEquals(1_767_603_600.0, clock())
-        nanos += 90_000_000_000L
-        assertEquals(1_767_603_690.0, clock())
-    }
+    private val pinned = 1_767_603_600.0 // 2026-01-05T09:00:00Z
 
     @Test
-    fun nowTakesEpochSeconds() {
-        assertEquals(1_767_603_600.0, epochSecondsOf("1767603600"))
+    fun nowTakesAnInstantOrEpochSeconds() {
+        assertEquals(pinned, epochSecondsOf("2026-01-05T09:00:00Z"))
+        assertEquals(pinned, epochSecondsOf("1767603600"))
     }
 
     @Test
     fun nowRefusesAnythingElse() {
-        assertFailsWith<IllegalArgumentException> { epochSecondsOf("yesterday") }
+        for (bad in listOf("yesterday", "", "NaN", "Infinity")) {
+            assertFailsWith<IllegalArgumentException>(bad) { epochSecondsOf(bad) }
+        }
     }
 
     @Test
-    fun aPinnedHouseholdIsTheSameOnEveryRun() {
-        val now = 1_767_603_600.0
-        val a = FakeRelayState.household(now) { now }
-        val b = FakeRelayState.household(now) { now }
-        assertEquals(a.packagesBody("admin"), b.packagesBody("admin"))
-        assertEquals("2026-01-05", a.packagesBody("admin")["today"].toString().trim('"'))
-        assertEquals(
-            FakeFrigateState.household(now).events.map { it.id to it.startTime },
-            FakeFrigateState.household(now).events.map { it.id to it.startTime },
-        )
+    fun aPinnedServerPlacesItsHistoryAtTheInstantAndHoldsTheRelaysClockThere() {
+        val server = fakeServer(pinnedNow = pinned)
+        assertEquals(pinned, server.relayState.nowSeconds())
+        Thread.sleep(20)
+        assertEquals(pinned, server.relayState.nowSeconds())
+        assertEquals("2026-01-05", server.relayState.packagesBody("admin")["today"].toString().trim('"'))
+        assertEquals(pinned - 180, server.state.events.maxOf { it.startTime })
+        assertEquals(fakeServer(pinnedNow = pinned).relayState.packagesBody("admin"), server.relayState.packagesBody("admin"))
+    }
+
+    @Test
+    fun anUnpinnedServerFollowsTheRealClock() {
+        val before = System.currentTimeMillis() / 1000.0
+        val server = fakeServer()
+        assertTrue(server.relayState.nowSeconds() >= before)
+        assertTrue(fakeServer(quiet = true).state.events.isEmpty())
     }
 }

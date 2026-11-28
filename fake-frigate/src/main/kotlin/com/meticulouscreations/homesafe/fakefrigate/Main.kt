@@ -13,8 +13,9 @@ import java.time.Instant
  * on the same host) for the fake relay behind Packages, Charging and Atlas.
  *
  * Its data is placed relative to the moment it starts ("someone at the front door minutes ago").
- * `--now 2026-01-05T09:00:00Z` (or epoch seconds) starts its clock at that instant instead, running on
- * from there, so two runs on different days serve the same history: give the app the same instant
+ * `--now 2026-01-05T09:00:00Z` (or epoch seconds) places it relative to that instant instead and holds
+ * the clock there (every "now" the relay answers is that instant), so two runs on different days, or
+ * two walks against one long-running fake, serve the same data: give the app the same instant
  * (apksim's `--clock`) and screens that show dates and times compare cleanly.
  */
 fun main(args: Array<String>) {
@@ -22,11 +23,8 @@ fun main(args: Array<String>) {
     val port = option("port")?.toInt() ?: 8971
     val host = option("host") ?: "0.0.0.0"
     val advertise = option("advertise") ?: "127.0.0.1"
-    val pinned = option("now")?.let(::epochSecondsOf)
-    val now = pinned ?: (System.currentTimeMillis() / 1000.0)
-    val clock = pinned?.let { clockStartingAt(it) } ?: { System.currentTimeMillis() / 1000.0 }
-    val state = if ("--quiet" in args) FakeFrigateState.quiet(now) else FakeFrigateState.household(now)
-    val server = FakeFrigateServer(state, relayState = FakeRelayState.household(now, clock)).start(
+    val pinned = if ("--now" in args) epochSecondsOf(option("now")?.takeUnless { it.startsWith("--") } ?: "") else null
+    val server = fakeServer(quiet = "--quiet" in args, pinnedNow = pinned).start(
         port = port,
         host = host,
         advertiseHost = advertise,
@@ -35,18 +33,22 @@ fun main(args: Array<String>) {
     Runtime.getRuntime().addShutdownHook(Thread { server.close() })
     println("Fake Frigate listening on $host:${server.port} — sign in at ${server.baseUrl} as ${FakeFrigateState.ADMIN.username} / ${FakeFrigateState.ADMIN.password}")
     server.relay?.let { println("Fake relay listening on $host:${it.port}") }
-    pinned?.let { println("Its clock started at ${Instant.ofEpochMilli((it * 1000).toLong())} (--now)") }
+    pinned?.let { println("Its clock is held at ${Instant.ofEpochMilli((it * 1000).toLong())} (--now)") }
     Thread.currentThread().join()
 }
 
-/** [instant] in epoch seconds: an ISO-8601 instant (`2026-01-05T09:00:00Z`) or a number of epoch seconds. */
-internal fun epochSecondsOf(instant: String): Double = instant.toDoubleOrNull()
-    ?: runCatching { Instant.parse(instant).toEpochMilli() / 1000.0 }.getOrElse {
-        throw IllegalArgumentException("--now takes an ISO-8601 instant such as 2026-01-05T09:00:00Z, or epoch seconds: $instant")
-    }
-
-/** A clock in epoch seconds that reads [start] now and runs on in real time from there. */
-internal fun clockStartingAt(start: Double, nanoTime: () -> Long = System::nanoTime): () -> Double {
-    val origin = nanoTime()
-    return { start + (nanoTime() - origin) / 1e9 }
+/**
+ * The household (or [quiet]) fake, placed relative to the real time, or with [pinnedNow] relative to
+ * that instant with every later "now" the relay answers held there too.
+ */
+internal fun fakeServer(quiet: Boolean = false, pinnedNow: Double? = null): FakeFrigateServer {
+    val now = pinnedNow ?: (System.currentTimeMillis() / 1000.0)
+    val clock: () -> Double = pinnedNow?.let { { it } } ?: { System.currentTimeMillis() / 1000.0 }
+    val state = if (quiet) FakeFrigateState.quiet(now) else FakeFrigateState.household(now)
+    return FakeFrigateServer(state, relayState = FakeRelayState.household(now, clock))
 }
+
+/** [instant] in epoch seconds: an ISO-8601 instant (`2026-01-05T09:00:00Z`) or a number of epoch seconds. */
+internal fun epochSecondsOf(instant: String): Double =
+    (instant.toDoubleOrNull()?.takeIf { it.isFinite() } ?: runCatching { Instant.parse(instant).toEpochMilli() / 1000.0 }.getOrNull())
+        ?: throw IllegalArgumentException("--now takes an ISO-8601 instant such as 2026-01-05T09:00:00Z, or epoch seconds: '$instant'")

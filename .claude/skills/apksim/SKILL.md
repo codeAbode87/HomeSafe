@@ -14,7 +14,7 @@ instead of an emulator on this Mac. It is not a phone: see "Limits" before trust
 ```bash
 brew tap aglose/apksim
 brew install apksim        # Homebrew may first ask you to trust the tap: that is the user's call, ask them
-apksim --version           # 0.67.0 or later (0.69.0 is current); else `brew update && brew upgrade --cask apksim`
+apksim --version           # 0.4.0 or later; 0.67.0 for record, replay and crawl below; else `brew update && brew upgrade --cask apksim`
 apksim --train             # optional: builds the startup cache now (otherwise in the background on first launch)
 ```
 
@@ -54,8 +54,8 @@ use the `homesafe-signin` credentials or the autofill file.
 `--relay` also serves the fake relay on 8787, which Packages, Charging and Atlas read; without it
 those apps show their "unavailable" states. The fake's history is placed relative to the moment it
 starts ("someone at the front door minutes ago"); `--now 2026-01-01T09:41:00Z` (or epoch seconds)
-starts its clock at that instant instead, so two runs on different days serve the same data (see
-"Record, replay and crawl").
+places it relative to that instant instead and holds its clock there, so two runs on different
+days serve the same data (see "Record, replay and crawl").
 
 Then sign in to `http://localhost:8971` as `admin` / `correct-horse` (`viewer` / `just-looking` is
 read-only; `--quiet` gives cameras with no history). apksim reaches the Mac's own localhost
@@ -137,8 +137,10 @@ launcher). What matters for HomeSafe:
 - **Recording a bug:** `apksim --headless --control auto --no-network --no-autofill --fresh
   --data-slots hsrec --network-host frigate.test=127.0.0.1 --rec all --rec-window 600 APK`, sign
   in, reproduce, then save it over the control port: `python3 "$APKSIM_SCRIPTS/drive.py" PORT
-  'rec save bug.apkrec'`. Replay it with `apksim replay --headless --no-network --network-match
-  method,url --network-ignore-query device [--apk FIXED.apk] bug.apkrec` (exit 0 matched, 3
+  'rec save'` answers with the bundle's path, `~/.apksim/screenshots/<package>-<time>.apkrec`
+  (a file name of your own must be under `~/.apksim` too: the sandbox refuses writes anywhere
+  else in your home folder). Replay it with `apksim replay --headless --no-network --network-match
+  method,url --network-ignore-query device [--apk FIXED.apk] BUNDLE` (exit 0 matched, 3
   diverged): the recorder leaves the typed password out and replay types `x`, so the sign-in
   request matches only on method and URL, and the app makes a device id after the first
   checkpoint, which no recorded query has.
@@ -157,7 +159,8 @@ launcher). What matters for HomeSafe:
   Depth matters: a screen at `--max-depth` is found but not explored, so `crawl-select.py` cannot
   place a change on it; Apps → Charging → Charges → a charge needs depth 5.
 - **Comparing two walks:** crawl.py sets the app's clock to `2026-01-01T09:41:00Z` (crawl.json's
-  `clock`), so start the fake with `--now 2026-01-01T09:41:00Z` too and a baseline and a later
+  `clock`) at every launch, so start the fake with `--now 2026-01-01T09:41:00Z` too: its history
+  and every "now" the relay answers are then that instant, and a baseline and a later
   `--diff-seed` walk see the same "minutes ago" and the same dates. Up to apksim 0.69.0,
   `--freeze-network` freezes the relay screens as 401s (the replayed sign-in's cookie is
   redacted); walk live against the fake instead.
