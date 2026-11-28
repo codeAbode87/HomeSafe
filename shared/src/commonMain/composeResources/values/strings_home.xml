@@ -219,6 +219,12 @@
     <string name="shell_return_to_app">Back to %1$s</string>
     <!-- Accessibility action on the scrim behind the drawer. -->
     <string name="shell_drawer_close">Close menu</string>
+    <!-- The circular Apps button beside the floating bottom nav, and the thumb-zone switcher it opens. -->
+    <string name="shell_apps_button">Apps</string>
+    <string name="shell_quick_apps_close">Close apps</string>
+    <string name="shell_quick_apps_all_cards">All cards</string>
+    <!-- Accessibility label on one app's quick-launch tile; %1$s is the app's name, e.g. "Weather". -->
+    <string name="shell_quick_apps_open_app">Open %1$s</string>
     <!-- Drawer section heading (shown in capitals). -->
     <string name="shell_drawer_section_apps">Apps</string>
     <string name="shell_drawer_finance">Finance</string>

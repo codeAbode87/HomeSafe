@@ -8,8 +8,10 @@ import com.meticulouscreations.homesafe.finance.ui.FINANCE_LOCK_TEST_TAG
 import com.meticulouscreations.homesafe.finance.ui.FINANCE_UNLOCK_TEST_TAG
 import com.meticulouscreations.homesafe.navigation.FitnessDeepLink
 import com.meticulouscreations.homesafe.navigation.FitnessDeepLinks
+import com.meticulouscreations.homesafe.ui.screens.InnerApp
 import com.meticulouscreations.homesafe.ui.screens.SIGN_IN_APPS_TEST_TAG
 import com.meticulouscreations.homesafe.ui.screens.SIGN_IN_CONNECT_TEST_TAG
+import com.meticulouscreations.homesafe.ui.screens.signInQuickAppTestTag
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -93,6 +95,19 @@ class AppsWithoutServerJourneyTest {
         awaitTag("fitness_app")
         // Wait for the overlay's reveal animation to finish before tapping its close button.
         settle()
+
+        tap(hasTestTag("fitness_back"), "Fitness's close button")
+        awaitGone(hasTestTag("fitness_app"), "the fitness app")
+        signIn.awaitForm()
+        assertTrue(server.requests.isEmpty(), "the server was never asked for anything: ${server.requests}")
+    }
+
+    @Test
+    fun fitnessOpensInOneTapFromTheSignInQuickChip() = runAppJourney {
+        signIn.awaitForm()
+        scrollIntoView(hasTestTag(signInQuickAppTestTag(InnerApp.FITNESS)), "the Fitness quick chip on sign-in")
+        tap(hasTestTag(signInQuickAppTestTag(InnerApp.FITNESS)), "the Fitness quick chip on sign-in")
+        awaitTag("fitness_app")
 
         tap(hasTestTag("fitness_back"), "Fitness's close button")
         awaitGone(hasTestTag("fitness_app"), "the fitness app")

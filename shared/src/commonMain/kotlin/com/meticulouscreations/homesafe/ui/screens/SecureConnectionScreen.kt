@@ -488,6 +488,10 @@ fun SecureConnectionScreen(
                             }
                         }
 
+                        SignInQuickAppsGrid(
+                            onOpenApp = { app, origin -> apps.openApp(app, origin, TopLevelRoute.Home) },
+                        )
+
                         OpenAppsButton(onClick = { apps.drawerOpen = true }, extraColors = extraColors)
                     }
                 }
