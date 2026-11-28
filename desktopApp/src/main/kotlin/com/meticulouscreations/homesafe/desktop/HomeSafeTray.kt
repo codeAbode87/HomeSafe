@@ -32,19 +32,29 @@ import com.meticulouscreations.homesafe.fitness.live.LiveWorkoutLines
 import com.meticulouscreations.homesafe.fitness.live.LiveWorkouts
 import com.meticulouscreations.homesafe.navigation.FitnessDeepLink
 import com.meticulouscreations.homesafe.navigation.FitnessDeepLinks
+import com.meticulouscreations.homesafe.navigation.ShellCommand
+import com.meticulouscreations.homesafe.navigation.ShellCommands
 import com.meticulouscreations.homesafe.text.resolve
+import com.meticulouscreations.homesafe.ui.screens.InnerApp
 import homesafe.shared.generated.resources.Res
+import homesafe.shared.generated.resources.atlas_drawer_title
+import homesafe.shared.generated.resources.charging_drawer_title
 import homesafe.shared.generated.resources.desktop_app_name
 import homesafe.shared.generated.resources.desktop_quit
+import homesafe.shared.generated.resources.desktop_tray_apps
 import homesafe.shared.generated.resources.desktop_tray_last_alert
 import homesafe.shared.generated.resources.desktop_tray_minimize
 import homesafe.shared.generated.resources.desktop_tray_mute
 import homesafe.shared.generated.resources.desktop_tray_open
+import homesafe.shared.generated.resources.fitness_drawer_title
 import homesafe.shared.generated.resources.fitness_live_open
 import homesafe.shared.generated.resources.fitness_rest_minus
 import homesafe.shared.generated.resources.fitness_rest_plus
 import homesafe.shared.generated.resources.fitness_rest_remaining
 import homesafe.shared.generated.resources.fitness_rest_skip
+import homesafe.shared.generated.resources.packages_drawer_title
+import homesafe.shared.generated.resources.shell_drawer_finance
+import homesafe.shared.generated.resources.weather_drawer_title
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
@@ -92,6 +102,7 @@ fun ApplicationScope.HomeSafeTray(graph: AppGraph, windowUp: Boolean, onOpen: ()
     val openOrMinimize = if (windowUp) onMinimize else onOpen
     // The workout in progress: its rest drains as a ring in the icon, and the menu leads with it.
     val workout by LiveWorkouts.process.workout.collectAsState()
+    val shellUp by ShellCommands.shellUp.collectAsState()
     val now by produceState(System.currentTimeMillis(), workout?.rest) {
         while (workout?.rest != null) {
             value = System.currentTimeMillis()
@@ -116,6 +127,21 @@ fun ApplicationScope.HomeSafeTray(graph: AppGraph, windowUp: Boolean, onOpen: ()
     ) {
         workout?.let { current -> WorkoutItems(current, now, onOpen) }
         Item(stringResource(if (windowUp) Res.string.desktop_tray_minimize else Res.string.desktop_tray_open), onClick = openOrMinimize)
+        Menu(stringResource(Res.string.desktop_tray_apps), enabled = shellUp) {
+            listOf(
+                Res.string.weather_drawer_title to InnerApp.WEATHER,
+                Res.string.fitness_drawer_title to InnerApp.FITNESS,
+                Res.string.shell_drawer_finance to InnerApp.FINANCE,
+                Res.string.packages_drawer_title to InnerApp.PACKAGES,
+                Res.string.atlas_drawer_title to InnerApp.ATLAS,
+                Res.string.charging_drawer_title to InnerApp.CHARGING,
+            ).forEach { (title, app) ->
+                Item(stringResource(title)) {
+                    onOpen()
+                    ShellCommands.send(ShellCommand.Open(app))
+                }
+            }
+        }
         Item(stringResource(Res.string.desktop_tray_last_alert), enabled = latest?.link != null, onClick = openLatest)
         Separator()
         CheckboxItem(stringResource(Res.string.desktop_tray_mute), checked = muted) { mute.setMuted(it) }

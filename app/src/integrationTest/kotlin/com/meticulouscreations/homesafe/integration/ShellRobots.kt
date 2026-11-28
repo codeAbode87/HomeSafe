@@ -35,7 +35,11 @@ internal class SignInRobot(private val journey: AppJourney) {
         journey.settle()
     }
 
-    fun connect() = journey.tap(hasTestTag(SIGN_IN_CONNECT_TEST_TAG), "the Connect button")
+    fun connect() {
+        // Under the fields and the app shortcuts above them: below the fold on a small screen.
+        journey.scrollIntoView(hasTestTag(SIGN_IN_CONNECT_TEST_TAG), "the Connect button")
+        journey.tap(hasTestTag(SIGN_IN_CONNECT_TEST_TAG), "the Connect button")
+    }
 
     /** Signs in to the fake server as [user] through the form, and waits for the shell. */
     fun signInAs(user: FakeUser = FakeFrigateState.ADMIN, serverUrl: String = journey.server.baseUrl) {

@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -61,7 +60,6 @@ import com.meticulouscreations.homesafe.ui.handCursor
 import com.meticulouscreations.homesafe.ui.isCompactLandscape
 import com.meticulouscreations.homesafe.ui.preview.FrigatePreview
 import com.meticulouscreations.homesafe.ui.rememberPredictiveBack
-import com.meticulouscreations.homesafe.ui.theme.FrigateTheme
 import homesafe.shared.generated.resources.Res
 import homesafe.shared.generated.resources.shell_apps_button
 import homesafe.shared.generated.resources.shell_drawer_section_apps
@@ -99,9 +97,6 @@ const val QUICK_APP_SWITCHER_TEST_TAG = "quick_app_switcher"
 
 /** Test tag on one app's tile inside [QuickAppSwitcher]. */
 fun quickAppTileTestTag(app: InnerApp): String = "quick_app_${app.name.lowercase()}"
-
-/** Test tag on one app's direct pill on the sign-in screen. */
-fun signInQuickAppTestTag(app: InnerApp): String = "sign_in_app_${app.name.lowercase()}"
 
 /**
  * The circular tonal button floating beside the bottom nav pill (or under the nav rail on a phone
@@ -346,90 +341,12 @@ private fun QuickAppTile(
     }
 }
 
-/**
- * One-tap app chips shown on the sign-in screen so Weather, Fitness, Finance and the rest can be
- * opened straight away without going through the drawer or waiting on the camera server.
- */
-@Composable
-internal fun SignInQuickAppsGrid(
-    onOpenApp: (InnerApp, Offset) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        QUICK_SWITCHER_APPS.chunked(3).forEach { row ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                row.forEach { app ->
-                    SignInQuickAppChip(
-                        app = app,
-                        onOpen = { origin -> onOpenApp(app, origin) },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SignInQuickAppChip(
-    app: InnerApp,
-    onOpen: (Offset) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var center by remember { mutableStateOf(Offset.Zero) }
-    val name = stringResource(app.title)
-    val shape = RoundedCornerShape(14.dp)
-    Row(
-        modifier = modifier
-            .onGloballyPositioned { center = it.boundsInRoot().center }
-            .heightIn(min = 44.dp)
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f), shape)
-            .clickable(
-                role = Role.Button,
-                onClickLabel = stringResource(Res.string.shell_quick_apps_open_app, name),
-                onClick = { onOpen(center) },
-            )
-            .handCursor()
-            .testTag(signInQuickAppTestTag(app))
-            .padding(horizontal = 8.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        Box(
-            modifier = Modifier.size(26.dp).clip(CircleShape).background(app.quickAccent),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(app.icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
-        }
-        Text(
-            text = name,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
-}
-
 @Preview(name = "Quick app switcher", widthDp = 412, heightDp = 420)
 @Preview(name = "Quick app switcher, in Spanish", widthDp = 412, heightDp = 420, locale = "es")
 @Composable
 private fun QuickAppSwitcherPreview() {
     FrigatePreview {
         QuickAppSwitcher(open = true, onOpenApp = { _, _ -> }, onOpenDrawer = {}, onClose = {})
-    }
-}
-
-@Preview(name = "Sign-in quick apps", widthDp = 380)
-@Preview(name = "Sign-in quick apps, in Spanish", widthDp = 380, locale = "es")
-@Composable
-private fun SignInQuickAppsGridPreview() {
-    FrigateTheme {
-        Box(Modifier.background(MaterialTheme.colorScheme.background).padding(16.dp)) {
-            SignInQuickAppsGrid(onOpenApp = { _, _ -> })
-        }
     }
 }
 

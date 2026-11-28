@@ -19,6 +19,7 @@
     <string name="desktop_zoom_window">Zoom</string>
     <string name="desktop_tray_open">Open HomeSafe</string>
     <string name="desktop_tray_minimize">Minimize HomeSafe</string>
+    <string name="desktop_tray_apps">Open App</string>
     <string name="desktop_tray_mute">Mute Notifications</string>
     <string name="desktop_tray_last_alert">Show Latest Alert</string>
     <string name="desktop_quit">Quit HomeSafe</string>

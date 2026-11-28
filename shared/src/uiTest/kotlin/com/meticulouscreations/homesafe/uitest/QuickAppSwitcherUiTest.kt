@@ -9,12 +9,12 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.meticulouscreations.homesafe.ui.preview.FrigatePreview
+import com.meticulouscreations.homesafe.ui.screens.DrawerQuickStrip
 import com.meticulouscreations.homesafe.ui.screens.InnerApp
 import com.meticulouscreations.homesafe.ui.screens.QUICK_APP_SWITCHER_TEST_TAG
 import com.meticulouscreations.homesafe.ui.screens.QuickAppSwitcher
-import com.meticulouscreations.homesafe.ui.screens.SignInQuickAppsGrid
+import com.meticulouscreations.homesafe.ui.screens.drawerQuickAppTestTag
 import com.meticulouscreations.homesafe.ui.screens.quickAppTileTestTag
-import com.meticulouscreations.homesafe.ui.screens.signInQuickAppTestTag
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -74,16 +74,16 @@ class QuickAppSwitcherUiTest {
     }
 
     @Test
-    fun signInQuickAppsOpensWeatherAndFitnessDirectly() = runComposeUiTest {
+    fun theQuickStripOpensWeatherAndFitnessDirectly() = runComposeUiTest {
         val opened = mutableListOf<InnerApp>()
         setContent {
             FrigatePreview {
-                SignInQuickAppsGrid(onOpenApp = { app, _ -> opened += app })
+                DrawerQuickStrip(onOpen = { app, _ -> opened += app }, animated = false)
             }
         }
 
-        onNodeWithTag(signInQuickAppTestTag(InnerApp.WEATHER)).performClick()
-        onNodeWithTag(signInQuickAppTestTag(InnerApp.FITNESS)).performClick()
+        onNodeWithTag(drawerQuickAppTestTag(InnerApp.WEATHER)).performClick()
+        onNodeWithTag(drawerQuickAppTestTag(InnerApp.FITNESS)).performClick()
         assertEquals(listOf(InnerApp.WEATHER, InnerApp.FITNESS), opened)
     }
 }

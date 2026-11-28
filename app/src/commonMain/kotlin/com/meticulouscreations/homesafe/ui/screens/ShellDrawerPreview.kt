@@ -34,6 +34,9 @@ private fun ShellDrawerPreview() {
             open = true,
             pull = remember { DrawerPull(onOpen = {}) },
             onClose = {},
+            quickStrip = { animated ->
+                DrawerQuickStrip(onOpen = { _, _ -> }, workoutActive = true, animated = animated)
+            },
         ) { animated ->
             WeatherDrawerCard(WeatherUiState(), animated = animated, onOpen = {})
             Spacer(Modifier.height(12.dp))

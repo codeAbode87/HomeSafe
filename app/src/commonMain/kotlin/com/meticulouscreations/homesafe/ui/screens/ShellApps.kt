@@ -118,6 +118,13 @@ fun ShellApps(nav: ShellNavigation, tab: TopLevelRoute) {
         open = nav.drawerOpen,
         pull = nav.drawerPull,
         onClose = { nav.drawerOpen = false },
+        quickStrip = { animated ->
+            DrawerQuickStrip(
+                onOpen = { app, origin -> nav.openApp(app, origin, tab) },
+                workoutActive = fitnessState.workout != null,
+                animated = animated,
+            )
+        },
     ) { animated ->
         WeatherDrawerCard(weatherState, animated = animated, onOpen = { origin -> nav.openApp(InnerApp.WEATHER, origin, tab) })
         Spacer(Modifier.height(12.dp))

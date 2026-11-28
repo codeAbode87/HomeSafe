@@ -42,9 +42,9 @@
         <error line="143" column="56" source="compose:vm-forwarding-check" />
     </file>
     <file name="src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SecureConnectionScreen.kt">
-        <error line="172" column="5" source="compose:modifier-missing-check" />
-        <error line="173" column="5" source="compose:lambda-param-in-effect" />
-        <error line="173" column="5" source="compose:parameter-naming" />
+        <error line="171" column="5" source="compose:modifier-missing-check" />
+        <error line="172" column="5" source="compose:lambda-param-in-effect" />
+        <error line="172" column="5" source="compose:parameter-naming" />
     </file>
     <file name="src/commonMain/kotlin/com/meticulouscreations/homesafe/ui/screens/SettingsScreen.kt">
         <error line="208" column="5" source="compose:modifier-missing-check" />

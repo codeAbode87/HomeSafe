@@ -28,10 +28,10 @@ private const val UI_TIMEOUT_MS = 5_000L
  * so this is two taps; it then waits for the camera list, which is when Home reports fully drawn.
  */
 fun MacrobenchmarkScope.signInToHome() {
-    val autofill = device.wait(Until.findObject(By.text("Autofill test credentials")), UI_TIMEOUT_MS)
+    val autofill = findScrollingDown("Autofill test credentials")
         ?: error("Sign-in form without the autofill button: build the benchmarkRelease variant with local.credentials.properties present")
     autofill.click()
-    device.wait(Until.findObject(By.text("Connect")), UI_TIMEOUT_MS)?.click()
+    findScrollingDown("Connect")?.click()
         ?: error("No Connect button")
     // A biometric-save offer can appear on a device with a fingerprint enrolled; decline it.
     device.wait(Until.findObject(By.text("Not now")), 3_000)?.click()
@@ -39,6 +39,21 @@ fun MacrobenchmarkScope.signInToHome() {
         "Home feed did not appear within ${SIGN_IN_TIMEOUT_MS}ms — is the Frigate server reachable from the device? On screen: ${screenText()}"
     }
     device.waitForIdle()
+}
+
+/**
+ * The node with [text], scrolling the sign-in page down a third of the screen at a time until it
+ * shows: its buttons sit under the app shortcuts, below the fold on a small screen, and
+ * UiAutomator only finds what is on screen.
+ */
+private fun MacrobenchmarkScope.findScrollingDown(text: String): UiObject2? {
+    repeat(4) {
+        device.wait(Until.findObject(By.text(text)), UI_TIMEOUT_MS)?.let { return it }
+        val x = device.displayWidth / 2
+        device.swipe(x, device.displayHeight * 3 / 4, x, device.displayHeight * 2 / 5, 20)
+        device.waitForIdle()
+    }
+    return device.findObject(By.text(text))
 }
 
 /**

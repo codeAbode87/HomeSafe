@@ -219,6 +219,10 @@
     <string name="shell_return_to_app">Back to %1$s</string>
     <!-- Accessibility action on the scrim behind the drawer. -->
     <string name="shell_drawer_close">Close menu</string>
+    <!-- Accessibility label on a tile in the drawer's quick-jump strip; %1$s is the app name, e.g. "Weather". -->
+    <string name="shell_drawer_quick_open">Open %1$s</string>
+    <!-- Announced on the Fitness quick-jump tile while a workout is active; %1$s is "Fitness". -->
+    <string name="shell_drawer_quick_workout_active">%1$s, workout in progress</string>
     <!-- The circular Apps button beside the floating bottom nav, and the thumb-zone switcher it opens. -->
     <string name="shell_apps_button">Apps</string>
     <string name="shell_quick_apps_close">Close apps</string>
