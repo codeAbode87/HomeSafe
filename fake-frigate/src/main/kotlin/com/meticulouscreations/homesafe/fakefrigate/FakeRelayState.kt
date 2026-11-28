@@ -332,8 +332,15 @@ class FakeRelayState(
         private const val PAGE = 20
         private const val HOME_RATE = 0.20
 
-        /** Three parcels (two on the way, one delivered), two cars with a week of charges, and three days of an invented life. */
-        fun household(nowSeconds: Double = System.currentTimeMillis() / 1000.0): FakeRelayState {
+        /**
+         * Three parcels (two on the way, one delivered), two cars with a week of charges, and three days of an invented life,
+         * placed relative to [nowSeconds]. [clock] is what the relay later reads as "now" (the packages' `now` and `today`);
+         * give a clock that starts at [nowSeconds] when that is not the real time (`--now`).
+         */
+        fun household(
+            nowSeconds: Double = System.currentTimeMillis() / 1000.0,
+            clock: () -> Double = { System.currentTimeMillis() / 1000.0 },
+        ): FakeRelayState {
             val hour = 3600.0
             val day = 86_400.0
             val now = nowSeconds
@@ -382,7 +389,7 @@ class FakeRelayState(
             )
             return FakeRelayState(
                 people = mutableListOf("Alex", "Sam"), parcels = parcels, charges = charges, visits = visits, moves = moves, places = places,
-                timelineUsers = mutableSetOf("viewer"),
+                timelineUsers = mutableSetOf("viewer"), nowSeconds = clock,
             )
         }
     }
