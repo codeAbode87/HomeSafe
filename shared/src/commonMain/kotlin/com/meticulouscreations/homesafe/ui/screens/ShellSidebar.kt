@@ -1,5 +1,6 @@
 package com.meticulouscreations.homesafe.ui.screens
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
@@ -19,7 +20,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
@@ -30,9 +30,11 @@ import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.ViewSidebar
 import androidx.compose.material.icons.filled.WbCloudy
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -120,6 +122,7 @@ fun sidebarSectionTestTag(app: InnerApp, index: Int): String = sidebarAppTestTag
  * The tab rows carry the bottom nav's test tags, so a test (or the Android CLI) finds a tab the
  * same way whichever nav the window has.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun ShellSidebar(nav: ShellNavigation, sections: AppSectionsHost, onHide: () -> Unit, modifier: Modifier = Modifier) {
     Column(
@@ -137,14 +140,14 @@ internal fun ShellSidebar(nav: ShellNavigation, sections: AppSectionsHost, onHid
         ) {
             Text(
                 text = stringResource(Res.string.shell_app_title),
-                style = MaterialTheme.typography.headlineSmall.copy(letterSpacing = 0.03.em),
+                style = MaterialTheme.typography.headlineSmallEmphasized.copy(letterSpacing = 0.02.em),
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f),
                 maxLines = 1,
             )
             val hide = stringResource(Res.string.shell_sidebar_hide)
             WithTooltip(hide) {
-                IconButton(onClick = onHide, modifier = Modifier.handCursor()) {
+                IconButton(onClick = onHide, shapes = IconButtonDefaults.shapes(), modifier = Modifier.handCursor()) {
                     Icon(Icons.Filled.ViewSidebar, contentDescription = hide, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
@@ -217,6 +220,7 @@ internal fun ShellSidebar(nav: ShellNavigation, sections: AppSectionsHost, onHid
  * One row of the sidebar: an icon and a label, tinted and filled while [selected], lit under the
  * pointer, with its keyboard shortcut at the end where shortcuts are shown ([shortcutLabel]).
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SidebarItem(
     icon: ImageVector,
@@ -230,34 +234,44 @@ private fun SidebarItem(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val hovered by interactionSource.collectIsHoveredAsState()
-    val shape = RoundedCornerShape(10.dp)
     val colors = MaterialTheme.colorScheme
-    val content = if (selected) colors.onPrimaryContainer else colors.onSurface
+    val background by animateColorAsState(
+        targetValue = when {
+            selected -> colors.primaryContainer
+            hovered -> colors.onSurface.copy(alpha = 0.06f)
+            else -> colors.surfaceContainerLowest
+        },
+        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+        label = "sidebar-item-bg",
+    )
+    val content by animateColorAsState(
+        targetValue = if (selected) colors.onPrimaryContainer else colors.onSurface,
+        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+        label = "sidebar-item-content",
+    )
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(if (compact) 34.dp else 40.dp)
-            .clip(shape)
-            .background(
-                when {
-                    selected -> colors.primaryContainer
-                    hovered -> colors.onSurface.copy(alpha = 0.06f)
-                    else -> colors.surfaceContainerLowest
-                },
-            )
+            .clip(CircleShape)
+            .background(background)
             .hoverable(interactionSource)
             .clickable(interactionSource = interactionSource, indication = null, role = Role.Tab, onClick = onClick)
             .handCursor()
             // An app whose sections are listed under it is still the one that is up.
             .semantics { this.selected = selected || emphasised }
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Icon(icon, contentDescription = null, tint = if (selected) content else colors.primary, modifier = Modifier.size(if (compact) 18.dp else 20.dp))
         Text(
             text = label,
-            style = if (compact) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge,
+            style = when {
+                compact -> MaterialTheme.typography.labelMedium
+                selected -> MaterialTheme.typography.labelLargeEmphasized
+                else -> MaterialTheme.typography.labelLarge
+            },
             color = content,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

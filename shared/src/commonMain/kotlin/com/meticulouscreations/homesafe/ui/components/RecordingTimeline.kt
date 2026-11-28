@@ -2,7 +2,6 @@ package com.meticulouscreations.homesafe.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.drag
@@ -98,7 +97,7 @@ fun RecordingTimeline(
     val textMeasurer = rememberTextMeasurer()
     val colorScheme = MaterialTheme.colorScheme
     val labelStyle = MaterialTheme.typography.labelSmall
-    val shape = RoundedCornerShape(20.dp)
+    val shape = RoundedCornerShape(24.dp)
     val indicatorEpoch = scrubEpochSeconds ?: playheadEpochSeconds ?: nowEpochSeconds
     // This composable recomposes four times a second while a recording plays and on every
     // pixel of a drag (the playhead is a parameter), so anything that doesn't depend on the
@@ -124,8 +123,7 @@ fun RecordingTimeline(
             .height(TIMELINE_HEIGHT)
             .clip(shape)
             .liquidLens(lens)
-            .background(colorScheme.surface)
-            .border(1.dp, colorScheme.outlineVariant.copy(alpha = 0.1f), shape)
+            .background(colorScheme.surfaceContainerLow)
             .pointerInput(Unit) {
                 awaitEachGesture {
                     val down = awaitFirstDown().also { it.consume() }

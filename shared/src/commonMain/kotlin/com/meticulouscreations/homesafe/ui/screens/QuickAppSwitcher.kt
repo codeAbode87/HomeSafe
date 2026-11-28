@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -61,7 +62,6 @@ import com.meticulouscreations.homesafe.ui.isCompactLandscape
 import com.meticulouscreations.homesafe.ui.preview.FrigatePreview
 import com.meticulouscreations.homesafe.ui.rememberPredictiveBack
 import com.meticulouscreations.homesafe.ui.theme.FrigateTheme
-import com.meticulouscreations.homesafe.ui.theme.LocalFrigateExtraColors
 import homesafe.shared.generated.resources.Res
 import homesafe.shared.generated.resources.shell_apps_button
 import homesafe.shared.generated.resources.shell_drawer_section_apps
@@ -104,7 +104,7 @@ fun quickAppTileTestTag(app: InnerApp): String = "quick_app_${app.name.lowercase
 fun signInQuickAppTestTag(app: InnerApp): String = "sign_in_app_${app.name.lowercase()}"
 
 /**
- * The circular glass button floating beside the bottom nav pill (or under the nav rail on a phone
+ * The circular tonal button floating beside the bottom nav pill (or under the nav rail on a phone
  * on its side), putting Weather, Fitness and the other apps under the user's thumb without a reach
  * for the top-left menu button.
  */
@@ -119,9 +119,9 @@ internal fun AppsNavButton(
         Box(
             modifier = Modifier
                 .size(58.dp)
+                .shadow(8.dp, CircleShape)
                 .clip(CircleShape)
-                .background(LocalFrigateExtraColors.current.glassFill, CircleShape)
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.94f), CircleShape)
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,

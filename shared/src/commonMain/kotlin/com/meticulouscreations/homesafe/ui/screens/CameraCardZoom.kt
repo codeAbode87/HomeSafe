@@ -1,6 +1,7 @@
 package com.meticulouscreations.homesafe.ui.screens
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,8 +16,10 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -320,7 +323,7 @@ class CameraCardZoomState(private val scope: CoroutineScope) {
         val window = zoomWindow(IntSize(size.width.roundToInt(), size.height.roundToInt()))
         val center = Offset(size.width / 2f, size.height / 2f) + frame.translation
         val half = Offset(window.width * frame.scale / 2f, window.height * frame.scale / 2f)
-        return WindowShape(Rect(center - half, center + half), cornerRadius * (1f - shownLift))
+        return WindowShape(Rect(center - half, center + half), cornerRadius * (1f - shownLift).coerceIn(0f, 1f))
     }
 
     private fun begin(tile: CameraTile, cardBoundsInRoot: Rect) {
@@ -368,7 +371,8 @@ class CameraCardZoomState(private val scope: CoroutineScope) {
     private val IntSize.center: Offset get() = Offset(width / 2f, height / 2f)
 
     private companion object {
-        val LIFT_SPEC = tween<Float>(NAV_TRANSITION_MS, easing = NavEnterEasing)
+        // Underdamped: the lift overshoots 0..1, so whatever can't (alpha, a corner radius) clamps it.
+        val LIFT_SPEC = spring<Float>(dampingRatio = 0.85f, stiffness = 420f)
 
         /** How much of the way home to its card a full back swipe draws the video. */
         const val BACK_PEEK = 0.5f
@@ -397,7 +401,7 @@ internal fun rememberCameraCardZoomState(): CameraCardZoomState {
  * whole shell, nav bars included, so the picture has the full screen; nothing while closed.
  * Tapping the video opens the camera's own screen via [onOpenCamera].
  */
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun CameraCardZoomOverlay(state: CameraCardZoomState, onOpenCamera: (CameraTile) -> Unit) {
     val tile = state.target ?: return
@@ -421,7 +425,7 @@ internal fun CameraCardZoomOverlay(state: CameraCardZoomState, onOpenCamera: (Ca
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .drawBehind { drawRect(Color.Black, alpha = SCRIM_ALPHA * state.shownLift) }
+            .drawBehind { drawRect(Color.Black, alpha = SCRIM_ALPHA * state.shownLift.coerceIn(0f, 1f)) }
             .clickable(interactionSource = null, indication = null, onClick = state::close)
             .onGloballyPositioned { state.overlayOriginInRoot = it.positionInRoot() }
             .onSizeChanged { state.viewportSize = it }
@@ -520,12 +524,12 @@ internal fun CameraCardZoomOverlay(state: CameraCardZoomState, onOpenCamera: (Ca
         ) {
             Text(
                 text = tile.camera.displayName,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmallEmphasized,
                 color = extraColors.textPrimary,
                 maxLines = 1,
                 modifier = Modifier.weight(1f).padding(end = 12.dp),
             )
-            IconButton(onClick = state::close) {
+            IconButton(onClick = state::close, shapes = IconButtonDefaults.shapes()) {
                 Icon(Icons.Filled.Close, contentDescription = stringResource(Res.string.common_close), tint = extraColors.textPrimary)
             }
         }
