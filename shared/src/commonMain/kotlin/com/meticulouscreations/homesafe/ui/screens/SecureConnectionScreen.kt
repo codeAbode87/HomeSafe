@@ -197,6 +197,8 @@ fun SecureConnectionScreen(
     // launcher or pinned home-screen shortcut) opens straight over the sign-in screen without
     // waiting on a camera-server sign-in that may not be possible or wanted right now. Taken here
     // first, the shell finds nothing left to open.
+    // Sampled before the effects below take the link: they act on it (and clear it) as soon as they run.
+    val launchedIntoApp = remember { hasPendingServerFreeAppLink() }
     LaunchedEffect(apps) { apps.openWeatherFromNotifications() }
     LaunchedEffect(apps) { apps.openFitnessFromLinks() }
     LaunchedEffect(apps) { apps.openFinanceFromNotifications() }
@@ -208,7 +210,7 @@ fun SecureConnectionScreen(
     // Weather or Workout via a shortcut, notification or share, in which case don't interrupt it.
     // Keyed on Unit so it only fires once per screen entry.
     LaunchedEffect(Unit) {
-        if (viewModel.biometricLoginAvailable && hasSavedBiometricCredentials && !hasPendingServerFreeAppLink()) {
+        if (viewModel.biometricLoginAvailable && hasSavedBiometricCredentials && !launchedIntoApp) {
             viewModel.signInWithBiometrics()
         }
     }
