@@ -14,15 +14,18 @@ instead of an emulator on this Mac. It is not a phone: see "Limits" before trust
 ```bash
 brew tap aglose/apksim
 brew install apksim        # Homebrew may first ask you to trust the tap: that is the user's call, ask them
-apksim --version           # 0.4.0 or later (CI pins the same release); else `brew update && brew upgrade --cask apksim`
+apksim --version           # 0.4.0 or later; 0.67.0 for record, replay and crawl below; else `brew update && brew upgrade --cask apksim`
 apksim --train             # optional: builds the startup cache now (otherwise in the background on first launch)
 ```
+
+CI pins its own image (`ghcr.io/aglose/apksim:…` in `.github/workflows/apksim.yml`), whatever is
+installed here. The record, replay and crawl steps below need 0.67.0 (`--biometrics auto`).
 
 An installed release keeps its state (app data, each instance's ports) in `~/.apksim`; a source
 checkout of apksim keeps it in its own `work/`. Its helper scripts ship beside the launcher:
 
 ```bash
-APKSIM_SCRIPTS="$(dirname "$(readlink -f "$(command -v apksim)")")/scripts"   # ctl.py, instrument.py, drive.py
+APKSIM_SCRIPTS="$(dirname "$(readlink -f "$(command -v apksim)")")/scripts"   # ctl.py, instrument.py, drive.py, crawl.py
 ```
 
 ## Build and launch
@@ -45,8 +48,14 @@ use the `homesafe-signin` credentials or the autofill file.
 ## Sign in to the fake Frigate
 
 ```bash
-./gradlew :fake-frigate:run --args="--port 8971 --host 127.0.0.1 --advertise localhost"   # in the background
+./gradlew :fake-frigate:run --args="--port 8971 --host 127.0.0.1 --advertise localhost --relay"   # in the background
 ```
+
+`--relay` also serves the fake relay on 8787, which Packages, Charging and Atlas read; without it
+those apps show their "unavailable" states. The fake's history is placed relative to the moment it
+starts ("someone at the front door minutes ago"); `--now 2026-01-01T09:41:00Z` (or epoch seconds)
+places it relative to that instant instead and holds its clock there, so two runs on different
+days serve the same data (see "Record, replay and crawl").
 
 Then sign in to `http://localhost:8971` as `admin` / `correct-horse` (`viewer` / `just-looking` is
 read-only; `--quiet` gives cameras with no history). apksim reaches the Mac's own localhost
@@ -103,12 +112,58 @@ adb shell apksim quit
 
 ## App data
 
-App data persists between launches, per package (a sign-in survives a relaunch). To start from a
-fresh install, quit the app, then:
+App data persists between launches, per package (`--data-slots NAME` keeps a separate copy under
+that name). A sign-in does not survive a cold start by itself: the debug build asks for the
+password again on every launch unless fingerprint sign-in was turned on (the "Enable fingerprint
+sign-in?" offer after a password sign-in), and then only with `--biometrics auto` or `biometrics
+match` to answer the prompt. To start from a fresh install, quit the app, then:
 
 ```bash
 python3 "$APKSIM_SCRIPTS/ctl.py" erase com.meticulouscreations.homesafe.debug   # refuses while it runs
 ```
+
+## Record, replay and crawl
+
+apksim's flight recorder (`--rec`), network recording and crawler (`crawl.py`) are its own docs
+(`docs/flight-recorder.md`, `docs/replay.md`, `docs/network.md`, `docs/crawl.md` beside the
+launcher). What matters for HomeSafe:
+
+- **Use a mapped hostname, not `localhost`.** apksim's network tap never reads loopback, so a
+  recording of a session signed in to `http://localhost:8971` holds no requests, and a crawl's
+  `--freeze-network` freezes none. Start the fake with `--advertise frigate.test --relay` and add
+  `--network-host frigate.test=127.0.0.1` beside `--no-network` (no port: the relay's 8787 is
+  reached on the same name), then sign in to `http://frigate.test:8971`. `--no-network` still
+  holds: the name goes to the Mac's loopback and nowhere else.
+- **Recording a bug:** `apksim --headless --control auto --no-network --no-autofill --fresh
+  --data-slots hsrec --network-host frigate.test=127.0.0.1 --rec all --rec-window 600 APK`, sign
+  in, reproduce, then save it over the control port: `python3 "$APKSIM_SCRIPTS/drive.py" PORT
+  'rec save'` answers with the bundle's path, `~/.apksim/screenshots/<package>-<time>.apkrec`
+  (a file name of your own must be under `~/.apksim` too: the sandbox refuses writes anywhere
+  else in your home folder). Replay it with `apksim replay --headless --no-network --network-match
+  method,url --network-ignore-query device [--apk FIXED.apk] BUNDLE` (exit 0 matched, 3
+  diverged): the recorder leaves the typed password out and replay types `x`, so the sign-in
+  request matches only on method and URL, and the app makes a device id after the first
+  checkpoint, which no recorded query has.
+- **Crawling signed in:** prepare a slot once with fingerprint sign-in, then let the walk copy it:
+
+  ```bash
+  apksim --headless --control auto --no-network --no-autofill --fresh --data-slots hscrawl \
+    --biometrics auto --network-host frigate.test=127.0.0.1 APK
+  # sign in to http://frigate.test:8971 as admin, tap Enable on the fingerprint offer, quit
+  python3 "$APKSIM_SCRIPTS/crawl.py" APK --out map --keep-data --record-deps -j 6 --max-depth 5 \
+    -- --data-slots hscrawl --no-network --network-host frigate.test=127.0.0.1
+  ```
+
+  `--keep-data` passes `--biometrics auto`, so each copy unlocks itself. Never pass
+  `crawl.py --autofill`: it reads the saved sign-in file, which is the real server's.
+  Depth matters: a screen at `--max-depth` is found but not explored, so `crawl-select.py` cannot
+  place a change on it; Apps → Charging → Charges → a charge needs depth 5.
+- **Comparing two walks:** crawl.py sets the app's clock to `2026-01-01T09:41:00Z` (crawl.json's
+  `clock`) at every launch, so start the fake with `--now 2026-01-01T09:41:00Z` too: its history
+  and every "now" the relay answers are then that instant, and a baseline and a later
+  `--diff-seed` walk see the same "minutes ago" and the same dates. Up to apksim 0.69.0,
+  `--freeze-network` freezes the relay screens as 401s (the replayed sign-in's cookie is
+  redacted); walk live against the fake instead.
 
 ## Device tests in seconds
 

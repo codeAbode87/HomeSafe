@@ -211,7 +211,7 @@ class FakeFrigateState(
         }
 
         /** A server with cameras but no history at all: the empty states. */
-        fun quiet(): FakeFrigateState = household().apply {
+        fun quiet(nowEpochSeconds: Double = System.currentTimeMillis() / 1000.0): FakeFrigateState = household(nowEpochSeconds).apply {
             events.clear()
             recordings.clear()
             faces.clear()

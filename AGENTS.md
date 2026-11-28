@@ -43,7 +43,8 @@ apksim --instrument X-androidTest.apk -e class a.B#test X-androidTest.apk   # on
 
 Sign in only to the fake Frigate (`admin` / `correct-horse`), never the real server; keep
 `--no-network` on so the debug build's compiled-in LAN address can't reach it. Use apksim 0.4.0 or
-later (`brew upgrade --cask apksim`): older ones refuse `127.0.0.1` under it. The fake binds
+later (`brew upgrade --cask apksim`; 0.67.0 for the skill's record, replay and crawl steps): older
+ones refuse `127.0.0.1` under it. The fake binds
 `127.0.0.1` and not `::1`, because the video player connects there for `localhost` and a clip
 won't play otherwise. The tests run
 Robolectric-style on API 36 with a simulated clock: keep the emulator for `startup-perf`, and use
