@@ -6,8 +6,10 @@ import androidx.compose.ui.test.hasText
 import com.meticulouscreations.homesafe.fakefrigate.FakeFrigateState
 import com.meticulouscreations.homesafe.finance.ui.FINANCE_LOCK_TEST_TAG
 import com.meticulouscreations.homesafe.finance.ui.FINANCE_UNLOCK_TEST_TAG
+import com.meticulouscreations.homesafe.ui.screens.InnerApp
 import com.meticulouscreations.homesafe.ui.screens.SIGN_IN_APPS_TEST_TAG
 import com.meticulouscreations.homesafe.ui.screens.SIGN_IN_CONNECT_TEST_TAG
+import com.meticulouscreations.homesafe.ui.screens.signInQuickAppTestTag
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -83,5 +85,18 @@ class AppsWithoutServerJourneyTest {
         tap(hasTestTag("fitness_back"), "Fitness's close button")
         shell.awaitSignedIn()
         shell.awaitCameraCard("back_yard", "Back Yard")
+    }
+
+    @Test
+    fun fitnessOpensInOneTapFromTheSignInQuickChip() = runAppJourney {
+        signIn.awaitForm()
+        scrollIntoView(hasTestTag(signInQuickAppTestTag(InnerApp.FITNESS)), "the Fitness quick chip on sign-in")
+        tap(hasTestTag(signInQuickAppTestTag(InnerApp.FITNESS)), "the Fitness quick chip on sign-in")
+        awaitTag("fitness_app")
+
+        tap(hasTestTag("fitness_back"), "Fitness's close button")
+        awaitGone(hasTestTag("fitness_app"), "the fitness app")
+        signIn.awaitForm()
+        assertTrue(server.requests.isEmpty(), "the server was never asked for anything: ${server.requests}")
     }
 }
